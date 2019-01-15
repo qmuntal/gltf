@@ -1,0 +1,18 @@
+
+
+language: go
+go_import_path: github.com/qmuntal/gltf
+
+go:
+  - 1.11.x
+
+env:
+  - GO111MODULE=on
+
+notifications:
+  - email: false
+
+script:
+  - go get -u github.com/mattn/goveralls
+  - go test  ./... -coverprofile=coverage.out -race -timeout=5s
+  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
