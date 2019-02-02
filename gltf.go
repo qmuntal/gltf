@@ -20,8 +20,8 @@ type Named struct {
 	Name string `json:"name,omitempty"` // The user-defined name of this object.
 }
 
-// The root object for a glTF asset.
-type GLTF struct {
+// Document defines the root object for a glTF asset.
+type Document struct {
 	Extensible
 	ExtensionsUsed     []string     `json:"extensionsUsed,omitempty"`     // Names of glTF extensions used somewhere in this asset.
 	ExtensionsRequired []string     `json:"extensionsRequired,omitempty"` // Names of glTF extensions required to properly load this asset.
