@@ -77,26 +77,26 @@ type PBRMetallicRoughness struct {
 // TextureInfo references to a texture.
 type TextureInfo struct {
 	Extensible
-	Index    uint32 `json:"index"`              // The index of the texture.
-	TexCoord uint32 `json:"texCoord,omitempty"` // The set index of texture's TEXCOORD attribute used for texture coordinate mapping.
+	Index    uint32 `json:"index"`
+	TexCoord uint32 `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
 }
 
 // A texture and its sampler.
 type Texture struct {
 	Named
 	Extensible
-	Sampler uint32 `json:"sampler,omitempty"` // The index of the sampler used by this texture.
-	Source  uint32 `json:"source,omitempty"`  // The index of the image used by this texture.
+	Sampler uint32 `json:"sampler,omitempty"`
+	Source  uint32 `json:"source,omitempty"`
 }
 
 // Sampler of a texture for filtering and wrapping modes.
 type Sampler struct {
 	Named
 	Extensible
-	MagFilter MagFilter    `json:"magFilter"` // Magnification filter.
-	MinFilter MinFilter    `json:"minFilter"` // Minification filter.
-	WrapS     WrappingMode `json:"wrapS"`     // S wrapping mode.
-	WrapT     WrappingMode `json:"wrapT"`     // T wrapping mode.
+	MagFilter MagFilter    `json:"magFilter"`
+	MinFilter MinFilter    `json:"minFilter"`
+	WrapS     WrappingMode `json:"wrapS"`
+	WrapT     WrappingMode `json:"wrapT"`
 }
 
 // Image data used to create a texture. Image can be referenced by URI or bufferView index.
@@ -104,7 +104,7 @@ type Sampler struct {
 type Image struct {
 	Named
 	Extensible
-	URI        string `json:"uri,omitempty"`        // The uri of the image.
-	MimeType   string `json:"mimeType,omitempty"`   // The image's MIME type.
-	BufferView uint32 `json:"bufferView,omitempty"` // The index of the bufferView that contains the image. Use this instead of the image's uri property.
+	URI        string `json:"uri,omitempty"`
+	MimeType   string `json:"mimeType,omitempty"`
+	BufferView uint32 `json:"bufferView,omitempty"` // Use this instead of the image's uri property.
 }

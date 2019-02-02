@@ -20,9 +20,9 @@ const (
 type Accessor struct {
 	Named
 	Extensible
-	BufferView    uint32        `json:"bufferView,omitempty"` // The index of the bufferView.
-	ByteOffset    uint32        `json:"byteOffset,omitempty"` // The offset relative to the start of the bufferView in bytes.
-	ComponentType ComponentType `json:"componentType"`        // The datatype of components in the attribute.
+	BufferView    uint32        `json:"bufferView,omitempty"`
+	ByteOffset    uint32        `json:"byteOffset,omitempty"`
+	ComponentType ComponentType `json:"componentType"`
 	Normalized    bool          `json:"normalized,omitempty"` // Specifies whether integer data values should be normalized.
 	Count         uint32        `json:"count"`                // The number of attributes referenced by this accessor.
 	Type          string        `json:"type"`                 // Specifies if the attribute is a scalar, vector, or matrix.
@@ -42,14 +42,14 @@ type Sparse struct {
 // SparseValues stores the displaced accessor attributes pointed by accessor.sparse.indices.
 type SparseValues struct {
 	Extensible
-	BufferView uint32 `json:"bufferView"`           // The index of the bufferView with sparse values.
-	ByteOffset uint32 `json:"byteOffset,omitempty"` // The offset relative to the start of the bufferView in bytes. Must be aligned.
+	BufferView uint32 `json:"bufferView"`
+	ByteOffset uint32 `json:"byteOffset,omitempty"`
 }
 
 // SparceIndices defines the indices of those attributes that deviate from their initialization value.
 type SparceIndices struct {
 	Extensible
-	BufferView    uint32        `json:"bufferView"`           // The index of the bufferView with sparse indices.
-	ByteOffset    uint32        `json:"byteOffset,omitempty"` // The offset relative to the start of the bufferView in bytes. Must be aligned.
-	ComponentType ComponentType `json:"componentType"`        // The indices data type.
+	BufferView    uint32        `json:"bufferView"`
+	ByteOffset    uint32        `json:"byteOffset,omitempty"`
+	ComponentType ComponentType `json:"componentType"`
 }

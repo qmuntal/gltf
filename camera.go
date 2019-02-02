@@ -13,9 +13,9 @@ const (
 type Camera struct {
 	Named
 	Extensible
-	Ortographic Ortographic `json:"orthographic,omitempty"` // An orthographic camera containing properties to create an orthographic projection matrix.
-	Perspective Perspective `json:"perspective,omitempty"`  // A perspective camera containing properties to create a perspective projection matrix.
-	Type        CameraType  `json:"type"`                   // Specifies if the camera uses a perspective or orthographic projection.
+	Ortographic Ortographic `json:"orthographic,omitempty"`
+	Perspective Perspective `json:"perspective,omitempty"`
+	Type        CameraType  `json:"type"`
 }
 
 // An Orthographic camera containing properties to create an orthographic projection matrix.
@@ -30,8 +30,8 @@ type Ortographic struct {
 // A perspective camera containing properties to create a perspective projection matrix.
 type Perspective struct {
 	Extensible
-	AspectRatio float32 `json:"aspectRatio,omitempty"` // The aspect ratio of the field of view.
-	Yfov        float32 `json:"yfov"`                  // The vertical field of view in radians.
-	Zfar        float32 `json:"zfar,omitempty"`        // The distance to the far clipping plane.
-	Znear       float32 `json:"znear"`                 // The distance to the near clipping plane.
+	AspectRatio float32 `json:"aspectRatio,omitempty"`
+	Yfov        float32 `json:"yfov"`           // The vertical field of view in radians.
+	Zfar        float32 `json:"zfar,omitempty"` // The distance to the far clipping plane.
+	Znear       float32 `json:"znear"`          // The distance to the near clipping plane.
 }
