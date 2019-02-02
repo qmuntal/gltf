@@ -81,12 +81,30 @@ type TextureInfo struct {
 	TexCoord uint32 `json:"texCoord,omitempty"` // The set index of texture's TEXCOORD attribute used for texture coordinate mapping.
 }
 
-// TextureSampler properties for filtering and wrapping modes.
-type TextureSampler struct {
+// A texture and its sampler.
+type Texture struct {
+	Named
+	Extensible
+	Sampler uint32 `json:"sampler,omitempty"` // The index of the sampler used by this texture.
+	Source  uint32 `json:"source,omitempty"`  // The index of the image used by this texture.
+}
+
+// Sampler of a texture for filtering and wrapping modes.
+type Sampler struct {
 	Named
 	Extensible
 	MagFilter MagFilter    `json:"magFilter"` // Magnification filter.
 	MinFilter MinFilter    `json:"minFilter"` // Minification filter.
 	WrapS     WrappingMode `json:"wrapS"`     // S wrapping mode.
 	WrapT     WrappingMode `json:"wrapT"`     // T wrapping mode.
+}
+
+// Image data used to create a texture. Image can be referenced by URI or bufferView index.
+// mimeType is required in the latter case.
+type Image struct {
+	Named
+	Extensible
+	URI        string `json:"uri,omitempty"`        // The uri of the image.
+	MimeType   string `json:"mimeType,omitempty"`   // The image's MIME type.
+	BufferView uint32 `json:"bufferView,omitempty"` // The index of the bufferView that contains the image. Use this instead of the image's uri property.
 }
