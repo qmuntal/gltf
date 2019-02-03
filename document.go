@@ -195,10 +195,10 @@ type Ortographic struct {
 // A perspective camera containing properties to create a perspective projection matrix.
 type Perspective struct {
 	extensible
-	AspectRatio float32 `json:"aspectRatio,omitempty" validate:"omitempty,gt=0"`
-	Yfov        float32 `json:"yfov" validate:"gt=0"`                     // The vertical field of view in radians.
-	Zfar        float32 `json:"zfar,omitempty" validate:"omitempty,gt=0"` // The distance to the far clipping plane.
-	Znear       float32 `json:"znear" validate:"omitempty,gt=0"`          // The distance to the near clipping plane.
+	AspectRatio float32 `json:"aspectRatio,omitempty"`
+	Yfov        float32 `json:"yfov"`           // The vertical field of view in radians.
+	Zfar        float32 `json:"zfar,omitempty"` // The distance to the far clipping plane.
+	Znear       float32 `json:"znear"`          // The distance to the near clipping plane.
 }
 
 // Each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
@@ -221,18 +221,18 @@ const (
 type Mesh struct {
 	named
 	extensible
-	Primitives []Primitive `json:"primitives" validate:"required"`
+	Primitives []Primitive `json:"primitives" validate:"required,gt=0,dive"`
 	Weights    []float32   `json:"weights,omitempty"`
 }
 
 // Geometry to be rendered with the given material.
 type Primitive struct {
 	extensible
-	Attributes Attribute   `json:"attributes"`
-	Indices    uint32      `json:"indices,omitempty"` // The index of the accessor that contains the indices.
-	Material   uint32      `json:"material,omitempty"`
-	Mode       uint32      `json:"mode" validate:"lte=6"`
-	Targets    []Attribute `json:"targets,omitempty" validate:"omitempty,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
+	Attributes Attribute     `json:"attributes"`
+	Indices    uint32        `json:"indices,omitempty"` // The index of the accessor that contains the indices.
+	Material   uint32        `json:"material,omitempty"`
+	Mode       PrimitiveMode `json:"mode" validate:"lte=6"`
+	Targets    []Attribute   `json:"targets,omitempty" validate:"omitempty,dive,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
 }
 
 // The AlphMode enumeration specifying the interpretation of the alpha value of the main factor and texture.
@@ -357,8 +357,8 @@ const (
 type Animation struct {
 	named
 	extensible
-	Channels []Channel        `json:"channel" validate:"required"`
-	Samplers AnimationSampler `json:"sampler" validate:"required"`
+	Channels []Channel          `json:"channels" validate:"required,gt=0,dive"`
+	Samplers []AnimationSampler `json:"samplers" validate:"required,gt=0,dive"`
 }
 
 // AnimationSampler combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
