@@ -13,15 +13,15 @@ const (
 type Animation struct {
 	Named
 	Extensible
-	Channels []Channel        `json:"channel"`
-	Samplers AnimationSampler `json:"sampler"`
+	Channels []Channel        `json:"channel" validator:"required"`
+	Samplers AnimationSampler `json:"sampler" validator:"required"`
 }
 
 // AnimationSampler combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
 type AnimationSampler struct {
 	Extensible
 	Input         uint32        `json:"input"` // The index of an accessor containing keyframe input values.
-	Interpolation Interpolation `json:"interpolation,omitempty"`
+	Interpolation Interpolation `json:"interpolation,omitempty" validator:"omitempty,oneof=LINEAR STEP CUBICSPLINE"`
 	Output        uint32        `json:"output"` // The index of an accessor containing keyframe output values.
 }
 

@@ -15,23 +15,23 @@ type Camera struct {
 	Extensible
 	Ortographic Ortographic `json:"orthographic,omitempty"`
 	Perspective Perspective `json:"perspective,omitempty"`
-	Type        CameraType  `json:"type"`
+	Type        CameraType  `json:"type" validator:"oneof=perspective orthographic"`
 }
 
 // An Orthographic camera containing properties to create an orthographic projection matrix.
 type Ortographic struct {
 	Extensible
-	Xmag  float32 `json:"xmag"`  // The horizontal magnification of the view.
-	Ymag  float32 `json:"ymag"`  // The vertical magnification of the view.
-	Zfar  float32 `json:"zfar"`  // The distance to the far clipping plane. zfar must be greater than znear.
-	Znear float32 `json:"znear"` // The distance to the near clipping plane.
+	Xmag  float32 `json:"xmag"`                                // The horizontal magnification of the view.
+	Ymag  float32 `json:"ymag"`                                // The vertical magnification of the view.
+	Zfar  float32 `json:"zfar" validator:"gt=0,gtfield=Znear"` // The distance to the far clipping plane.
+	Znear float32 `json:"znear" validator:"gte=0"`             // The distance to the near clipping plane.
 }
 
 // A perspective camera containing properties to create a perspective projection matrix.
 type Perspective struct {
 	Extensible
-	AspectRatio float32 `json:"aspectRatio,omitempty"`
-	Yfov        float32 `json:"yfov"`           // The vertical field of view in radians.
-	Zfar        float32 `json:"zfar,omitempty"` // The distance to the far clipping plane.
-	Znear       float32 `json:"znear"`          // The distance to the near clipping plane.
+	AspectRatio float32 `json:"aspectRatio,omitempty" validator:"omitempty,gt=0"`
+	Yfov        float32 `json:"yfov" validator:"gt=0"`                     // The vertical field of view in radians.
+	Zfar        float32 `json:"zfar,omitempty" validator:"omitempty,gt=0"` // The distance to the far clipping plane.
+	Znear       float32 `json:"znear" validator:"omitempty,gt=0"`          // The distance to the near clipping plane.
 }

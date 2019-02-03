@@ -42,35 +42,35 @@ const (
 type Material struct {
 	Named
 	Extensible
-	PBRMetallicRoughness PBRMetallicRoughness `json:"pbrMetallicRoughness,omitempty"` //Metallic-roughness material model parameters.
-	NormalTexture        NormalTexture        `json:"normalTexture,omitempty"`        // A tangent space normal map.
-	OcclusionTexture     OcclusionTexture     `json:"occlusionTexture,omitempty"`     // The occlusion map texture.
-	EmissiveTexture      TextureInfo          `json:"emissiveTexture,omitempty"`      // The emissive map controls the color and intensity of the light being emitted by the material.
-	EmissiveFactor       [3]float32           `json:"emissiveFactor,omitempty"`       // The RGB components of the emissive color of the material. These values are linear
-	AlphaMode            AlphaMode            `json:"alphaMode,omitempty"`            // The material's alpha rendering mode enumeration specifying the interpretation of the alpha value of the main factor and texture.
-	AlphaCutoff          string               `json:"alphaCutoff"`                    // Specifies the cutoff threshold when in MASK mode.
-	DoubleSided          bool                 `json:"doubleSided,omitempty"`          // Specifies whether the material is double sided.
+	PBRMetallicRoughness PBRMetallicRoughness `json:"pbrMetallicRoughness,omitempty"`
+	NormalTexture        NormalTexture        `json:"normalTexture,omitempty"`
+	OcclusionTexture     OcclusionTexture     `json:"occlusionTexture,omitempty"`
+	EmissiveTexture      TextureInfo          `json:"emissiveTexture,omitempty"`
+	EmissiveFactor       [3]float32           `json:"emissiveFactor,omitempty" validator:"dive,gte=0,lte=1"`
+	AlphaMode            AlphaMode            `json:"alphaMode,omitempty" validator:"oneof=OPAQUE MASK BLEND"`
+	AlphaCutoff          string               `json:"alphaCutoff"`
+	DoubleSided          bool                 `json:"doubleSided,omitempty"`
 }
 
 // A NormalTexture references to a normal texture.
 type NormalTexture struct {
 	TextureInfo
-	Scale float32 `json:"scale"` // The scalar multiplier applied to each normal vector of the normal texture.
+	Scale float32 `json:"scale"`
 }
 
 // An OcclusionTexture references to an occlusion texture
 type OcclusionTexture struct {
 	TextureInfo
-	Strength float32 `json:"strength"` // A scalar multiplier controlling the amount of occlusion applied.
+	Strength float32 `json:"strength" validator:"gte=0,lte=1"`
 }
 
 // A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
 type PBRMetallicRoughness struct {
 	Extensible
-	BaseColorFactor          [4]float32  `json:"baseColorFactor"`
+	BaseColorFactor          [4]float32  `json:"baseColorFactor" validator:"dive,gte=0,lte=1"`
 	BaseColorTexture         TextureInfo `json:"baseColorTexture,omitempty"`
-	MetallicFactor           float32     `json:"metallicFactor"`
-	RoughnessFactor          float32     `json:"roughnessFactor"`
+	MetallicFactor           float32     `json:"metallicFactor" validator:"gte=0,lte=1"`
+	RoughnessFactor          float32     `json:"roughnessFactor" validator:"gte=0,lte=1"`
 	MetallicRoughnessTexture TextureInfo `json:"metallicRoughnessTexture,omitempty"`
 }
 
@@ -104,7 +104,7 @@ type Sampler struct {
 type Image struct {
 	Named
 	Extensible
-	URI        string `json:"uri,omitempty"`
-	MimeType   string `json:"mimeType,omitempty"`
+	URI        string `json:"uri,omitempty" validator:"omitempty,uri|datauri"`
+	MimeType   string `json:"mimeType,omitempty" validator:"omitempty,oneof=image/jpeg image/png"`
 	BufferView uint32 `json:"bufferView,omitempty"` // Use this instead of the image's uri property.
 }

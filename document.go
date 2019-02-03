@@ -3,10 +3,10 @@ package gltf
 // An Asset is metadata about the glTF asset.
 type Asset struct {
 	Extensible
-	Copyright  string `json:"copyright,omitempty"`  // A copyright message suitable for display to credit the content creator.
-	Generator  string `json:"generator,omitempty"`  // Tool that generated this glTF model. Useful for debugging.
-	Version    string `json:"version"`              // The glTF version that this asset targets.
-	MinVersion string `json:"minVersion,omitempty"` // The minimum glTF version that this asset targets.
+	Copyright  string `json:"copyright,omitempty"`          // A copyright message suitable for display to credit the content creator.
+	Generator  string `json:"generator,omitempty"`          // Tool that generated this glTF model. Useful for debugging.
+	Version    string `json:"version" validator:"required"` // The glTF version that this asset targets.
+	MinVersion string `json:"minVersion,omitempty"`         // The minimum glTF version that this asset targets.
 }
 
 // Extensible is an object that has the Extension and Extras properties.
@@ -23,8 +23,8 @@ type Named struct {
 // Document defines the root object for a glTF asset.
 type Document struct {
 	Extensible
-	ExtensionsUsed     []string     `json:"extensionsUsed,omitempty"`     // Names of glTF extensions used somewhere in this asset.
-	ExtensionsRequired []string     `json:"extensionsRequired,omitempty"` // Names of glTF extensions required to properly load this asset.
+	ExtensionsUsed     []string     `json:"extensionsUsed,omitempty"`
+	ExtensionsRequired []string     `json:"extensionsRequired,omitempty"`
 	Accessors          []Accessor   `json:"accessors,omitempty"`
 	Animations         []Animation  `json:"animations,omitempty"`
 	Asset              Asset        `json:"asset"`

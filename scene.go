@@ -13,14 +13,14 @@ type Node struct {
 	Named
 	Extensible
 	Camera      uint32      `json:"camera,omitempty"`
-	Children    []uint32    `json:"children,omitempty"`
+	Children    []uint32    `json:"children,omitempty" validator:"omitempty,unique"`
 	Skin        uint32      `json:"skin,omitempty"`
 	Matrix      [16]float32 `json:"matrix,omitempty"` // A 4x4 transformation matrix stored in column-major order.
 	Mesh        uint32      `json:"mesh,omitempty"`
-	Rotation    [4]float64  `json:"rotation"`              // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
-	Scale       [3]float32  `json:"scale,omitempty"`       // The node's non-uniform scale, given as the scaling factors along the x, y, and z axes.
-	Translation [3]float32  `json:"translation,omitempty"` // The node's translation along the x, y, and z axes.
-	Weights     []float32   `json:"weights,omitempty"`     // The weights of the instantiated Morph Target.
+	Rotation    [4]float64  `json:"rotation" validator:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+	Scale       [3]float32  `json:"scale,omitempty"`
+	Translation [3]float32  `json:"translation,omitempty"`
+	Weights     []float32   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
 
 // Skin defines joints and matrices.
