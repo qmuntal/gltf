@@ -431,7 +431,7 @@ type Primitive struct {
 	Indices    int32         `json:"indices" validate:"gte=-1"` // The index of the accessor that contains the indices.
 	Material   int32         `json:"material" validate:"gte=-1"`
 	Mode       PrimitiveMode `json:"mode" validate:"lte=6"`
-	Targets    []Attribute   `json:"targets,omitempty" validate:"omitempty,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
+	Targets    []Attribute   `json:"targets,omitempty" validate:"omitempty,dive,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
 }
 
 // UnmarshalJSON unmarshal the primitive with the correct default values.
