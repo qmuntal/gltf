@@ -57,9 +57,7 @@ type Document struct {
 // UnmarshalJSON unmarshal the document with the correct default values.
 func (d *Document) UnmarshalJSON(data []byte) error {
 	type alias Document
-	tmp := &alias{
-		Scene: -1,
-	}
+	tmp := &alias{Scene: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*d = Document(*tmp)
@@ -129,9 +127,7 @@ type Accessor struct {
 // UnmarshalJSON unmarshal the accessor with the correct default values.
 func (a *Accessor) UnmarshalJSON(data []byte) error {
 	type alias Accessor
-	tmp := &alias{
-		BufferView: -1,
-	}
+	tmp := &alias{BufferView: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*a = Accessor(*tmp)
@@ -226,9 +222,7 @@ type BufferView struct {
 // UnmarshalJSON unmarshal the buffer view with the correct default values.
 func (b *BufferView) UnmarshalJSON(data []byte) error {
 	type alias BufferView
-	tmp := &alias{
-		Buffer: -1,
-	}
+	tmp := &alias{Buffer: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*b = BufferView(*tmp)
@@ -335,10 +329,7 @@ type Skin struct {
 // UnmarshalJSON unmarshal the skin with the correct default values.
 func (s *Skin) UnmarshalJSON(data []byte) error {
 	type alias Skin
-	tmp := &alias{
-		InverseBindMatrices: -1,
-		Skeleton:            -1,
-	}
+	tmp := &alias{InverseBindMatrices: -1, Skeleton: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*s = Skin(*tmp)
@@ -518,10 +509,7 @@ type Material struct {
 // UnmarshalJSON unmarshal the material with the correct default values.
 func (m *Material) UnmarshalJSON(data []byte) error {
 	type alias Material
-	tmp := &alias{
-		AlphaCutoff: 0.5,
-		AlphaMode:   Opaque,
-	}
+	tmp := &alias{AlphaCutoff: 0.5, AlphaMode: Opaque}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*m = Material(*tmp)
@@ -559,10 +547,7 @@ type NormalTexture struct {
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 	type alias NormalTexture
-	tmp := &alias{
-		Index: -1,
-		Scale: 1,
-	}
+	tmp := &alias{Index: -1, Scale: 1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*n = NormalTexture(*tmp)
@@ -597,10 +582,7 @@ type OcclusionTexture struct {
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 	type alias OcclusionTexture
-	tmp := &alias{
-		Index:    -1,
-		Strength: 1,
-	}
+	tmp := &alias{Index: -1, Strength: 1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*o = OcclusionTexture(*tmp)
@@ -678,9 +660,7 @@ type TextureInfo struct {
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (t *TextureInfo) UnmarshalJSON(data []byte) error {
 	type alias TextureInfo
-	tmp := &alias{
-		Index: -1,
-	}
+	tmp := &alias{Index: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*t = TextureInfo(*tmp)
@@ -714,10 +694,7 @@ type Texture struct {
 // UnmarshalJSON unmarshal the texture with the correct default values.
 func (t *Texture) UnmarshalJSON(data []byte) error {
 	type alias Texture
-	tmp := &alias{
-		Sampler: -1,
-		Source:  -1,
-	}
+	tmp := &alias{Sampler: -1, Source: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*t = Texture(*tmp)
@@ -754,10 +731,7 @@ type Sampler struct {
 // UnmarshalJSON unmarshal the sampler with the correct default values.
 func (s *Sampler) UnmarshalJSON(data []byte) error {
 	type alias Sampler
-	tmp := &alias{
-		WrapS: Repeat,
-		WrapT: Repeat,
-	}
+	tmp := &alias{WrapS: Repeat, WrapT: Repeat}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*s = Sampler(*tmp)
@@ -843,9 +817,7 @@ type Channel struct {
 // UnmarshalJSON unmarshal the channel with the correct default values.
 func (ch *Channel) UnmarshalJSON(data []byte) error {
 	type alias Channel
-	tmp := &alias{
-		Sampler: -1,
-	}
+	tmp := &alias{Sampler: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*ch = Channel(*tmp)
@@ -882,9 +854,7 @@ type ChannelTarget struct {
 // UnmarshalJSON unmarshal the channel target with the correct default values.
 func (ch *ChannelTarget) UnmarshalJSON(data []byte) error {
 	type alias ChannelTarget
-	tmp := &alias{
-		Node: -1,
-	}
+	tmp := &alias{Node: -1}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
 		*ch = ChannelTarget(*tmp)
