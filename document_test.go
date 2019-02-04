@@ -708,7 +708,7 @@ func TestPrimitive_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &Primitive{Indices: -1, Material: -1, Mode: Triangles}, []byte(`{"attributes":null}`), false},
+		{"default", &Primitive{Indices: -1, Material: -1, Mode: Triangles}, []byte(`{"attributes":null,"mode":4}`), false},
 		{"empty", &Primitive{Indices: 0, Material: 0, Mode: Points}, []byte(`{"attributes":null,"indices":0,"material":0,"mode":0}`), false},
 		{"nodefault", &Primitive{Indices: 1, Material: 2, Mode: Triangle_Strip}, []byte(`{"attributes":null,"indices":1,"material":2,"mode":5}`), false},
 	}
