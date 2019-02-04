@@ -70,6 +70,7 @@ func TestImage_MarshalData(t *testing.T) {
 		{"error", &Image{URI: "data:image/png;base64,_"}, []uint8{}, true},
 		{"external", &Image{URI: "http://web.com"}, []uint8{}, false},
 		{"empty", &Image{URI: "data:image/png;base64,"}, []uint8{}, false},
+		{"empty", &Image{URI: "data:image/jpeg;base64,"}, []uint8{}, false},
 		{"test", &Image{URI: "data:image/png;base64,TEST"}, []uint8{76, 68, 147}, false},
 		{"complex", &Image{URI: "data:image/png;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []uint8{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
 	}
