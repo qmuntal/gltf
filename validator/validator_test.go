@@ -110,6 +110,11 @@ func TestValidateDocument(t *testing.T) {
 		{"Document.Animations[0].Samplers[0].Interpolation", args{&gltf.Document{Asset: gltf.Asset{Version: "1.0"},
 			Animations: []gltf.Animation{{Channels: []gltf.Channel{{Target: gltf.ChannelTarget{Path: "translation"}}},
 				Samplers: []gltf.AnimationSampler{{Interpolation: "OTHER"}}}}}}, true},
+		{"ok", args{&gltf.Document{
+			ExtensionsUsed:     []string{"one", "another"},
+			ExtensionsRequired: []string{"that", "this"},
+			Asset:              gltf.Asset{Copyright: "glTF", Generator: "qmuntal", Version: "1.0", MinVersion: "0.5"}},
+		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
