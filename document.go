@@ -47,10 +47,23 @@ type Document struct {
 	Meshes             []Mesh       `json:"meshes,omitempty" validate:"dive"`
 	Nodes              []Node       `json:"nodes,omitempty" validate:"dive"`
 	Samplers           []Sampler    `json:"samplers,omitempty" validate:"dive"`
-	Scene              uint32       `json:"scene,omitempty"`
+	Scene              int32        `json:"scene,omitempty" validate:"gte=-1"`
 	Scenes             []Scene      `json:"scenes,omitempty" validate:"dive"`
 	Skins              []Skin       `json:"skins,omitempty" validate:"dive"`
 	Textures           []Texture    `json:"textures,omitempty" validate:"dive"`
+}
+
+// UnmarshalJSON unmarshal the document with the correct default values.
+func (d *Document) UnmarshalJSON(data []byte) error {
+	type alias Document
+	tmp := &alias{
+		Scene: -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*d = Document(*tmp)
+	}
+	return err
 }
 
 //The ComponentType is the datatype of components in the attribute. All valid values correspond to WebGL enums.
@@ -80,13 +93,13 @@ const (
 	Mat4                = "MAT4"
 )
 
-// An accessor is a typed view into a bufferView. A bufferView contains raw binary data.
+// An Accessor is a typed view into a bufferView.
 // An accessor provides a typed view into a bufferView or a subset of a bufferView
 // similar to how WebGL's vertexAttribPointer() defines an attribute in a buffer.
 type Accessor struct {
 	named
 	extensible
-	BufferView    uint32        `json:"bufferView,omitempty"`
+	BufferView    int32         `json:"bufferView" validate:"gte=-1"`
 	ByteOffset    uint32        `json:"byteOffset,omitempty"`
 	ComponentType ComponentType `json:"componentType" validate:"oneof=5120 5121 5122 5123 5125 5126"`
 	Normalized    bool          `json:"normalized,omitempty"`      // Specifies whether integer data values should be normalized.
@@ -95,6 +108,19 @@ type Accessor struct {
 	Max           []float32     `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
 	Min           []float32     `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
 	Sparce        *Sparse       `json:"sparce,omitempty"`                          // Sparse storage of attributes that deviate from their initialization value.
+}
+
+// UnmarshalJSON unmarshal the accessor with the correct default values.
+func (a *Accessor) UnmarshalJSON(data []byte) error {
+	type alias Accessor
+	tmp := &alias{
+		BufferView: -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*a = Accessor(*tmp)
+	}
+	return err
 }
 
 // Sparse storage of attributes that deviate from their initialization value.
@@ -150,11 +176,24 @@ func (b *Buffer) EmbeddedResource() {
 // BufferView is a view into a buffer generally representing a subset of the buffer.
 type BufferView struct {
 	extensible
-	Buffer     uint32 `json:"buffer"`
+	Buffer     int32  `json:"buffer" validate:"gte=-1"`
 	ByteOffset uint32 `json:"byteOffset,omitempty"`
 	ByteLength uint32 `json:"byteLength" validate:"required"`
 	ByteStride uint32 `json:"byteStride,omitempty" validate:"omitempty,gte=4,lte=252"`
 	Target     Target `json:"target,omitempty" validate:"omitempty,oneof=34962 34963"`
+}
+
+// UnmarshalJSON unmarshal the buffer view with the correct default values.
+func (b *BufferView) UnmarshalJSON(data []byte) error {
+	type alias BufferView
+	tmp := &alias{
+		Buffer: -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*b = BufferView(*tmp)
+	}
+	return err
 }
 
 // The Scene contains a list of root nodes.
@@ -169,13 +208,13 @@ type Scene struct {
 type Node struct {
 	named
 	extensible
-	Camera      uint32      `json:"camera,omitempty"`
+	Camera      int32       `json:"camera" validate:"gte=-1"`
 	Children    []uint32    `json:"children,omitempty" validate:"omitempty,unique"`
-	Skin        uint32      `json:"skin,omitempty"`
-	Matrix      [16]float32 `json:"matrix,omitempty"` // A 4x4 transformation matrix stored in column-major order.
-	Mesh        uint32      `json:"mesh,omitempty"`
+	Skin        int32       `json:"skin" validate:"gte=-1"`
+	Matrix      [16]float32 `json:"matrix"` // A 4x4 transformation matrix stored in column-major order.
+	Mesh        int32       `json:"mesh" validate:"gte=-1"`
 	Rotation    [4]float32  `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
-	Scale       [3]float32  `json:"scale,omitempty"`
+	Scale       [3]float32  `json:"scale"`
 	Translation [3]float32  `json:"translation,omitempty"`
 	Weights     []float32   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
@@ -187,6 +226,9 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 		Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
 		Rotation: [4]float32{0, 0, 0, 1},
 		Scale:    [3]float32{1, 1, 1},
+		Camera:   -1,
+		Skin:     -1,
+		Mesh:     -1,
 	}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
@@ -199,9 +241,23 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 type Skin struct {
 	named
 	extensible
-	InverseBindMatrices uint32   `json:"inverseBindMatrices,omitempty"`      // The index of the accessor containing the floating-point 4x4 inverse-bind matrices.
-	Skeleton            uint32   `json:"skeleton,omitempty"`                 // The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
-	Joints              []uint32 `json:"joints" validate:"omitempty,unique"` // Indices of skeleton nodes, used as joints in this skin.
+	InverseBindMatrices int32    `json:"inverseBindMatrices" validate:"gte=-1"` // The index of the accessor containing the floating-point 4x4 inverse-bind matrices.
+	Skeleton            int32    `json:"skeleton" validate:"gte=-1"`            // The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
+	Joints              []uint32 `json:"joints" validate:"omitempty,unique"`    // Indices of skeleton nodes, used as joints in this skin.
+}
+
+// UnmarshalJSON unmarshal the node with the correct default values.
+func (s *Skin) UnmarshalJSON(data []byte) error {
+	type alias Skin
+	tmp := &alias{
+		InverseBindMatrices: -1,
+		Skeleton:            -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*s = Skin(*tmp)
+	}
+	return err
 }
 
 // CameraType specifies if the camera uses a perspective or orthographic projection.
@@ -209,21 +265,21 @@ type Skin struct {
 type CameraType string
 
 const (
-	PerspectiveType CameraType = "perspective"
-	OrtographicType            = "orthographic"
+	PerspectiveType  CameraType = "perspective"
+	OrthographicType            = "orthographic"
 )
 
 // A Camera projection. A node can reference a camera to apply a transform to place the camera in the scene.
 type Camera struct {
 	named
 	extensible
-	Ortographic *Ortographic `json:"orthographic,omitempty"`
-	Perspective *Perspective `json:"perspective,omitempty"`
-	Type        CameraType   `json:"type" validate:"oneof=perspective orthographic"`
+	Orthographic *Orthographic `json:"orthographic,omitempty"`
+	Perspective  *Perspective  `json:"perspective,omitempty"`
+	Type         CameraType    `json:"type" validate:"oneof=perspective orthographic"`
 }
 
 // Orthographic camera containing properties to create an orthographic projection matrix.
-type Ortographic struct {
+type Orthographic struct {
 	extensible
 	Xmag  float32 `json:"xmag"`                               // The horizontal magnification of the view.
 	Ymag  float32 `json:"ymag"`                               // The vertical magnification of the view.
@@ -268,8 +324,8 @@ type Mesh struct {
 type Primitive struct {
 	extensible
 	Attributes Attribute     `json:"attributes"`
-	Indices    uint32        `json:"indices,omitempty"` // The index of the accessor that contains the indices.
-	Material   uint32        `json:"material,omitempty"`
+	Indices    int32         `json:"indices" validate:"gte=-1"` // The index of the accessor that contains the indices.
+	Material   int32         `json:"material" validate:"gte=-1"`
 	Mode       PrimitiveMode `json:"mode" validate:"lte=6"`
 	Targets    []Attribute   `json:"targets,omitempty" validate:"omitempty,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
 }
@@ -278,7 +334,9 @@ type Primitive struct {
 func (p *Primitive) UnmarshalJSON(data []byte) error {
 	type alias Primitive
 	tmp := &alias{
-		Mode: Triangles,
+		Mode:     Triangles,
+		Indices:  -1,
+		Material: -1,
 	}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
@@ -355,14 +413,17 @@ func (m *Material) UnmarshalJSON(data []byte) error {
 
 // A NormalTexture references to a normal texture.
 type NormalTexture struct {
-	TextureInfo
-	Scale float32 `json:"scale"`
+	extensible
+	Index    int32   `json:"index" validate:"gte=-1"`
+	TexCoord uint32  `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
+	Scale    float32 `json:"scale"`
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 	type alias NormalTexture
 	tmp := &alias{
+		Index: -1,
 		Scale: 1,
 	}
 	err := json.Unmarshal(data, tmp)
@@ -374,7 +435,9 @@ func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 
 // An OcclusionTexture references to an occlusion texture
 type OcclusionTexture struct {
-	TextureInfo
+	extensible
+	Index    int32   `json:"index" validate:"gte=-1"`
+	TexCoord uint32  `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
 	Strength float32 `json:"strength" validate:"gte=0,lte=1"`
 }
 
@@ -382,6 +445,7 @@ type OcclusionTexture struct {
 func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 	type alias OcclusionTexture
 	tmp := &alias{
+		Index:    -1,
 		Strength: 1,
 	}
 	err := json.Unmarshal(data, tmp)
@@ -419,16 +483,43 @@ func (p *PBRMetallicRoughness) UnmarshalJSON(data []byte) error {
 // TextureInfo references to a texture.
 type TextureInfo struct {
 	extensible
-	Index    uint32 `json:"index"`
+	Index    int32  `json:"index" validate:"gte=-1"`
 	TexCoord uint32 `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
+}
+
+// UnmarshalJSON unmarshal the texture info with the correct default values.
+func (t *TextureInfo) UnmarshalJSON(data []byte) error {
+	type alias TextureInfo
+	tmp := &alias{
+		Index: -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*t = TextureInfo(*tmp)
+	}
+	return err
 }
 
 // A Texture and its sampler.
 type Texture struct {
 	named
 	extensible
-	Sampler uint32 `json:"sampler,omitempty"`
-	Source  uint32 `json:"source,omitempty"`
+	Sampler int32 `json:"sampler,omitempty" validate:"gte=-1"`
+	Source  int32 `json:"source,omitempty" validate:"gte=-1"`
+}
+
+// UnmarshalJSON unmarshal the texture with the correct default values.
+func (t *Texture) UnmarshalJSON(data []byte) error {
+	type alias Texture
+	tmp := &alias{
+		Sampler: -1,
+		Source:  -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*t = Texture(*tmp)
+	}
+	return err
 }
 
 // Sampler of a texture for filtering and wrapping modes.
@@ -503,16 +594,18 @@ type Animation struct {
 // AnimationSampler combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
 type AnimationSampler struct {
 	extensible
-	Input         uint32        `json:"input"` // The index of an accessor containing keyframe input values.
+	Input         int32         `json:"input" validate:"gte=-1"` // The index of an accessor containing keyframe input values.
 	Interpolation Interpolation `json:"interpolation,omitempty" validate:"omitempty,oneof=LINEAR STEP CUBICSPLINE"`
-	Output        uint32        `json:"output"` // The index of an accessor containing keyframe output values.
+	Output        int32         `json:"output" validate:"gte=-1"` // The index of an accessor containing keyframe output values.
 }
 
 // UnmarshalJSON unmarshal the animation sampler with the correct default values.
 func (as *AnimationSampler) UnmarshalJSON(data []byte) error {
 	type alias AnimationSampler
 	tmp := &alias{
+		Input:         -1,
 		Interpolation: Linear,
+		Output:        -1,
 	}
 	err := json.Unmarshal(data, tmp)
 	if err == nil {
@@ -524,8 +617,21 @@ func (as *AnimationSampler) UnmarshalJSON(data []byte) error {
 // The Channel targets an animation's sampler at a node's property.
 type Channel struct {
 	extensible
-	Sampler uint32        `json:"sampler"`
+	Sampler int32         `json:"sampler" validate:"gte=-1"`
 	Target  ChannelTarget `json:"target"`
+}
+
+// UnmarshalJSON unmarshal the channel with the correct default values.
+func (ch *Channel) UnmarshalJSON(data []byte) error {
+	type alias Channel
+	tmp := &alias{
+		Sampler: -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*ch = Channel(*tmp)
+	}
+	return err
 }
 
 // ChannelTarget describes the index of the node and TRS property that an animation channel targets.
@@ -535,6 +641,19 @@ type Channel struct {
 // For the "scale" property, the values are the scaling factors along the x, y, and z axes.
 type ChannelTarget struct {
 	extensible
-	Node uint32 `json:"node,omitempty"`
+	Node int32  `json:"node" validate:"gte=-1"`
 	Path string `json:"path" validate:"oneof=translation rotation scale weights"`
+}
+
+// UnmarshalJSON unmarshal the channel target with the correct default values.
+func (ch *ChannelTarget) UnmarshalJSON(data []byte) error {
+	type alias ChannelTarget
+	tmp := &alias{
+		Node: -1,
+	}
+	err := json.Unmarshal(data, tmp)
+	if err == nil {
+		*ch = ChannelTarget(*tmp)
+	}
+	return err
 }

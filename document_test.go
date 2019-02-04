@@ -101,11 +101,25 @@ func TestNode_UnmarshalJSON(t *testing.T) {
 			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
 			Rotation: [4]float32{0, 0, 0, 1},
 			Scale:    [3]float32{1, 1, 1},
+			Camera:   -1,
+			Mesh:     -1,
+			Skin:     -1,
 		}, false},
-		{"nodefault", new(Node), args{[]byte(`{"matrix":[1,2,2,0,0,1,3,4,0,0,1,0,5,0,0,5],"rotation":[1,2,3,4],"scale":[2,3,4]}`)}, &Node{
+		{"nodefault", new(Node), args{[]byte(`{"matrix":[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],"rotation":[0,0,0,1],"scale":[1,1,1],"camera":0,"mesh":0,"skin":0}`)}, &Node{
+			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float32{0, 0, 0, 1},
+			Scale:    [3]float32{1, 1, 1},
+			Camera:   0,
+			Mesh:     0,
+			Skin:     0,
+		}, false},
+		{"nodefault", new(Node), args{[]byte(`{"matrix":[1,2,2,0,0,1,3,4,0,0,1,0,5,0,0,5],"rotation":[1,2,3,4],"scale":[2,3,4],"camera":1,"mesh":2,"skin":3}`)}, &Node{
 			Matrix:   [16]float32{1, 2, 2, 0, 0, 1, 3, 4, 0, 0, 1, 0, 5, 0, 0, 5},
 			Rotation: [4]float32{1, 2, 3, 4},
 			Scale:    [3]float32{2, 3, 4},
+			Camera:   1,
+			Mesh:     2,
+			Skin:     3,
 		}, false},
 	}
 	for _, tt := range tests {
@@ -132,8 +146,9 @@ func TestPrimitive_UnmarshalJSON(t *testing.T) {
 		want    *Primitive
 		wantErr bool
 	}{
-		{"default", new(Primitive), args{[]byte("{}")}, &Primitive{Mode: Triangles}, false},
-		{"nodefault", new(Primitive), args{[]byte(`{"mode": 1}`)}, &Primitive{Mode: Lines}, false},
+		{"default", new(Primitive), args{[]byte("{}")}, &Primitive{Mode: Triangles, Indices: -1, Material: -1}, false},
+		{"empty", new(Primitive), args{[]byte(`{"mode": 0, "indices": 0, "material": 0}`)}, &Primitive{Mode: Points, Indices: 0, Material: 0}, false},
+		{"nodefault", new(Primitive), args{[]byte(`{"mode": 1, "indices": 2, "material": 3}`)}, &Primitive{Mode: Lines, Indices: 2, Material: 3}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -186,8 +201,9 @@ func TestNormalTexture_UnmarshalJSON(t *testing.T) {
 		want    *NormalTexture
 		wantErr bool
 	}{
-		{"default", new(NormalTexture), args{[]byte("{}")}, &NormalTexture{Scale: 1}, false},
-		{"nodefault", new(NormalTexture), args{[]byte(`{"scale": 0.5}`)}, &NormalTexture{Scale: 0.5}, false},
+		{"default", new(NormalTexture), args{[]byte("{}")}, &NormalTexture{Scale: 1, Index: -1}, false},
+		{"empty", new(NormalTexture), args{[]byte(`{"scale": 0, "index": 0}`)}, &NormalTexture{Scale: 0, Index: 0}, false},
+		{"nodefault", new(NormalTexture), args{[]byte(`{"scale": 0.5, "index":2}`)}, &NormalTexture{Scale: 0.5, Index: 2}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -213,8 +229,9 @@ func TestOcclusionTexture_UnmarshalJSON(t *testing.T) {
 		want    *OcclusionTexture
 		wantErr bool
 	}{
-		{"default", new(OcclusionTexture), args{[]byte("{}")}, &OcclusionTexture{Strength: 1}, false},
-		{"nodefault", new(OcclusionTexture), args{[]byte(`{"strength": 0.5}`)}, &OcclusionTexture{Strength: 0.5}, false},
+		{"default", new(OcclusionTexture), args{[]byte("{}")}, &OcclusionTexture{Strength: 1, Index: -1}, false},
+		{"empty", new(OcclusionTexture), args{[]byte(`{"strength": 0, "index": 0}`)}, &OcclusionTexture{Strength: 0, Index: 0}, false},
+		{"nodefault", new(OcclusionTexture), args{[]byte(`{"strength": 0.5, "index":2}`)}, &OcclusionTexture{Strength: 0.5, Index: 2}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -296,8 +313,9 @@ func TestAnimationSampler_UnmarshalJSON(t *testing.T) {
 		want    *AnimationSampler
 		wantErr bool
 	}{
-		{"default", new(AnimationSampler), args{[]byte("{}")}, &AnimationSampler{Interpolation: Linear}, false},
-		{"nodefault", new(AnimationSampler), args{[]byte(`{"interpolation": "STEP"}`)}, &AnimationSampler{Interpolation: Step}, false},
+		{"default", new(AnimationSampler), args{[]byte("{}")}, &AnimationSampler{Interpolation: Linear, Input: -1, Output: -1}, false},
+		{"empty", new(AnimationSampler), args{[]byte(`{"interpolation": "LINEAR", "input": 0, "output":0}`)}, &AnimationSampler{Interpolation: Linear, Input: 0, Output: 0}, false},
+		{"nodefault", new(AnimationSampler), args{[]byte(`{"interpolation": "STEP", "input": 1, "output":2}`)}, &AnimationSampler{Interpolation: Step, Input: 1, Output: 2}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -307,6 +325,230 @@ func TestAnimationSampler_UnmarshalJSON(t *testing.T) {
 			}
 			if !reflect.DeepEqual(tt.as, tt.want) {
 				t.Errorf("AnimationSampler.UnmarshalJSON() = %v, want %v", tt.as, tt.want)
+			}
+		})
+	}
+}
+
+func TestAccessor_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		a       *Accessor
+		args    args
+		want    *Accessor
+		wantErr bool
+	}{
+		{"default", new(Accessor), args{[]byte("{}")}, &Accessor{BufferView: -1}, false},
+		{"empty", new(Accessor), args{[]byte(`{"bufferView": 0}`)}, &Accessor{BufferView: 0}, false},
+		{"nodefault", new(Accessor), args{[]byte(`{"bufferView": 1}`)}, &Accessor{BufferView: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("Accessor.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.a, tt.want) {
+				t.Errorf("Accessor.UnmarshalJSON() = %v, want %v", tt.a, tt.want)
+			}
+		})
+	}
+}
+
+func TestChannelTarget_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		ch      *ChannelTarget
+		args    args
+		want    *ChannelTarget
+		wantErr bool
+	}{
+		{"default", new(ChannelTarget), args{[]byte("{}")}, &ChannelTarget{Node: -1}, false},
+		{"empty", new(ChannelTarget), args{[]byte(`{"node": 0}`)}, &ChannelTarget{Node: 0}, false},
+		{"nodefault", new(ChannelTarget), args{[]byte(`{"node": 1}`)}, &ChannelTarget{Node: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.ch.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("ChannelTarget.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.ch, tt.want) {
+				t.Errorf("ChannelTarget.UnmarshalJSON() = %v, want %v", tt.ch, tt.want)
+			}
+		})
+	}
+}
+
+func TestChannel_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		ch      *Channel
+		args    args
+		want    *Channel
+		wantErr bool
+	}{
+		{"default", new(Channel), args{[]byte("{}")}, &Channel{Sampler: -1}, false},
+		{"empty", new(Channel), args{[]byte(`{"sampler": 0}`)}, &Channel{Sampler: 0}, false},
+		{"nodefault", new(Channel), args{[]byte(`{"sampler": 1}`)}, &Channel{Sampler: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.ch.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("Channel.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.ch, tt.want) {
+				t.Errorf("Channel.UnmarshalJSON() = %v, want %v", tt.ch, tt.want)
+			}
+		})
+	}
+}
+
+func TestBufferView_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		b       *BufferView
+		args    args
+		want    *BufferView
+		wantErr bool
+	}{
+		{"default", new(BufferView), args{[]byte("{}")}, &BufferView{Buffer: -1}, false},
+		{"empty", new(BufferView), args{[]byte(`{"Buffer": 0}`)}, &BufferView{Buffer: 0}, false},
+		{"nodefault", new(BufferView), args{[]byte(`{"Buffer": 1}`)}, &BufferView{Buffer: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.b.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("BufferView.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.b, tt.want) {
+				t.Errorf("BufferView.UnmarshalJSON() = %v, want %v", tt.b, tt.want)
+			}
+		})
+	}
+}
+
+func TestTextureInfo_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		t       *TextureInfo
+		args    args
+		want    *TextureInfo
+		wantErr bool
+	}{
+		{"default", new(TextureInfo), args{[]byte("{}")}, &TextureInfo{Index: -1}, false},
+		{"empty", new(TextureInfo), args{[]byte(`{"index": 0}`)}, &TextureInfo{Index: 0}, false},
+		{"nodefault", new(TextureInfo), args{[]byte(`{"index": 1}`)}, &TextureInfo{Index: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.t.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("TextureInfo.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.t, tt.want) {
+				t.Errorf("TextureInfo.UnmarshalJSON() = %v, want %v", tt.t, tt.want)
+			}
+		})
+	}
+}
+
+func TestSkin_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		s       *Skin
+		args    args
+		want    *Skin
+		wantErr bool
+	}{
+		{"default", new(Skin), args{[]byte("{}")}, &Skin{InverseBindMatrices: -1, Skeleton: -1}, false},
+		{"empty", new(Skin), args{[]byte(`{"InverseBindMatrices": 0, "skeleton": 0}`)}, &Skin{InverseBindMatrices: 0, Skeleton: 0}, false},
+		{"nodefault", new(Skin), args{[]byte(`{"InverseBindMatrices": 1, "skeleton": 2}`)}, &Skin{InverseBindMatrices: 1, Skeleton: 2}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.s.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("Skin.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.s, tt.want) {
+				t.Errorf("Skin.UnmarshalJSON() = %v, want %v", tt.s, tt.want)
+			}
+		})
+	}
+}
+
+func TestTexture_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		t       *Texture
+		args    args
+		want    *Texture
+		wantErr bool
+	}{
+		{"default", new(Texture), args{[]byte("{}")}, &Texture{Sampler: -1, Source: -1}, false},
+		{"empty", new(Texture), args{[]byte(`{"sampler": 0, "source": 0}`)}, &Texture{Sampler: 0, Source: 0}, false},
+		{"nodefault", new(Texture), args{[]byte(`{"sampler": 1, "source": 2}`)}, &Texture{Sampler: 1, Source: 2}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.t.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("Texture.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.t, tt.want) {
+				t.Errorf("Texture.UnmarshalJSON() = %v, want %v", tt.t, tt.want)
+			}
+		})
+	}
+}
+
+func TestDocument_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		d       *Document
+		args    args
+		want    *Document
+		wantErr bool
+	}{
+		{"default", new(Document), args{[]byte("{}")}, &Document{Scene: -1}, false},
+		{"empty", new(Document), args{[]byte(`{"scene": 0}`)}, &Document{Scene: 0}, false},
+		{"nodefault", new(Document), args{[]byte(`{"scene": 1}`)}, &Document{Scene: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.d.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("Document.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(tt.d, tt.want) {
+				t.Errorf("Document.UnmarshalJSON() = %v, want %v", tt.d, tt.want)
 			}
 		})
 	}
