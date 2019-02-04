@@ -1,6 +1,7 @@
 package gltf
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -47,7 +48,7 @@ type Document struct {
 	Meshes             []Mesh       `json:"meshes,omitempty" validate:"dive"`
 	Nodes              []Node       `json:"nodes,omitempty" validate:"dive"`
 	Samplers           []Sampler    `json:"samplers,omitempty" validate:"dive"`
-	Scene              int32        `json:"scene,omitempty" validate:"gte=-1"`
+	Scene              int32        `json:"scene" validate:"gte=-1"`
 	Scenes             []Scene      `json:"scenes,omitempty" validate:"dive"`
 	Skins              []Skin       `json:"skins,omitempty" validate:"dive"`
 	Textures           []Texture    `json:"textures,omitempty" validate:"dive"`
@@ -64,6 +65,21 @@ func (d *Document) UnmarshalJSON(data []byte) error {
 		*d = Document(*tmp)
 	}
 	return err
+}
+
+// MarshalJSON marshal the document with the correct default values.
+func (d *Document) MarshalJSON() ([]byte, error) {
+	type alias Document
+	if d.Scene == -1 {
+		return json.Marshal(&struct {
+			Scene int32 `json:"scene,omitempty"`
+			*alias
+		}{
+			Scene: 0,
+			alias: (*alias)(d),
+		})
+	}
+	return json.Marshal(&struct{ *alias }{alias: (*alias)(d)})
 }
 
 //The ComponentType is the datatype of components in the attribute. All valid values correspond to WebGL enums.
@@ -121,6 +137,21 @@ func (a *Accessor) UnmarshalJSON(data []byte) error {
 		*a = Accessor(*tmp)
 	}
 	return err
+}
+
+// MarshalJSON marshal the accessor with the correct default values.
+func (a *Accessor) MarshalJSON() ([]byte, error) {
+	type alias Accessor
+	if a.BufferView == -1 {
+		return json.Marshal(&struct {
+			BufferView int32 `json:"bufferView,omitempty"`
+			*alias
+		}{
+			BufferView: 0,
+			alias:      (*alias)(a),
+		})
+	}
+	return json.Marshal(&struct{ *alias }{alias: (*alias)(a)})
 }
 
 // Sparse storage of attributes that deviate from their initialization value.
@@ -196,6 +227,21 @@ func (b *BufferView) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the buffer view with the correct default values.
+func (b *BufferView) MarshalJSON() ([]byte, error) {
+	type alias BufferView
+	if b.Buffer == -1 {
+		return json.Marshal(&struct {
+			Buffer int32 `json:"buffer,omitempty"`
+			*alias
+		}{
+			Buffer: 0,
+			alias:  (*alias)(b),
+		})
+	}
+	return json.Marshal(&struct{ *alias }{alias: (*alias)(b)})
+}
+
 // The Scene contains a list of root nodes.
 type Scene struct {
 	named
@@ -215,7 +261,7 @@ type Node struct {
 	Mesh        int32       `json:"mesh" validate:"gte=-1"`
 	Rotation    [4]float32  `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
 	Scale       [3]float32  `json:"scale"`
-	Translation [3]float32  `json:"translation,omitempty"`
+	Translation [3]float32  `json:"translation"`
 	Weights     []float32   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
 
@@ -237,6 +283,38 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the node with the correct default values.
+func (n *Node) MarshalJSON() ([]byte, error) {
+	type alias Node
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
+	if err == nil {
+		if n.Matrix == [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1} {
+			out = removeProperty([]byte(`"matrix":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]`), out)
+		}
+		if n.Rotation == [4]float32{0, 0, 0, 1} {
+			out = removeProperty([]byte(`"rotation":[0,0,0,1]`), out)
+		}
+		if n.Scale == [3]float32{1, 1, 1} {
+			out = removeProperty([]byte(`"scale":[1,1,1]`), out)
+		}
+		if n.Translation == [3]float32{0, 0, 0} {
+			out = removeProperty([]byte(`"translation":[0,0,0]`), out)
+		}
+		if n.Camera == -1 {
+			out = removeProperty([]byte(`"camera":-1`), out)
+		}
+		if n.Skin == -1 {
+			out = removeProperty([]byte(`"skin":-1`), out)
+		}
+		if n.Mesh == -1 {
+			out = removeProperty([]byte(`"mesh":-1`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
+}
+
 // Skin defines joints and matrices.
 type Skin struct {
 	named
@@ -246,7 +324,7 @@ type Skin struct {
 	Joints              []uint32 `json:"joints" validate:"omitempty,unique"`    // Indices of skeleton nodes, used as joints in this skin.
 }
 
-// UnmarshalJSON unmarshal the node with the correct default values.
+// UnmarshalJSON unmarshal the skin with the correct default values.
 func (s *Skin) UnmarshalJSON(data []byte) error {
 	type alias Skin
 	tmp := &alias{
@@ -258,6 +336,23 @@ func (s *Skin) UnmarshalJSON(data []byte) error {
 		*s = Skin(*tmp)
 	}
 	return err
+}
+
+// MarshalJSON marshal the skin with the correct default values.
+func (s *Skin) MarshalJSON() ([]byte, error) {
+	type alias Skin
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(s)})
+	if err == nil {
+		if s.InverseBindMatrices == -1 {
+			out = removeProperty([]byte(`"inverseBindMatrices":-1`), out)
+		}
+		if s.Skeleton == -1 {
+			out = removeProperty([]byte(`"skeleton":-1`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
 }
 
 // CameraType specifies if the camera uses a perspective or orthographic projection.
@@ -345,6 +440,23 @@ func (p *Primitive) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the primitive with the correct default values.
+func (p *Primitive) MarshalJSON() ([]byte, error) {
+	type alias Primitive
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(p)})
+	if err == nil {
+		if p.Indices == -1 {
+			out = removeProperty([]byte(`"indices":-1`), out)
+		}
+		if p.Material == -1 {
+			out = removeProperty([]byte(`"material":-1`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
+}
+
 // The AlphaMode enumeration specifying the interpretation of the alpha value of the main factor and texture.
 type AlphaMode string
 
@@ -411,6 +523,26 @@ func (m *Material) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the material with the correct default values.
+func (m *Material) MarshalJSON() ([]byte, error) {
+	type alias Material
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(m)})
+	if err == nil {
+		if m.AlphaCutoff == 0.5 {
+			out = removeProperty([]byte(`"alphaCutoff":0.5`), out)
+		}
+		if m.AlphaMode == Opaque {
+			out = removeProperty([]byte(`"alphaMode":"OPAQUE"`), out)
+		}
+		if m.EmissiveFactor == [3]float32{0, 0, 0} {
+			out = removeProperty([]byte(`"emissiveFactor":[0,0,0]`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
+}
+
 // A NormalTexture references to a normal texture.
 type NormalTexture struct {
 	extensible
@@ -433,6 +565,23 @@ func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the texture info with the correct default values.
+func (n *NormalTexture) MarshalJSON() ([]byte, error) {
+	type alias NormalTexture
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
+	if err == nil {
+		if n.Index == -1 {
+			out = removeProperty([]byte(`"index":-1`), out)
+		}
+		if n.Scale == -1 {
+			out = removeProperty([]byte(`"scale":-1`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
+}
+
 // An OcclusionTexture references to an occlusion texture
 type OcclusionTexture struct {
 	extensible
@@ -453,6 +602,23 @@ func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 		*o = OcclusionTexture(*tmp)
 	}
 	return err
+}
+
+// MarshalJSON marshal the texture info with the correct default values.
+func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
+	type alias OcclusionTexture
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(o)})
+	if err == nil {
+		if o.Index == -1 {
+			out = removeProperty([]byte(`"index":-1`), out)
+		}
+		if o.Strength == -1 {
+			out = removeProperty([]byte(`"strength":-1`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
 }
 
 // PBRMetallicRoughness defines a set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
@@ -480,6 +646,26 @@ func (p *PBRMetallicRoughness) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the pbr with the correct default values.
+func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
+	type alias PBRMetallicRoughness
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(p)})
+	if err == nil {
+		if p.MetallicFactor == -1 {
+			out = removeProperty([]byte(`"metallicFactor":-1`), out)
+		}
+		if p.RoughnessFactor == -1 {
+			out = removeProperty([]byte(`"roughnessFactor":-1`), out)
+		}
+		if p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
+			out = removeProperty([]byte(`"baseColorFactor":[1,1,1,1]`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
+}
+
 // TextureInfo references to a texture.
 type TextureInfo struct {
 	extensible
@@ -500,12 +686,27 @@ func (t *TextureInfo) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the texture info with the correct default values.
+func (t *TextureInfo) MarshalJSON() ([]byte, error) {
+	type alias TextureInfo
+	if t.Index == -1 {
+		return json.Marshal(&struct {
+			Index int32 `json:"index,omitempty"`
+			*alias
+		}{
+			Index: 0,
+			alias: (*alias)(t),
+		})
+	}
+	return json.Marshal(&struct{ *alias }{alias: (*alias)(t)})
+}
+
 // A Texture and its sampler.
 type Texture struct {
 	named
 	extensible
-	Sampler int32 `json:"sampler,omitempty" validate:"gte=-1"`
-	Source  int32 `json:"source,omitempty" validate:"gte=-1"`
+	Sampler int32 `json:"sampler" validate:"gte=-1"`
+	Source  int32 `json:"source" validate:"gte=-1"`
 }
 
 // UnmarshalJSON unmarshal the texture with the correct default values.
@@ -522,14 +723,31 @@ func (t *Texture) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the texture with the correct default values.
+func (t *Texture) MarshalJSON() ([]byte, error) {
+	type alias Texture
+	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(t)})
+	if err == nil {
+		if t.Sampler == -1 {
+			out = removeProperty([]byte(`"sampler":-1`), out)
+		}
+		if t.Source == -1 {
+			out = removeProperty([]byte(`"source":-1`), out)
+		}
+		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
+		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+	}
+	return out, err
+}
+
 // Sampler of a texture for filtering and wrapping modes.
 type Sampler struct {
 	named
 	extensible
-	MagFilter MagFilter    `json:"magFilter" validate:"omitempty,oneof=9728 9729"`
-	MinFilter MinFilter    `json:"minFilter" validate:"omitempty,oneof=9728 9729 9984 9985 9986 9987"`
-	WrapS     WrappingMode `json:"wrapS" validate:"omitempty,oneof=33071 33648 10497"`
-	WrapT     WrappingMode `json:"wrapT" validate:"omitempty,oneof=33071 33648 10497"`
+	MagFilter MagFilter    `json:"magFilter,omitempty" validate:"omitempty,oneof=9728 9729"`
+	MinFilter MinFilter    `json:"minFilter,omitempty" validate:"omitempty,oneof=9728 9729 9984 9985 9986 9987"`
+	WrapS     WrappingMode `json:"wrapS,omitempty" validate:"omitempty,oneof=33071 33648 10497"`
+	WrapT     WrappingMode `json:"wrapT,omitempty" validate:"omitempty,oneof=33071 33648 10497"`
 }
 
 // UnmarshalJSON unmarshal the sampler with the correct default values.
@@ -634,6 +852,21 @@ func (ch *Channel) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the channel with the correct default values.
+func (ch *Channel) MarshalJSON() ([]byte, error) {
+	type alias Channel
+	if ch.Sampler == -1 {
+		return json.Marshal(&struct {
+			Sampler int32 `json:"sampler,omitempty"`
+			*alias
+		}{
+			Sampler: 0,
+			alias:   (*alias)(ch),
+		})
+	}
+	return json.Marshal(&struct{ *alias }{alias: (*alias)(ch)})
+}
+
 // ChannelTarget describes the index of the node and TRS property that an animation channel targets.
 // The Path represents the name of the node's TRS property to modify, or the "weights" of the Morph Targets it instantiates.
 // For the "translation" property, the values that are provided by the sampler are the translation along the x, y, and z axes.
@@ -656,4 +889,24 @@ func (ch *ChannelTarget) UnmarshalJSON(data []byte) error {
 		*ch = ChannelTarget(*tmp)
 	}
 	return err
+}
+
+// MarshalJSON marshal the channel target with the correct default values.
+func (ch *ChannelTarget) MarshalJSON() ([]byte, error) {
+	type alias ChannelTarget
+	if ch.Node == -1 {
+		return json.Marshal(&struct {
+			Node int32 `json:"node,omitempty"`
+			*alias
+		}{
+			Node:  0,
+			alias: (*alias)(ch),
+		})
+	}
+	return json.Marshal(&struct{ *alias }{alias: (*alias)(ch)})
+}
+
+func removeProperty(str []byte, b []byte) []byte {
+	b = bytes.Replace(b, str, []byte(""), 1)
+	return bytes.Replace(b, []byte(`,,`), []byte(","), 1)
 }

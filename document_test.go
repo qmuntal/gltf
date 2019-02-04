@@ -553,3 +553,350 @@ func TestDocument_UnmarshalJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestDocument_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		d       *Document
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Document{Scene: -1}, []byte(`{"asset":{"version":""}}`), false},
+		{"empty", &Document{Scene: 0}, []byte(`{"asset":{"version":""},"scene":0}`), false},
+		{"nodefault", &Document{Scene: 1}, []byte(`{"asset":{"version":""},"scene":1}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.d.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Document.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Document.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestAccessor_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		a       *Accessor
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Accessor{BufferView: -1}, []byte(`{"componentType":0,"count":0,"type":""}`), false},
+		{"empty", &Accessor{BufferView: 0}, []byte(`{"bufferView":0,"componentType":0,"count":0,"type":""}`), false},
+		{"nodefault", &Accessor{BufferView: 1}, []byte(`{"bufferView":1,"componentType":0,"count":0,"type":""}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.a.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Accessor.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Accessor.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestBufferView_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		b       *BufferView
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &BufferView{Buffer: -1}, []byte(`{"byteLength":0}`), false},
+		{"empty", &BufferView{Buffer: 0}, []byte(`{"buffer":0,"byteLength":0}`), false},
+		{"nodefault", &BufferView{Buffer: 1}, []byte(`{"buffer":1,"byteLength":0}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.b.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("BufferView.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("BufferView.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestNode_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		n       *Node
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Node{
+			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float32{0, 0, 0, 1},
+			Scale:    [3]float32{1, 1, 1},
+			Camera:   -1,
+			Skin:     -1,
+			Mesh:     -1,
+		}, []byte("{}"), false},
+		{"empty", &Node{
+			Matrix:   [16]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation: [4]float32{0, 0, 0, 0},
+			Scale:    [3]float32{0, 0, 0},
+			Camera:   0,
+			Skin:     0,
+			Mesh:     0,
+		}, []byte(`{"camera":0,"skin":0,"matrix":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"mesh":0,"rotation":[0,0,0,0],"scale":[0,0,0]}`), false},
+		{"nodefault", &Node{
+			Matrix:      [16]float32{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation:    [4]float32{1, 0, 0, 0},
+			Scale:       [3]float32{1, 0, 0},
+			Translation: [3]float32{1, 0, 0},
+			Camera:      1,
+			Skin:        1,
+			Mesh:        1,
+		}, []byte(`{"camera":1,"skin":1,"matrix":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"mesh":1,"rotation":[1,0,0,0],"scale":[1,0,0],"translation":[1,0,0]}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.n.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Node.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Node.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestSkin_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       *Skin
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Skin{InverseBindMatrices: -1, Skeleton: -1}, []byte(`{"joints":null}`), false},
+		{"empty", &Skin{InverseBindMatrices: 0, Skeleton: 0}, []byte(`{"inverseBindMatrices":0,"skeleton":0,"joints":null}`), false},
+		{"nodefault", &Skin{InverseBindMatrices: 1, Skeleton: 2}, []byte(`{"inverseBindMatrices":1,"skeleton":2,"joints":null}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.s.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Skin.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Skin.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestPrimitive_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		p       *Primitive
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Primitive{Indices: -1, Material: -1, Mode: Triangles}, []byte(`{"attributes":null}`), false},
+		{"empty", &Primitive{Indices: 0, Material: 0, Mode: Points}, []byte(`{"attributes":null,"indices":0,"material":0,"mode":0}`), false},
+		{"nodefault", &Primitive{Indices: 1, Material: 2, Mode: Triangle_Strip}, []byte(`{"attributes":null,"indices":1,"material":2,"mode":5}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.p.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Primitive.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Primitive.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestMaterial_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		m       *Material
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Material{AlphaCutoff: 0.5, AlphaMode: Opaque}, []byte(`{}`), false},
+		{"empty", &Material{AlphaCutoff: 0, AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":0}`), false},
+		{"nodefault", &Material{AlphaCutoff: 1, AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.m.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Material.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Material.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestNormalTexture_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		n       *NormalTexture
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &NormalTexture{Index: -1, Scale: -1}, []byte(`{}`), false},
+		{"empty", &NormalTexture{Index: 0, Scale: 0}, []byte(`{"index":0,"scale":0}`), false},
+		{"nodefault", &NormalTexture{Index: 1, Scale: 1}, []byte(`{"index":1,"scale":1}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.n.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NormalTexture.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NormalTexture.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestOcclusionTexture_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		o       *OcclusionTexture
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &OcclusionTexture{Index: -1, Strength: -1}, []byte(`{}`), false},
+		{"empty", &OcclusionTexture{Index: 0, Strength: 0}, []byte(`{"index":0,"strength":0}`), false},
+		{"nodefault", &OcclusionTexture{Index: 1, Strength: 1}, []byte(`{"index":1,"strength":1}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.o.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("OcclusionTexture.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("OcclusionTexture.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestPBRMetallicRoughness_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		p       *PBRMetallicRoughness
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &PBRMetallicRoughness{MetallicFactor: -1, RoughnessFactor: -1, BaseColorFactor: [4]float32{1, 1, 1, 1}}, []byte(`{}`), false},
+		{"empty", &PBRMetallicRoughness{MetallicFactor: 0, RoughnessFactor: 0, BaseColorFactor: [4]float32{0, 0, 0, 0}}, []byte(`{"baseColorFactor":[0,0,0,0],"metallicFactor":0,"roughnessFactor":0}`), false},
+		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: [4]float32{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":1,"roughnessFactor":1}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.p.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PBRMetallicRoughness.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PBRMetallicRoughness.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestTextureInfo_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		t       *TextureInfo
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &TextureInfo{Index: -1}, []byte(`{}`), false},
+		{"empty", &TextureInfo{Index: 0}, []byte(`{"index":0}`), false},
+		{"nodefault", &TextureInfo{Index: 1}, []byte(`{"index":1}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.t.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TextureInfo.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TextureInfo.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestChannel_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		ch      *Channel
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Channel{Sampler: -1, Target: ChannelTarget{Node: -1}}, []byte(`{"target":{"path":""}}`), false},
+		{"empty", &Channel{Sampler: 0, Target: ChannelTarget{Node: 0}}, []byte(`{"sampler":0,"target":{"node":0,"path":""}}`), false},
+		{"nodefault", &Channel{Sampler: 1, Target: ChannelTarget{Node: 1}}, []byte(`{"sampler":1,"target":{"node":1,"path":""}}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.ch.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Channel.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Channel.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestTexture_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		t       *Texture
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Texture{Sampler: -1, Source: -1}, []byte(`{}`), false},
+		{"empty", &Texture{Sampler: 0, Source: 0}, []byte(`{"sampler":0,"source":0}`), false},
+		{"nodefault", &Texture{Sampler: 1, Source: 1}, []byte(`{"sampler":1,"source":1}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.t.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Texture.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Texture.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
