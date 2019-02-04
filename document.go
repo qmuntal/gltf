@@ -204,6 +204,15 @@ func (b *Buffer) EmbeddedResource() {
 	b.URI = fmt.Sprintf("%s,%s", mimetypeApplicationOctet, base64.StdEncoding.EncodeToString(b.Data))
 }
 
+// MarshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
+func (b *Buffer) MarshalData() ([]uint8, error) {
+	if !b.IsEmbeddedResource() {
+		return []uint8{}, nil
+	}
+	startPos := len(mimetypeApplicationOctet) + 1
+	return base64.StdEncoding.DecodeString(b.URI[startPos:])
+}
+
 // BufferView is a view into a buffer generally representing a subset of the buffer.
 type BufferView struct {
 	extensible
@@ -779,10 +788,10 @@ func (im *Image) IsEmbeddedResource() bool {
 	return strings.HasPrefix(im.URI, mimetypeImagePNG) || strings.HasPrefix(im.URI, mimetypeImageJPG)
 }
 
-// Data decode the image from the URI. If the image is not en embedded resource the return values will be nil.
-func (im *Image) Data() ([]uint8, error) {
+// MarshalData decode the image from the URI. If the image is not en embedded resource the returned array will be empty.
+func (im *Image) MarshalData() ([]uint8, error) {
 	if !im.IsEmbeddedResource() {
-		return nil, nil
+		return []uint8{}, nil
 	}
 	mimetype := mimetypeImagePNG
 	if strings.HasPrefix(im.URI, mimetypeImageJPG) {

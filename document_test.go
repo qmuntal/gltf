@@ -60,7 +60,7 @@ func TestImage_IsEmbeddedResource(t *testing.T) {
 	}
 }
 
-func TestImage_Data(t *testing.T) {
+func TestImage_MarshalData(t *testing.T) {
 	tests := []struct {
 		name    string
 		im      *Image
@@ -68,19 +68,20 @@ func TestImage_Data(t *testing.T) {
 		wantErr bool
 	}{
 		{"error", &Image{URI: "data:image/png;base64,_"}, []uint8{}, true},
+		{"external", &Image{URI: "http://web.com"}, []uint8{}, false},
 		{"empty", &Image{URI: "data:image/png;base64,"}, []uint8{}, false},
 		{"test", &Image{URI: "data:image/png;base64,TEST"}, []uint8{76, 68, 147}, false},
 		{"complex", &Image{URI: "data:image/png;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []uint8{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.im.Data()
+			got, err := tt.im.MarshalData()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Image.Data() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Image.MarshalData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Image.Data() = %v, want %v", got, tt.want)
+				t.Errorf("Image.MarshalData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -896,6 +897,33 @@ func TestTexture_MarshalJSON(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Texture.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestBuffer_MarshalData(t *testing.T) {
+	tests := []struct {
+		name    string
+		b       *Buffer
+		want    []uint8
+		wantErr bool
+	}{
+		{"error", &Buffer{URI: "data:application/octet-stream;base64,_"}, []uint8{}, true},
+		{"external", &Buffer{URI: "http://web.com"}, []uint8{}, false},
+		{"empty", &Buffer{URI: "data:application/octet-stream;base64,"}, []uint8{}, false},
+		{"test", &Buffer{URI: "data:application/octet-stream;base64,TEST"}, []uint8{76, 68, 147}, false},
+		{"complex", &Buffer{URI: "data:application/octet-stream;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []uint8{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.b.MarshalData()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Buffer.MarshalData() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Buffer.MarshalData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
