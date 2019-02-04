@@ -318,8 +318,7 @@ func (n *Node) MarshalJSON() ([]byte, error) {
 		if n.Mesh == -1 {
 			out = removeProperty([]byte(`"mesh":-1`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -358,8 +357,7 @@ func (s *Skin) MarshalJSON() ([]byte, error) {
 		if s.Skeleton == -1 {
 			out = removeProperty([]byte(`"skeleton":-1`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -460,8 +458,7 @@ func (p *Primitive) MarshalJSON() ([]byte, error) {
 		if p.Material == -1 {
 			out = removeProperty([]byte(`"material":-1`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -546,8 +543,7 @@ func (m *Material) MarshalJSON() ([]byte, error) {
 		if m.EmissiveFactor == [3]float32{0, 0, 0} {
 			out = removeProperty([]byte(`"emissiveFactor":[0,0,0]`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -585,8 +581,7 @@ func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 		if n.Scale == -1 {
 			out = removeProperty([]byte(`"scale":-1`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -624,8 +619,7 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 		if o.Strength == -1 {
 			out = removeProperty([]byte(`"strength":-1`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -669,8 +663,7 @@ func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 		if p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
 			out = removeProperty([]byte(`"baseColorFactor":[1,1,1,1]`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -743,8 +736,7 @@ func (t *Texture) MarshalJSON() ([]byte, error) {
 		if t.Source == -1 {
 			out = removeProperty([]byte(`"source":-1`), out)
 		}
-		out = bytes.Replace(out, []byte(`{,`), []byte("{"), 1)
-		out = bytes.Replace(out, []byte(`,}`), []byte("}"), 1)
+		out = sanitizeJSON(out)
 	}
 	return out, err
 }
@@ -918,4 +910,9 @@ func (ch *ChannelTarget) MarshalJSON() ([]byte, error) {
 func removeProperty(str []byte, b []byte) []byte {
 	b = bytes.Replace(b, str, []byte(""), 1)
 	return bytes.Replace(b, []byte(`,,`), []byte(","), 1)
+}
+
+func sanitizeJSON(b []byte) []byte {
+	b = bytes.Replace(b, []byte(`{,`), []byte("{"), 1)
+	return bytes.Replace(b, []byte(`,}`), []byte("}"), 1)
 }
