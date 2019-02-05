@@ -11,7 +11,7 @@ import (
 
 // WriteResourceCallback defines a callback that will be called when an external resource should be writed.
 // The string parameter is the URI of the resource.
-type WriteResourceCallback = func(string) (io.WriteCloser, error)
+type WriteResourceCallback = func(string, int) (io.WriteCloser, error)
 
 // Save will save a document as a glTF or a GLB file specified by name.
 func Save(doc *Document, name string, asBinary bool) error {
@@ -19,7 +19,7 @@ func Save(doc *Document, name string, asBinary bool) error {
 	if err != nil {
 		return err
 	}
-	cb := func(uri string) (io.WriteCloser, error) {
+	cb := func(uri string, size int) (io.WriteCloser, error) {
 		return os.Create(filepath.Join(filepath.Dir(name), uri))
 	}
 
@@ -91,7 +91,7 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}
-	r, err := e.cb(buffer.URI)
+	r, err := e.cb(buffer.URI, int(buffer.ByteLength))
 	if err != nil {
 		return err
 	}
