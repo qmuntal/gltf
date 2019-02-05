@@ -74,8 +74,8 @@ func (d *Decoder) Decode(doc *Document) error {
 	if isBinary {
 		return d.decodeBinaryBuffer(&doc.Buffers[0])
 	}
-	for _, buffer := range doc.Buffers {
-		if err := d.decodeBuffer(&buffer); err != nil {
+	for i := range doc.Buffers {
+		if err := d.decodeBuffer(&doc.Buffers[i]); err != nil {
 			break
 		}
 	}
@@ -146,8 +146,8 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		if err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
 			_, err = r.Read(buffer.Data)
+			r.Close()
 		}
-		r.Close()
 	}
 	return err
 }

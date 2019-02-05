@@ -22,10 +22,17 @@ func Save(doc *Document, name string, asBinary bool) error {
 	cb := func(uri string) (io.WriteCloser, error) {
 		return os.Create(filepath.Join(filepath.Dir(name), uri))
 	}
+
 	if asBinary {
-		return NewEncoderBinary(f, cb).Encode(doc)
+		err = NewEncoderBinary(f, cb).Encode(doc)
+	} else {
+		err = NewEncoder(f, cb).Encode(doc)
 	}
-	return NewEncoder(f, cb).Encode(doc)
+	if err != nil {
+		f.Close()
+		return err
+	}
+	return f.Close()
 }
 
 // An Encoder writes a GLTF to an output stream.
