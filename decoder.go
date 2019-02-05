@@ -20,14 +20,9 @@ type ReadQuotas struct {
 	MaxMemoryAllocation int
 }
 
-type dataContext struct {
-	Quotas       ReadQuotas
-	ReadCallback ExternalResourceCallback
-}
-
 // ExternalResourceCallback defines a callback that will be called when an external resource should be loaded.
 // The string parameter is the URI of the resource.
-type ExternalResourceCallback = func(string) (io.Reader, error)
+type ExternalResourceCallback = func(string) (io.ReadCloser, error)
 
 // Open will open a glTF or GLB file specified by name and return the Document.
 func Open(name string) (*Document, error) {
@@ -35,7 +30,7 @@ func Open(name string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
-	cb := func(uri string) (io.Reader, error) {
+	cb := func(uri string) (io.ReadCloser, error) {
 		return os.Open(filepath.Join(filepath.Dir(name), uri))
 	}
 	d := NewDecoder(f, cb)
@@ -153,6 +148,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 			buffer.Data = make([]uint8, buffer.ByteLength)
 			_, err = r.Read(buffer.Data)
 		}
+		r.Close()
 	}
 	return err
 }

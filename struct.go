@@ -9,6 +9,26 @@ import (
 )
 
 const (
+	glbHeaderMagic = 0x46546c67
+	glbChunkJSON   = 0x4e4f534a
+	glbChunkBIN    = 0x004e4942
+)
+
+// ChunkHeader defines the properties of a chunk
+type ChunkHeader struct {
+	Length uint32
+	Type   uint32
+}
+
+// GLBHeader defines the properties of a glb file.
+type GLBHeader struct {
+	Magic      uint32
+	Version    uint32
+	Length     uint32
+	JSONHeader ChunkHeader
+}
+
+const (
 	mimetypeApplicationOctet = "data:application/octet-stream;base64"
 	mimetypeImagePNG         = "data:image/png;base64"
 	mimetypeImageJPG         = "data:image/jpeg;base64"
