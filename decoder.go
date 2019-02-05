@@ -20,9 +20,9 @@ type ReadQuotas struct {
 	MaxMemoryAllocation int
 }
 
-// ExternalResourceCallback defines a callback that will be called when an external resource should be loaded.
+// ReadResourceCallback defines a callback that will be called when an external resource should be loaded.
 // The string parameter is the URI of the resource.
-type ExternalResourceCallback = func(string) (io.ReadCloser, error)
+type ReadResourceCallback = func(string) (io.ReadCloser, error)
 
 // Open will open a glTF or GLB file specified by name and return the Document.
 func Open(name string) (*Document, error) {
@@ -33,21 +33,20 @@ func Open(name string) (*Document, error) {
 	cb := func(uri string) (io.ReadCloser, error) {
 		return os.Open(filepath.Join(filepath.Dir(name), uri))
 	}
-	d := NewDecoder(f, cb)
 	doc := new(Document)
-	err = d.Decode(doc)
+	err = NewDecoder(f, cb).Decode(doc)
 	return doc, err
 }
 
 // A Decoder reads and decodes glTF and GLB values from an input stream.
 type Decoder struct {
 	r      *bufio.Reader
-	cb     ExternalResourceCallback
+	cb     ReadResourceCallback
 	quotas ReadQuotas
 }
 
 // NewDecoder returns a new decoder that reads from r.
-func NewDecoder(r io.Reader, cb ExternalResourceCallback) *Decoder {
+func NewDecoder(r io.Reader, cb ReadResourceCallback) *Decoder {
 	return &Decoder{
 		r:  bufio.NewReader(r),
 		cb: cb,
@@ -142,7 +141,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	var err error
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
-	} else if err = d.validateBufferURI(buffer.URI); err == nil {
+	} else if err = validateBufferURI(buffer.URI); err == nil {
 		r, err := d.cb(buffer.URI)
 		if err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
@@ -180,7 +179,7 @@ func (d *Decoder) validateBuffer(buffer *Buffer) error {
 	return nil
 }
 
-func (d *Decoder) validateBufferURI(uri string) error {
+func validateBufferURI(uri string) error {
 	if uri == "" || strings.Contains(uri, "..") || strings.HasPrefix(uri, "/") || strings.HasPrefix(uri, "\\") {
 		return fmt.Errorf("gltf: Invalid buffer.uri value '%s'", uri)
 	}

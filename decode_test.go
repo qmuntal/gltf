@@ -18,11 +18,12 @@ func TestOpen(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.args.name, func(t *testing.T) {
-			_, err := Open(tt.args.name)
+			got, err := Open(tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Open() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			Save(got, tt.args.name+"-1", false)
 			// if !reflect.DeepEqual(got, tt.want) {
 			// 	t.Errorf("Open() = %v, want %v", got, tt.want)
 			// }
