@@ -902,7 +902,7 @@ func TestTexture_MarshalJSON(t *testing.T) {
 	}
 }
 
-func TestBuffer_MarshalData(t *testing.T) {
+func TestBuffer_marshalData(t *testing.T) {
 	tests := []struct {
 		name    string
 		b       *Buffer
@@ -917,13 +917,13 @@ func TestBuffer_MarshalData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.b.MarshalData()
+			got, err := tt.b.marshalData()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Buffer.MarshalData() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Buffer.marshalData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Buffer.MarshalData() = %v, want %v", got, tt.want)
+				t.Errorf("Buffer.marshalData() = %v, want %v", got, tt.want)
 			}
 		})
 	}

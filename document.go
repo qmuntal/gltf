@@ -204,8 +204,8 @@ func (b *Buffer) EmbeddedResource() {
 	b.URI = fmt.Sprintf("%s,%s", mimetypeApplicationOctet, base64.StdEncoding.EncodeToString(b.Data))
 }
 
-// MarshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
-func (b *Buffer) MarshalData() ([]uint8, error) {
+// marshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
+func (b *Buffer) marshalData() ([]uint8, error) {
 	if !b.IsEmbeddedResource() {
 		return []uint8{}, nil
 	}
