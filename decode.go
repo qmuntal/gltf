@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 	"unsafe"
 )
@@ -26,6 +28,21 @@ type dataContext struct {
 // ExternalResourceCallback defines a callback that will be called when an external resource should be loaded.
 // The string parameter is the URI of the resource.
 type ExternalResourceCallback = func(string) (io.Reader, error)
+
+// Open will open a glTF or GLB file specified by name and return the Document.
+func Open(name string) (*Document, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	cb := func(uri string) (io.Reader, error) {
+		return os.Open(filepath.Join(filepath.Dir(name), uri))
+	}
+	d := NewDecoder(f, cb)
+	doc := new(Document)
+	err = d.Decode(doc)
+	return doc, err
+}
 
 // A Decoder reads and decodes glTF and GLB values from an input stream.
 type Decoder struct {
@@ -50,62 +67,13 @@ func (d *Decoder) SetQuotas(quotas ReadQuotas) {
 	d.quotas = quotas
 }
 
-func (d *Decoder) glbHeader() *GLBHeader {
-	var header GLBHeader
-	chunk, err := d.r.Peek(int(unsafe.Sizeof(header)))
-	if err != nil {
-		return nil
-	}
-	r := bytes.NewReader(chunk)
-	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
-		return nil
-	}
-	if header.Magic != glbHeaderMagic {
-		return nil
-	}
-	d.r.Read(chunk)
-	return &header
-}
-
-func (d *Decoder) chunkHeader() (*ChunkHeader, error) {
-	var header ChunkHeader
-	chunk := make([]byte, unsafe.Sizeof(header))
-	_, err := d.r.Read(chunk)
-	if err != nil {
-		return nil, err
-	}
-	r := bytes.NewReader(chunk)
-	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
-		return nil, err
-	}
-	return &header, nil
-}
-
-func (d *Decoder) checkForBinary() (bool, error) {
-	glbHeader := d.glbHeader()
-	if glbHeader == nil {
-		return false, nil
-	}
-	if int(glbHeader.Length) > d.quotas.MaxMemoryAllocation {
-		return false, errors.New("gltf: Quota exceeded, bytes of glb buffer > MaxMemoryAllocation")
-	}
-	jsonHeader, err := d.chunkHeader()
-	if err != nil || jsonHeader.Type != glbChunkJSON || (jsonHeader.Length+uint32(unsafe.Sizeof(glbHeader)+unsafe.Sizeof(jsonHeader))) > glbHeader.Length {
-		return false, errors.New("gltf: Invalid GLB JSON header")
-	}
-	return true, nil
-}
-
 // Decode reads the next JSON-encoded value from its
 // input and stores it in the value pointed to by doc.
 func (d *Decoder) Decode(doc *Document) error {
-	isBinary, err := d.checkForBinary()
+	isBinary, err := d.decodeDocument(doc)
 	if err != nil {
-		return err
+		return nil
 	}
-	jd := json.NewDecoder(d.r)
-	jd.Decode(doc)
-	d.r.Reset(jd.Buffered())
 	if len(doc.Buffers) > d.quotas.MaxBufferCount {
 		return errors.New("gltf: Quota exceeded, number of buffer > MaxBufferCount")
 	}
@@ -113,11 +81,60 @@ func (d *Decoder) Decode(doc *Document) error {
 		return d.decodeBinaryBuffer(&doc.Buffers[0])
 	}
 	for _, buffer := range doc.Buffers {
-		if err = d.decodeBuffer(&buffer); err != nil {
+		if err := d.decodeBuffer(&buffer); err != nil {
 			break
 		}
 	}
 	return nil
+}
+
+func (d *Decoder) decodeDocument(doc *Document) (isBinary bool, err error) {
+	glbHeader, err := d.readGLBHeader()
+	if err != nil {
+		return
+	}
+	var jd *json.Decoder
+	if glbHeader != nil {
+		jd = json.NewDecoder(&io.LimitedReader{R: d.r, N: int64(glbHeader.JSONHeader.Length)})
+		isBinary = true
+	} else {
+		jd = json.NewDecoder(d.r)
+		isBinary = false
+	}
+
+	err = jd.Decode(doc)
+	return
+}
+
+func (d *Decoder) readGLBHeader() (*GLBHeader, error) {
+	var header GLBHeader
+	chunk, err := d.r.Peek(int(unsafe.Sizeof(header)))
+	if err != nil {
+		return nil, nil
+	}
+	r := bytes.NewReader(chunk)
+	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
+		return nil, nil
+	}
+	if header.Magic != glbHeaderMagic {
+		return nil, nil
+	}
+	d.r.Read(chunk)
+	if int(header.Length) > d.quotas.MaxMemoryAllocation {
+		return nil, errors.New("gltf: Quota exceeded, bytes of glb buffer > MaxMemoryAllocation")
+	}
+	if header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(unsafe.Sizeof(header))) > header.Length {
+		return nil, errors.New("gltf: Invalid GLB JSON header")
+	}
+	return &header, nil
+}
+
+func (d *Decoder) chunkHeader() (*ChunkHeader, error) {
+	var header ChunkHeader
+	if err := binary.Read(d.r, binary.LittleEndian, &header); err != nil {
+		return nil, err
+	}
+	return &header, nil
 }
 
 func (d *Decoder) decodeBuffer(buffer *Buffer) error {
@@ -130,7 +147,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	var err error
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
-	} else if err = d.validateBufferURI(buffer.URI); err != nil {
+	} else if err = d.validateBufferURI(buffer.URI); err == nil {
 		r, err := d.cb(buffer.URI)
 		if err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
@@ -168,7 +185,7 @@ func (d *Decoder) validateBuffer(buffer *Buffer) error {
 }
 
 func (d *Decoder) validateBufferURI(uri string) error {
-	if uri == "" || strings.IndexAny(uri, "..") != -1 || strings.HasPrefix(uri, "/") || strings.HasPrefix(uri, "\\") {
+	if uri == "" || strings.Contains(uri, "..") || strings.HasPrefix(uri, "/") || strings.HasPrefix(uri, "\\") {
 		return fmt.Errorf("gltf: Invalid buffer.uri value '%s'", uri)
 	}
 	return nil

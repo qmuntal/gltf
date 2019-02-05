@@ -23,9 +23,10 @@ type ChunkHeader struct {
 
 // GLBHeader defines the properties of a glb file.
 type GLBHeader struct {
-	Magic   uint32
-	Version uint32
-	Length  uint32
+	Magic      uint32
+	Version    uint32
+	Length     uint32
+	JSONHeader ChunkHeader
 }
 
 func create(r io.Reader, ctx dataContext) (*Document, error) {
