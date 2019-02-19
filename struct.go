@@ -289,10 +289,9 @@ type Node struct {
 	Weights     []float32              `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
 
-// UnmarshalJSON unmarshal the node with the correct default values.
-func (n *Node) UnmarshalJSON(data []byte) error {
-	type alias Node
-	tmp := &alias{
+// NewNode returns a default Node.
+func NewNode() *Node {
+	return &Node{
 		Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
 		Rotation: [4]float32{0, 0, 0, 1},
 		Scale:    [3]float32{1, 1, 1},
@@ -300,9 +299,15 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 		Skin:     -1,
 		Mesh:     -1,
 	}
-	err := json.Unmarshal(data, tmp)
+}
+
+// UnmarshalJSON unmarshal the node with the correct default values.
+func (n *Node) UnmarshalJSON(data []byte) error {
+	type alias Node
+	tmp := alias(*NewNode())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*n = Node(*tmp)
+		*n = Node(tmp)
 	}
 	return err
 }
@@ -348,13 +353,18 @@ type Skin struct {
 	Joints              []uint32               `json:"joints" validate:"omitempty,unique"`    // Indices of skeleton nodes, used as joints in this skin.
 }
 
+// NewSkin create a default Skin.
+func NewSkin() *Skin {
+	return &Skin{InverseBindMatrices: -1, Skeleton: -1}
+}
+
 // UnmarshalJSON unmarshal the skin with the correct default values.
 func (s *Skin) UnmarshalJSON(data []byte) error {
 	type alias Skin
-	tmp := &alias{InverseBindMatrices: -1, Skeleton: -1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewSkin())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*s = Skin(*tmp)
+		*s = Skin(tmp)
 	}
 	return err
 }
@@ -450,17 +460,18 @@ type Primitive struct {
 	Targets    []Attribute            `json:"targets,omitempty" validate:"omitempty,dive,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
 }
 
+// NewPrimitive create a default Primitive.
+func NewPrimitive() *Primitive {
+	return &Primitive{Mode: Triangles, Indices: -1, Material: -1}
+}
+
 // UnmarshalJSON unmarshal the primitive with the correct default values.
 func (p *Primitive) UnmarshalJSON(data []byte) error {
 	type alias Primitive
-	tmp := &alias{
-		Mode:     Triangles,
-		Indices:  -1,
-		Material: -1,
-	}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewPrimitive())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*p = Primitive(*tmp)
+		*p = Primitive(tmp)
 	}
 	return err
 }
@@ -534,13 +545,18 @@ type Material struct {
 	DoubleSided          bool                   `json:"doubleSided,omitempty"`
 }
 
+// NewMaterial create a default Material.
+func NewMaterial() *Material {
+	return &Material{AlphaCutoff: 0.5, AlphaMode: Opaque}
+}
+
 // UnmarshalJSON unmarshal the material with the correct default values.
 func (m *Material) UnmarshalJSON(data []byte) error {
 	type alias Material
-	tmp := &alias{AlphaCutoff: 0.5, AlphaMode: Opaque}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewMaterial())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*m = Material(*tmp)
+		*m = Material(tmp)
 	}
 	return err
 }
@@ -573,13 +589,18 @@ type NormalTexture struct {
 	Scale      float32                `json:"scale"`
 }
 
+// NewNormalTexture returns a default NormalTexture.
+func NewNormalTexture(index int32) *NormalTexture {
+	return &NormalTexture{Index: index, Scale: 1}
+}
+
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 	type alias NormalTexture
-	tmp := &alias{Index: -1, Scale: 1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewNormalTexture(-1))
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*n = NormalTexture(*tmp)
+		*n = NormalTexture(tmp)
 	}
 	return err
 }
@@ -600,6 +621,11 @@ func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 	return out, err
 }
 
+// NewOcclusionTexture returns a default OcclusionTexture.
+func NewOcclusionTexture(index int32) *OcclusionTexture {
+	return &OcclusionTexture{Index: index, Strength: 1}
+}
+
 // An OcclusionTexture references to an occlusion texture
 type OcclusionTexture struct {
 	Extensions interface{}            `json:"extensions,omitempty"`
@@ -612,10 +638,10 @@ type OcclusionTexture struct {
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 	type alias OcclusionTexture
-	tmp := &alias{Index: -1, Strength: 1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewOcclusionTexture(-1))
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*o = OcclusionTexture(*tmp)
+		*o = OcclusionTexture(tmp)
 	}
 	return err
 }
@@ -647,17 +673,18 @@ type PBRMetallicRoughness struct {
 	MetallicRoughnessTexture *TextureInfo           `json:"metallicRoughnessTexture,omitempty"`
 }
 
+// NewPBRMetallicRoughness returns a default PBRMetallicRoughness.
+func NewPBRMetallicRoughness() *PBRMetallicRoughness {
+	return &PBRMetallicRoughness{BaseColorFactor: [4]float32{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1}
+}
+
 // UnmarshalJSON unmarshal the pbr with the correct default values.
 func (p *PBRMetallicRoughness) UnmarshalJSON(data []byte) error {
 	type alias PBRMetallicRoughness
-	tmp := &alias{
-		BaseColorFactor: [4]float32{1, 1, 1, 1},
-		MetallicFactor:  1,
-		RoughnessFactor: 1,
-	}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewPBRMetallicRoughness())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*p = PBRMetallicRoughness(*tmp)
+		*p = PBRMetallicRoughness(tmp)
 	}
 	return err
 }
@@ -689,13 +716,18 @@ type TextureInfo struct {
 	TexCoord   uint32                 `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
 }
 
+// NewTextureInfo returns a default TextureInfo.
+func NewTextureInfo(index int32) *TextureInfo {
+	return &TextureInfo{Index: index}
+}
+
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (t *TextureInfo) UnmarshalJSON(data []byte) error {
 	type alias TextureInfo
-	tmp := &alias{Index: -1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewTextureInfo(-1))
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*t = TextureInfo(*tmp)
+		*t = TextureInfo(tmp)
 	}
 	return err
 }
@@ -724,13 +756,18 @@ type Texture struct {
 	Source     int32                  `json:"source" validate:"gte=-1"`
 }
 
+// NewTexture returns a default Texture.
+func NewTexture() *Texture {
+	return &Texture{Sampler: -1, Source: -1}
+}
+
 // UnmarshalJSON unmarshal the texture with the correct default values.
 func (t *Texture) UnmarshalJSON(data []byte) error {
 	type alias Texture
-	tmp := &alias{Sampler: -1, Source: -1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewTexture())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*t = Texture(*tmp)
+		*t = Texture(tmp)
 	}
 	return err
 }
@@ -762,13 +799,18 @@ type Sampler struct {
 	WrapT      WrappingMode           `json:"wrapT,omitempty" validate:"omitempty,oneof=33071 33648 10497"`
 }
 
+// NewSampler returns a default Sampler.
+func NewSampler() *Sampler {
+	return &Sampler{WrapS: Repeat, WrapT: Repeat}
+}
+
 // UnmarshalJSON unmarshal the sampler with the correct default values.
 func (s *Sampler) UnmarshalJSON(data []byte) error {
 	type alias Sampler
-	tmp := &alias{WrapS: Repeat, WrapT: Repeat}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewSampler())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*s = Sampler(*tmp)
+		*s = Sampler(tmp)
 	}
 	return err
 }
@@ -829,17 +871,18 @@ type AnimationSampler struct {
 	Output        int32                  `json:"output" validate:"gte=-1"` // The index of an accessor containing keyframe output values.
 }
 
+// NewAnimationSampler returns a default AnimationSampler.
+func NewAnimationSampler() *AnimationSampler {
+	return &AnimationSampler{Input: -1, Interpolation: Linear, Output: -1}
+}
+
 // UnmarshalJSON unmarshal the animation sampler with the correct default values.
 func (as *AnimationSampler) UnmarshalJSON(data []byte) error {
 	type alias AnimationSampler
-	tmp := &alias{
-		Input:         -1,
-		Interpolation: Linear,
-		Output:        -1,
-	}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewAnimationSampler())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*as = AnimationSampler(*tmp)
+		*as = AnimationSampler(tmp)
 	}
 	return err
 }
@@ -852,13 +895,18 @@ type Channel struct {
 	Target     ChannelTarget          `json:"target"`
 }
 
+// NewChannel returns a default Channel.
+func NewChannel(sampler int32) *Channel {
+	return &Channel{Sampler: sampler}
+}
+
 // UnmarshalJSON unmarshal the channel with the correct default values.
 func (ch *Channel) UnmarshalJSON(data []byte) error {
 	type alias Channel
-	tmp := &alias{Sampler: -1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewChannel(-1))
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*ch = Channel(*tmp)
+		*ch = Channel(tmp)
 	}
 	return err
 }
@@ -878,6 +926,17 @@ func (ch *Channel) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct{ *alias }{alias: (*alias)(ch)})
 }
 
+// TRSProperty defines a local space transformation.
+// TRSproperties are converted to matrices and postmultiplied in the T * R * S order to compose the transformation matrix.
+type TRSProperty string
+
+const (
+	Translation TRSProperty = "translation"
+	Rotation                = "rotation"
+	Scale                   = "scale"
+	Weights                 = "weights"
+)
+
 // ChannelTarget describes the index of the node and TRS property that an animation channel targets.
 // The Path represents the name of the node's TRS property to modify, or the "weights" of the Morph Targets it instantiates.
 // For the "translation" property, the values that are provided by the sampler are the translation along the x, y, and z axes.
@@ -887,16 +946,21 @@ type ChannelTarget struct {
 	Extensions interface{}            `json:"extensions,omitempty"`
 	Extras     map[string]interface{} `json:"extras,omitempty"`
 	Node       int32                  `json:"node" validate:"gte=-1"`
-	Path       string                 `json:"path" validate:"oneof=translation rotation scale weights"`
+	Path       TRSProperty            `json:"path" validate:"oneof=translation rotation scale weights"`
+}
+
+// NewChannelTarget returns a default ChannelTarget.
+func NewChannelTarget(path TRSProperty) *ChannelTarget {
+	return &ChannelTarget{Node: -1, Path: path}
 }
 
 // UnmarshalJSON unmarshal the channel target with the correct default values.
 func (ch *ChannelTarget) UnmarshalJSON(data []byte) error {
 	type alias ChannelTarget
-	tmp := &alias{Node: -1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewChannelTarget(""))
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*ch = ChannelTarget(*tmp)
+		*ch = ChannelTarget(tmp)
 	}
 	return err
 }
