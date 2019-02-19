@@ -108,9 +108,7 @@ func (d *Decoder) readGLBHeader() (*GLBHeader, error) {
 		return nil, nil
 	}
 	r := bytes.NewReader(chunk)
-	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
-		return nil, nil
-	}
+	binary.Read(r, binary.LittleEndian, &header)
 	if header.Magic != glbHeaderMagic {
 		return nil, nil
 	}
