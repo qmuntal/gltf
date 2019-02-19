@@ -73,11 +73,14 @@ func (d *Decoder) Decode(doc *Document) error {
 		return errors.New("gltf: Quota exceeded, number of buffer > MaxBufferCount")
 	}
 	if isBinary {
-		return d.decodeBinaryBuffer(&doc.Buffers[0])
-	}
-	for i := range doc.Buffers {
-		if err := d.decodeBuffer(&doc.Buffers[i]); err != nil {
-			return err
+		if len(doc.Buffers) > 0 {
+			return d.decodeBinaryBuffer(&doc.Buffers[0])
+		}
+	} else {
+		for i := range doc.Buffers {
+			if err := d.decodeBuffer(&doc.Buffers[i]); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

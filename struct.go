@@ -135,16 +135,21 @@ type Accessor struct {
 	Type          AccessorType           `json:"type" validate:"oneof=SCALAR VEC2 VEC3 VEC4 MAT2 MAT3 MAT4"`
 	Max           []float32              `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
 	Min           []float32              `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
-	Sparce        *Sparse                `json:"sparce,omitempty"`                          // Sparse storage of attributes that deviate from their initialization value.
+	Sparse        *Sparse                `json:"sparse,omitempty"`                          // Sparse storage of attributes that deviate from their initialization value.
+}
+
+// NewAccessor returns a default accessor.
+func NewAccessor() *Accessor {
+	return &Accessor{BufferView: -1}
 }
 
 // UnmarshalJSON unmarshal the accessor with the correct default values.
 func (a *Accessor) UnmarshalJSON(data []byte) error {
 	type alias Accessor
-	tmp := &alias{BufferView: -1}
-	err := json.Unmarshal(data, tmp)
+	tmp := alias(*NewAccessor())
+	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*a = Accessor(*tmp)
+		*a = Accessor(tmp)
 	}
 	return err
 }

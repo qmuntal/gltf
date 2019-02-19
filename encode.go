@@ -22,13 +22,7 @@ func Save(doc *Document, name string, asBinary bool) error {
 	cb := func(uri string, size int) (io.WriteCloser, error) {
 		return os.Create(filepath.Join(filepath.Dir(name), uri))
 	}
-
-	if asBinary {
-		err = NewEncoderBinary(f, cb).Encode(doc)
-	} else {
-		err = NewEncoder(f, cb).Encode(doc)
-	}
-	if err != nil {
+	if err := NewEncoder(f, cb, asBinary).Encode(doc); err != nil {
 		f.Close()
 		return err
 	}
@@ -43,20 +37,11 @@ type Encoder struct {
 }
 
 // NewEncoder returns a new encoder that writes to w as a normal glTF file.
-func NewEncoder(w io.Writer, cb WriteResourceCallback) *Encoder {
+func NewEncoder(w io.Writer, cb WriteResourceCallback, asBinary bool) *Encoder {
 	return &Encoder{
 		w:        w,
 		cb:       cb,
-		asBinary: false,
-	}
-}
-
-// NewEncoderBinary returns a new encoder that writes to w as a binary glTF file.
-func NewEncoderBinary(w io.Writer, cb WriteResourceCallback) *Encoder {
-	return &Encoder{
-		w:        w,
-		cb:       cb,
-		asBinary: true,
+		asBinary: asBinary,
 	}
 }
 
@@ -109,9 +94,14 @@ func (e *Encoder) encodeBinary(doc *Document) error {
 	}
 	header := GLBHeader{Magic: glbHeaderMagic, Version: 2, Length: 0, JSONHeader: ChunkHeader{Length: 0, Type: glbChunkJSON}}
 	binHeader := ChunkHeader{Length: 0, Type: glbChunkBIN}
-	binBuffer := &doc.Buffers[0]
-	binPaddedLength := ((binBuffer.ByteLength + 3) / 4) * 4
-	binPadding := make([]byte, binPaddedLength-binBuffer.ByteLength)
+	var binBufferLength uint32
+	var binBuffer *Buffer
+	if len(doc.Buffers) > 0 {
+		binBuffer = &doc.Buffers[0]
+		binBufferLength = binBuffer.ByteLength
+	}
+	binPaddedLength := ((binBufferLength + 3) / 4) * 4
+	binPadding := make([]byte, binPaddedLength-binBufferLength)
 	binHeader.Length = uint32(len(binPadding))
 
 	header.JSONHeader.Length = uint32(((len(jsonText) + 3) / 4) * 4)
@@ -130,6 +120,8 @@ func (e *Encoder) encodeBinary(doc *Document) error {
 	binary.Write(e.w, binary.LittleEndian, jsonText)
 	binary.Write(e.w, binary.LittleEndian, headerPadding)
 	binary.Write(e.w, binary.LittleEndian, &binHeader)
-	binary.Write(e.w, binary.LittleEndian, binBuffer.Data)
+	if binBuffer != nil {
+		binary.Write(e.w, binary.LittleEndian, binBuffer.Data)
+	}
 	return binary.Write(e.w, binary.LittleEndian, binPadding)
 }
