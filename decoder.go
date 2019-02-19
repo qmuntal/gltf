@@ -56,9 +56,10 @@ func NewDecoder(r io.Reader, cb ReadResourceCallback) *Decoder {
 		}}
 }
 
-// SetQuotas sets the read memory limits.
-func (d *Decoder) SetQuotas(quotas ReadQuotas) {
+// SetQuotas sets the read memory limits. The return value is the same decoder.
+func (d *Decoder) SetQuotas(quotas ReadQuotas) *Decoder {
 	d.quotas = quotas
+	return d
 }
 
 // Decode reads the next JSON-encoded value from its
@@ -66,7 +67,7 @@ func (d *Decoder) SetQuotas(quotas ReadQuotas) {
 func (d *Decoder) Decode(doc *Document) error {
 	isBinary, err := d.decodeDocument(doc)
 	if err != nil {
-		return nil
+		return err
 	}
 	if len(doc.Buffers) > d.quotas.MaxBufferCount {
 		return errors.New("gltf: Quota exceeded, number of buffer > MaxBufferCount")
@@ -76,7 +77,7 @@ func (d *Decoder) Decode(doc *Document) error {
 	}
 	for i := range doc.Buffers {
 		if err := d.decodeBuffer(&doc.Buffers[i]); err != nil {
-			break
+			return err
 		}
 	}
 	return nil
@@ -139,10 +140,11 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		return errors.New("gltf: buffer without URI")
 	}
 	var err error
+	var r io.ReadCloser
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
-		r, err := d.cb(buffer.URI)
+		r, err = d.cb(buffer.URI)
 		if err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
 			_, err = r.Read(buffer.Data)
