@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"testing"
+	"fmt"
 
 	"github.com/go-test/deep"
 )
@@ -19,7 +20,7 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
 	chunks := make(map[string]*bytes.Buffer)
 	wcb := func(uri string, size int) (io.WriteCloser, error) {
-		chunks[uri] = bytes.NewBuffer(make([]byte, size))
+		chunks[uri] = bytes.NewBuffer(make([]byte, 0, size))
 		return &writeCloser{chunks[uri]}, nil
 	}
 	if err := NewEncoder(buff, wcb, asBinary).Encode(doc); err != nil {
@@ -50,20 +51,44 @@ func TestEncoder_Encode(t *testing.T) {
 				Indices: SparseIndices{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, BufferView: 1, ByteOffset: 2, ComponentType: Float}},
 			},
 		}}}, false},
+		{"withAnimations", args{&Document{Animations: []Animation{
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "an_1", Channels: []Channel{
+				{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Sampler: 1, Target: ChannelTarget{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Node: 10, Path: Rotation}},
+				{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Sampler: 2, Target: ChannelTarget{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Node: 10, Path: Scale}},
+			}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "an_2", Channels: []Channel{
+				{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Sampler: 1, Target: ChannelTarget{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Node: 3, Path: Weights}},
+				{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Sampler: 2, Target: ChannelTarget{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Node: 5, Path: Translation}},
+			}},
+		}}}, false},
+		{"withBuffer", args{&Document{Buffers: []Buffer{
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1,2,3}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "external", ByteLength: 4, URI: "b.bin", Data: []uint8{4,5,6,7}},
+		}}}, false},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d, err := saveMemory(tt.args.doc, true)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Encoder.Encode() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			doc := new(Document)
-			d.Decode(doc)
-			if diff := deep.Equal(doc, tt.args.doc); diff != nil {
-				t.Errorf("Encoder.Encode() = %v", diff)
-				return
-			}
-		})
+		for _, method := range []string{"json", "binary"} {
+			t.Run(fmt.Sprintf("%s_%s", tt.name, method), func(t *testing.T) {
+				var asBinary bool
+				if method == "binary" {
+					asBinary = true
+					for i := 1; i < len(tt.args.doc.Buffers); i++ {
+						tt.args.doc.Buffers[i].EmbeddedResource()
+					}
+				}
+				d, err := saveMemory(tt.args.doc, asBinary)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Encoder.Encode() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				doc := new(Document)
+				d.Decode(doc)
+				if diff := deep.Equal(doc, tt.args.doc); diff != nil {
+					t.Errorf("Encoder.Encode() = %v", diff)
+					return
+				}
+			})
+		}
 	}
 }
