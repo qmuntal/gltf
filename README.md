@@ -6,7 +6,7 @@
 [![codeclimate](https://codeclimate.com/github/qmuntal/gltf/badges/gpa.svg)](https://codeclimate.com/github/qmuntal/gltf)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
-A Go package for simple, efficient, and robust serialization/deserialization of glTF 2.0 
+A Go package for simple, efficient, and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/) 
 
 ## Features
 * Moderate parsing time and memory consumption.
