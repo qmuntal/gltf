@@ -8,32 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	glbHeaderMagic = 0x46546c67
-	glbChunkJSON   = 0x4e4f534a
-	glbChunkBIN    = 0x004e4942
-)
-
-// ChunkHeader defines the properties of a chunk
-type ChunkHeader struct {
-	Length uint32
-	Type   uint32
-}
-
-// GLBHeader defines the properties of a glb file.
-type GLBHeader struct {
-	Magic      uint32
-	Version    uint32
-	Length     uint32
-	JSONHeader ChunkHeader
-}
-
-const (
-	mimetypeApplicationOctet = "data:application/octet-stream;base64"
-	mimetypeImagePNG         = "data:image/png;base64"
-	mimetypeImageJPG         = "data:image/jpeg;base64"
-)
-
 // An Asset is metadata about the glTF asset.
 type Asset struct {
 	Extensions interface{}            `json:"extensions,omitempty"`
@@ -92,33 +66,6 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(&struct{ *alias }{alias: (*alias)(d)})
 }
-
-//The ComponentType is the datatype of components in the attribute. All valid values correspond to WebGL enums.
-// The corresponding typed arrays are Int8Array, Uint8Array, Int16Array, Uint16Array, Uint32Array, and Float32Array, respectively.
-// 5125 (UNSIGNED_INT) is only allowed when the accessor contains indices.
-type ComponentType uint16
-
-const (
-	Byte          ComponentType = 5120
-	UnsignedByte                = 5121
-	Short                       = 5122
-	UnsignedShort               = 5123
-	UnsignedInt                 = 5125
-	Float                       = 5126
-)
-
-// AccessorType specifies if the attribute is a scalar, vector, or matrix.
-type AccessorType string
-
-const (
-	Scalar AccessorType = "SCALAR"
-	Vec2                = "VEC2"
-	Vec3                = "VEC3"
-	Vec4                = "VEC4"
-	Mat2                = "MAT2"
-	Mat3                = "MAT3"
-	Mat4                = "MAT4"
-)
 
 // An Accessor is a typed view into a bufferView.
 // An accessor provides a typed view into a bufferView or a subset of a bufferView
@@ -194,14 +141,6 @@ type SparseIndices struct {
 	ByteOffset    uint32                 `json:"byteOffset,omitempty"`
 	ComponentType ComponentType          `json:"componentType" validate:"oneof=5121 5123 5125"`
 }
-
-// The Target that the GPU buffer should be bound to.
-type Target uint16
-
-const (
-	ArrayBuffer        Target = 34962
-	ElementArrayBuffer        = 34963
-)
 
 // A Buffer points to binary geometry, animation, or skins.
 type Buffer struct {
@@ -390,15 +329,6 @@ func (s *Skin) MarshalJSON() ([]byte, error) {
 	return out, err
 }
 
-// CameraType specifies if the camera uses a perspective or orthographic projection.
-// Based on this, either the camera's perspective or orthographic property will be defined.
-type CameraType string
-
-const (
-	PerspectiveType  CameraType = "perspective"
-	OrthographicType            = "orthographic"
-)
-
 // A Camera projection. A node can reference a camera to apply a transform to place the camera in the scene.
 type Camera struct {
 	Extensions   interface{}            `json:"extensions,omitempty"`
@@ -428,22 +358,6 @@ type Perspective struct {
 	Zfar        float64                `json:"zfar,omitempty"` // The distance to the far clipping plane.
 	Znear       float64                `json:"znear"`          // The distance to the near clipping plane.
 }
-
-// Attribute is a map that each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
-type Attribute = map[string]uint32
-
-// PrimitiveMode defines the type of primitives to render. All valid values correspond to WebGL enums.
-type PrimitiveMode uint8
-
-const (
-	Points         PrimitiveMode = 0
-	Lines                        = 1
-	Line_Loop                    = 2
-	Lin_Strip                    = 3
-	Triangles                    = 4
-	Triangle_Strip               = 5
-	Triangle_Fan                 = 6
-)
 
 // A Mesh is a set of primitives to be rendered. A node can contain one mesh. A node's transform places the mesh in the scene.
 type Mesh struct {
@@ -496,44 +410,6 @@ func (p *Primitive) MarshalJSON() ([]byte, error) {
 	}
 	return out, err
 }
-
-// The AlphaMode enumeration specifying the interpretation of the alpha value of the main factor and texture.
-type AlphaMode string
-
-const (
-	Opaque AlphaMode = "OPAQUE"
-	Mask             = "MASK"
-	Blend            = "BLEND"
-)
-
-// MagFilter is the magnification filter.
-type MagFilter uint16
-
-const (
-	MagNearest MagFilter = 9728
-	MagLinear            = 9729
-)
-
-// MinFilter is the minification filter.
-type MinFilter uint16
-
-const (
-	MinNearest              MinFilter = 9728
-	MinLinear                         = 9729
-	MinNearestMipMapNearest           = 9984
-	MinLinearMipMapNearest            = 9985
-	MinNearestMipMapLinear            = 9986
-	MinLinearMipMapLinear             = 9987
-)
-
-// WrappingMode is the wrapping mode of a texture.
-type WrappingMode uint16
-
-const (
-	ClampToEdge    WrappingMode = 33071
-	MirroredRepeat              = 33648
-	Repeat                      = 10497
-)
 
 // The Material appearance of a primitive.
 type Material struct {
@@ -849,15 +725,6 @@ func (im *Image) MarshalData() ([]uint8, error) {
 	return base64.StdEncoding.DecodeString(im.URI[startPos:])
 }
 
-// Interpolation algorithm.
-type Interpolation string
-
-const (
-	Linear      Interpolation = "LINEAR"
-	Step                      = "STEP"
-	CubicSpline               = "CUBICSPLINE"
-)
-
 // An Animation keyframe.
 type Animation struct {
 	Extensions interface{}            `json:"extensions,omitempty"`
@@ -930,17 +797,6 @@ func (ch *Channel) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(&struct{ *alias }{alias: (*alias)(ch)})
 }
-
-// TRSProperty defines a local space transformation.
-// TRSproperties are converted to matrices and postmultiplied in the T * R * S order to compose the transformation matrix.
-type TRSProperty string
-
-const (
-	Translation TRSProperty = "translation"
-	Rotation                = "rotation"
-	Scale                   = "scale"
-	Weights                 = "weights"
-)
 
 // ChannelTarget describes the index of the node and TRS property that an animation channel targets.
 // The Path represents the name of the node's TRS property to modify, or the "weights" of the Morph Targets it instantiates.

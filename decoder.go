@@ -107,8 +107,8 @@ func (d *Decoder) decodeDocument(doc *Document) (isBinary bool, err error) {
 	return
 }
 
-func (d *Decoder) readGLBHeader() (*GLBHeader, error) {
-	var header GLBHeader
+func (d *Decoder) readGLBHeader() (*glbHeader, error) {
+	var header glbHeader
 	chunk, err := d.r.Peek(int(unsafe.Sizeof(header)))
 	if err != nil {
 		return nil, nil
@@ -128,8 +128,8 @@ func (d *Decoder) readGLBHeader() (*GLBHeader, error) {
 	return &header, nil
 }
 
-func (d *Decoder) chunkHeader() (*ChunkHeader, error) {
-	var header ChunkHeader
+func (d *Decoder) chunkHeader() (*chunkHeader, error) {
+	var header chunkHeader
 	if err := binary.Read(d.r, binary.LittleEndian, &header); err != nil {
 		return nil, err
 	}

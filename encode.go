@@ -94,8 +94,8 @@ func (e *Encoder) encodeBinary(doc *Document) error {
 	if err != nil {
 		return err
 	}
-	header := GLBHeader{Magic: glbHeaderMagic, Version: 2, Length: 0, JSONHeader: ChunkHeader{Length: 0, Type: glbChunkJSON}}
-	binHeader := ChunkHeader{Length: 0, Type: glbChunkBIN}
+	header := glbHeader{Magic: glbHeaderMagic, Version: 2, Length: 0, JSONHeader: chunkHeader{Length: 0, Type: glbChunkJSON}}
+	binHeader := chunkHeader{Length: 0, Type: glbChunkBIN}
 	var binBufferLength uint32
 	var binBuffer *Buffer
 	if len(doc.Buffers) > 0 {
