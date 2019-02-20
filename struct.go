@@ -133,8 +133,8 @@ type Accessor struct {
 	Normalized    bool                   `json:"normalized,omitempty"`      // Specifies whether integer data values should be normalized.
 	Count         uint32                 `json:"count" validate:"required"` // The number of attributes referenced by this accessor.
 	Type          AccessorType           `json:"type" validate:"oneof=SCALAR VEC2 VEC3 VEC4 MAT2 MAT3 MAT4"`
-	Max           []float32              `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
-	Min           []float32              `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
+	Max           []float64              `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
+	Min           []float64              `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
 	Sparse        *Sparse                `json:"sparse,omitempty"`                          // Sparse storage of attributes that deviate from their initialization value.
 }
 
@@ -286,20 +286,20 @@ type Node struct {
 	Camera      int32                  `json:"camera" validate:"gte=-1"`
 	Children    []uint32               `json:"children,omitempty" validate:"omitempty,unique"`
 	Skin        int32                  `json:"skin" validate:"gte=-1"`
-	Matrix      [16]float32            `json:"matrix"` // A 4x4 transformation matrix stored in column-major order.
+	Matrix      [16]float64            `json:"matrix"` // A 4x4 transformation matrix stored in column-major order.
 	Mesh        int32                  `json:"mesh" validate:"gte=-1"`
-	Rotation    [4]float32             `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
-	Scale       [3]float32             `json:"scale"`
-	Translation [3]float32             `json:"translation"`
-	Weights     []float32              `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
+	Rotation    [4]float64             `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+	Scale       [3]float64             `json:"scale"`
+	Translation [3]float64             `json:"translation"`
+	Weights     []float64              `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
 
 // NewNode returns a default Node.
 func NewNode() *Node {
 	return &Node{
-		Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-		Rotation: [4]float32{0, 0, 0, 1},
-		Scale:    [3]float32{1, 1, 1},
+		Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+		Rotation: [4]float64{0, 0, 0, 1},
+		Scale:    [3]float64{1, 1, 1},
 		Camera:   -1,
 		Skin:     -1,
 		Mesh:     -1,
@@ -322,16 +322,16 @@ func (n *Node) MarshalJSON() ([]byte, error) {
 	type alias Node
 	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
 	if err == nil {
-		if n.Matrix == [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1} {
+		if n.Matrix == [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1} {
 			out = removeProperty([]byte(`"matrix":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]`), out)
 		}
-		if n.Rotation == [4]float32{0, 0, 0, 1} {
+		if n.Rotation == [4]float64{0, 0, 0, 1} {
 			out = removeProperty([]byte(`"rotation":[0,0,0,1]`), out)
 		}
-		if n.Scale == [3]float32{1, 1, 1} {
+		if n.Scale == [3]float64{1, 1, 1} {
 			out = removeProperty([]byte(`"scale":[1,1,1]`), out)
 		}
-		if n.Translation == [3]float32{0, 0, 0} {
+		if n.Translation == [3]float64{0, 0, 0} {
 			out = removeProperty([]byte(`"translation":[0,0,0]`), out)
 		}
 		if n.Camera == -1 {
@@ -413,20 +413,20 @@ type Camera struct {
 type Orthographic struct {
 	Extensions interface{}            `json:"extensions,omitempty"`
 	Extras     map[string]interface{} `json:"extras,omitempty"`
-	Xmag       float32                `json:"xmag"`                               // The horizontal magnification of the view.
-	Ymag       float32                `json:"ymag"`                               // The vertical magnification of the view.
-	Zfar       float32                `json:"zfar" validate:"gt=0,gtfield=Znear"` // The distance to the far clipping plane.
-	Znear      float32                `json:"znear" validate:"gte=0"`             // The distance to the near clipping plane.
+	Xmag       float64                `json:"xmag"`                               // The horizontal magnification of the view.
+	Ymag       float64                `json:"ymag"`                               // The vertical magnification of the view.
+	Zfar       float64                `json:"zfar" validate:"gt=0,gtfield=Znear"` // The distance to the far clipping plane.
+	Znear      float64                `json:"znear" validate:"gte=0"`             // The distance to the near clipping plane.
 }
 
 // Perspective camera containing properties to create a perspective projection matrix.
 type Perspective struct {
 	Extensions  interface{}            `json:"extensions,omitempty"`
 	Extras      map[string]interface{} `json:"extras,omitempty"`
-	AspectRatio float32                `json:"aspectRatio,omitempty"`
-	Yfov        float32                `json:"yfov"`           // The vertical field of view in radians.
-	Zfar        float32                `json:"zfar,omitempty"` // The distance to the far clipping plane.
-	Znear       float32                `json:"znear"`          // The distance to the near clipping plane.
+	AspectRatio float64                `json:"aspectRatio,omitempty"`
+	Yfov        float64                `json:"yfov"`           // The vertical field of view in radians.
+	Zfar        float64                `json:"zfar,omitempty"` // The distance to the far clipping plane.
+	Znear       float64                `json:"znear"`          // The distance to the near clipping plane.
 }
 
 // Attribute is a map that each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
@@ -451,7 +451,7 @@ type Mesh struct {
 	Extras     map[string]interface{} `json:"extras,omitempty"`
 	Name       string                 `json:"name,omitempty"`
 	Primitives []Primitive            `json:"primitives" validate:"required,gt=0,dive"`
-	Weights    []float32              `json:"weights,omitempty"`
+	Weights    []float64              `json:"weights,omitempty"`
 }
 
 // Primitive defines the geometry to be rendered with the given material.
@@ -544,9 +544,9 @@ type Material struct {
 	NormalTexture        *NormalTexture         `json:"normalTexture,omitempty"`
 	OcclusionTexture     *OcclusionTexture      `json:"occlusionTexture,omitempty"`
 	EmissiveTexture      *TextureInfo           `json:"emissiveTexture,omitempty"`
-	EmissiveFactor       [3]float32             `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
+	EmissiveFactor       [3]float64             `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
 	AlphaMode            AlphaMode              `json:"alphaMode,omitempty" validate:"oneof=OPAQUE MASK BLEND"`
-	AlphaCutoff          float32                `json:"alphaCutoff" validate:"gte=0"`
+	AlphaCutoff          float64                `json:"alphaCutoff" validate:"gte=0"`
 	DoubleSided          bool                   `json:"doubleSided,omitempty"`
 }
 
@@ -577,7 +577,7 @@ func (m *Material) MarshalJSON() ([]byte, error) {
 		if m.AlphaMode == Opaque {
 			out = removeProperty([]byte(`"alphaMode":"OPAQUE"`), out)
 		}
-		if m.EmissiveFactor == [3]float32{0, 0, 0} {
+		if m.EmissiveFactor == [3]float64{0, 0, 0} {
 			out = removeProperty([]byte(`"emissiveFactor":[0,0,0]`), out)
 		}
 		out = sanitizeJSON(out)
@@ -591,7 +591,7 @@ type NormalTexture struct {
 	Extras     map[string]interface{} `json:"extras,omitempty"`
 	Index      int32                  `json:"index" validate:"gte=-1"`
 	TexCoord   uint32                 `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
-	Scale      float32                `json:"scale"`
+	Scale      float64                `json:"scale"`
 }
 
 // NewNormalTexture returns a default NormalTexture.
@@ -637,7 +637,7 @@ type OcclusionTexture struct {
 	Extras     map[string]interface{} `json:"extras,omitempty"`
 	Index      int32                  `json:"index" validate:"gte=-1"`
 	TexCoord   uint32                 `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
-	Strength   float32                `json:"strength" validate:"gte=0,lte=1"`
+	Strength   float64                `json:"strength" validate:"gte=0,lte=1"`
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
@@ -671,16 +671,16 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 type PBRMetallicRoughness struct {
 	Extensions               interface{}            `json:"extensions,omitempty"`
 	Extras                   map[string]interface{} `json:"extras,omitempty"`
-	BaseColorFactor          [4]float32             `json:"baseColorFactor" validate:"dive,gte=0,lte=1"`
+	BaseColorFactor          [4]float64             `json:"baseColorFactor" validate:"dive,gte=0,lte=1"`
 	BaseColorTexture         *TextureInfo           `json:"baseColorTexture,omitempty"`
-	MetallicFactor           float32                `json:"metallicFactor" validate:"gte=0,lte=1"`
-	RoughnessFactor          float32                `json:"roughnessFactor" validate:"gte=0,lte=1"`
+	MetallicFactor           float64                `json:"metallicFactor" validate:"gte=0,lte=1"`
+	RoughnessFactor          float64                `json:"roughnessFactor" validate:"gte=0,lte=1"`
 	MetallicRoughnessTexture *TextureInfo           `json:"metallicRoughnessTexture,omitempty"`
 }
 
 // NewPBRMetallicRoughness returns a default PBRMetallicRoughness.
 func NewPBRMetallicRoughness() *PBRMetallicRoughness {
-	return &PBRMetallicRoughness{BaseColorFactor: [4]float32{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1}
+	return &PBRMetallicRoughness{BaseColorFactor: [4]float64{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1}
 }
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.
@@ -705,7 +705,7 @@ func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 		if p.RoughnessFactor == -1 {
 			out = removeProperty([]byte(`"roughnessFactor":-1`), out)
 		}
-		if p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
+		if p.BaseColorFactor == [4]float64{1, 1, 1, 1} {
 			out = removeProperty([]byte(`"baseColorFactor":[1,1,1,1]`), out)
 		}
 		out = sanitizeJSON(out)

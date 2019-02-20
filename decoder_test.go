@@ -16,6 +16,7 @@ func readFile(path string) []uint8 {
 }
 
 func TestOpen(t *testing.T) {
+	deep.FloatPrecision = 5
 	type args struct {
 		name     string
 		embedded string
@@ -28,11 +29,11 @@ func TestOpen(t *testing.T) {
 		{args{"openError", ""}, nil, true},
 		{args{"testdata/Cube/glTF/Cube.gltf", ""}, &Document{
 			Accessors: []Accessor{
-				{BufferView: 0, ByteOffset: 0, ComponentType: UnsignedShort, Count: 36, Max: []float32{35}, Min: []float32{0}, Type: Scalar},
-				{BufferView: 1, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float32{1, 1, 1}, Min: []float32{-1, -1, -1}, Type: Vec3},
-				{BufferView: 2, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float32{1, 1, 1}, Min: []float32{-1, -1, -1}, Type: Vec3},
-				{BufferView: 3, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float32{1, 0, 0, 1}, Min: []float32{0, 0, -1, -1}, Type: Vec4},
-				{BufferView: 4, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float32{1, 1}, Min: []float32{-1, -1}, Type: Vec2}},
+				{BufferView: 0, ByteOffset: 0, ComponentType: UnsignedShort, Count: 36, Max: []float64{35}, Min: []float64{0}, Type: Scalar},
+				{BufferView: 1, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: Vec3},
+				{BufferView: 2, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: Vec3},
+				{BufferView: 3, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 0, 0, 1}, Min: []float64{0, 0, -1, -1}, Type: Vec4},
+				{BufferView: 4, ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 1}, Min: []float64{-1, -1}, Type: Vec2}},
 			Asset: Asset{Generator: "VKTS glTF 2.0 exporter", Version: "2.0"},
 			BufferViews: []BufferView{
 				{Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: ElementArrayBuffer},
@@ -43,9 +44,9 @@ func TestOpen(t *testing.T) {
 			},
 			Buffers:   []Buffer{{ByteLength: 1800, URI: "Cube.bin", Data: readFile("testdata/Cube/glTF/Cube.bin")}},
 			Images:    []Image{{URI: "Cube_BaseColor.png"}, {URI: "Cube_MetallicRoughness.png"}},
-			Materials: []Material{{Name: "Cube", AlphaMode: Opaque, AlphaCutoff: 0.5, PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: [4]float32{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1, BaseColorTexture: &TextureInfo{Index: 0}, MetallicRoughnessTexture: &TextureInfo{Index: 1}}}},
+			Materials: []Material{{Name: "Cube", AlphaMode: Opaque, AlphaCutoff: 0.5, PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: [4]float64{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1, BaseColorTexture: &TextureInfo{Index: 0}, MetallicRoughnessTexture: &TextureInfo{Index: 1}}}},
 			Meshes:    []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: 0, Material: 0, Mode: Triangles, Attributes: map[string]uint32{"NORMAL": 2, "POSITION": 1, "TANGENT": 3, "TEXCOORD_0": 4}}}}},
-			Nodes:     []Node{{Mesh: 0, Name: "Cube", Camera: -1, Skin: -1, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}}},
+			Nodes:     []Node{{Mesh: 0, Name: "Cube", Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}}},
 			Samplers:  []Sampler{{WrapS: Repeat, WrapT: Repeat}},
 			Scene:     0,
 			Scenes:    []Scene{{Nodes: []uint32{0}}},
@@ -55,8 +56,8 @@ func TestOpen(t *testing.T) {
 		}, false},
 		{args{"testdata/Cameras/glTF/Cameras.gltf", "testdata/Cameras/glTF-Embedded/Cameras.gltf"}, &Document{
 			Accessors: []Accessor{
-				{BufferView: 0, ByteOffset: 0, ComponentType: UnsignedShort, Count: 6, Max: []float32{3}, Min: []float32{0}, Type: Scalar},
-				{BufferView: 1, ByteOffset: 0, ComponentType: Float, Count: 4, Max: []float32{1, 1, 0}, Min: []float32{0, 0, 0}, Type: Vec3},
+				{BufferView: 0, ByteOffset: 0, ComponentType: UnsignedShort, Count: 6, Max: []float64{3}, Min: []float64{0}, Type: Scalar},
+				{BufferView: 1, ByteOffset: 0, ComponentType: Float, Count: 4, Max: []float64{1, 1, 0}, Min: []float64{0, 0, 0}, Type: Vec3},
 			},
 			Asset: Asset{Version: "2.0"},
 			BufferViews: []BufferView{
@@ -70,9 +71,9 @@ func TestOpen(t *testing.T) {
 			},
 			Meshes: []Mesh{{Primitives: []Primitive{{Indices: 0, Material: -1, Mode: Triangles, Attributes: map[string]uint32{"POSITION": 1}}}}},
 			Nodes: []Node{
-				{Mesh: 0, Camera: -1, Skin: -1, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{-0.3, 0, 0, 0.9}, Scale: [3]float32{1, 1, 1}},
-				{Mesh: -1, Camera: 0, Skin: -1, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}, Translation: [3]float32{0.5, 0.5, 3.0}},
-				{Mesh: -1, Camera: 1, Skin: -1, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}, Translation: [3]float32{0.5, 0.5, 3.0}},
+				{Mesh: 0, Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{-0.3, 0, 0, 0.9}, Scale: [3]float64{1, 1, 1}},
+				{Mesh: -1, Camera: 0, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}, Translation: [3]float64{0.5, 0.5, 3.0}},
+				{Mesh: -1, Camera: 1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}, Translation: [3]float64{0.5, 0.5, 3.0}},
 			},
 			Scene:  -1,
 			Scenes: []Scene{{Nodes: []uint32{0, 1, 2}}},
@@ -80,7 +81,7 @@ func TestOpen(t *testing.T) {
 		{args{"testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb", ""}, &Document{
 			Accessors: []Accessor{
 				{BufferView: 0, ByteOffset: 0, ComponentType: UnsignedShort, Count: 36, Type: Scalar},
-				{BufferView: 1, ByteOffset: 0, ComponentType: Float, Count: 24, Max: []float32{0.5, 0.5, 0.5}, Min: []float32{-0.5, -0.5, -0.5}, Type: Vec3},
+				{BufferView: 1, ByteOffset: 0, ComponentType: Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: Vec3},
 				{BufferView: 2, ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec3},
 				{BufferView: 3, ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec4},
 				{BufferView: 4, ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec2},
@@ -94,13 +95,13 @@ func TestOpen(t *testing.T) {
 				{Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: ArrayBuffer},
 			},
 			Buffers:   []Buffer{{ByteLength: 1224, Data: readFile("testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb")[1628+20+8:]}},
-			Materials: []Material{{Name: "Default", AlphaMode: Opaque, AlphaCutoff: 0.5, PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: [4]float32{0.8, 0.8, 0.8, 1}, MetallicFactor: 0.1, RoughnessFactor: 0.99}}},
+			Materials: []Material{{Name: "Default", AlphaMode: Opaque, AlphaCutoff: 0.5, PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: [4]float64{0.8, 0.8, 0.8, 1}, MetallicFactor: 0.1, RoughnessFactor: 0.99}}},
 			Meshes:    []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: 0, Material: 0, Mode: Triangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
 			Nodes: []Node{
-				{Name: "RootNode", Mesh: -1, Camera: -1, Skin: -1, Children: []uint32{1, 2, 3}, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}},
-				{Name: "Mesh", Mesh: -1, Camera: -1, Skin: -1, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}},
-				{Name: "Cube", Mesh: 0, Camera: -1, Skin: -1, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}},
-				{Name: "Texture Group", Mesh: -1, Camera: -1, Skin: -1, Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}},
+				{Name: "RootNode", Mesh: -1, Camera: -1, Skin: -1, Children: []uint32{1, 2, 3}, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
+				{Name: "Mesh", Mesh: -1, Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
+				{Name: "Cube", Mesh: 0, Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
+				{Name: "Texture Group", Mesh: -1, Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 			},
 			Samplers: []Sampler{{WrapS: Repeat, WrapT: Repeat}},
 			Scene:    0,

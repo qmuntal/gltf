@@ -100,25 +100,25 @@ func TestNode_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", new(Node), args{[]byte("{}")}, &Node{
-			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-			Rotation: [4]float32{0, 0, 0, 1},
-			Scale:    [3]float32{1, 1, 1},
+			Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float64{0, 0, 0, 1},
+			Scale:    [3]float64{1, 1, 1},
 			Camera:   -1,
 			Mesh:     -1,
 			Skin:     -1,
 		}, false},
 		{"nodefault", new(Node), args{[]byte(`{"matrix":[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],"rotation":[0,0,0,1],"scale":[1,1,1],"camera":0,"mesh":0,"skin":0}`)}, &Node{
-			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-			Rotation: [4]float32{0, 0, 0, 1},
-			Scale:    [3]float32{1, 1, 1},
+			Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float64{0, 0, 0, 1},
+			Scale:    [3]float64{1, 1, 1},
 			Camera:   0,
 			Mesh:     0,
 			Skin:     0,
 		}, false},
 		{"nodefault", new(Node), args{[]byte(`{"matrix":[1,2,2,0,0,1,3,4,0,0,1,0,5,0,0,5],"rotation":[1,2,3,4],"scale":[2,3,4],"camera":1,"mesh":2,"skin":3}`)}, &Node{
-			Matrix:   [16]float32{1, 2, 2, 0, 0, 1, 3, 4, 0, 0, 1, 0, 5, 0, 0, 5},
-			Rotation: [4]float32{1, 2, 3, 4},
-			Scale:    [3]float32{2, 3, 4},
+			Matrix:   [16]float64{1, 2, 2, 0, 0, 1, 3, 4, 0, 0, 1, 0, 5, 0, 0, 5},
+			Rotation: [4]float64{1, 2, 3, 4},
+			Scale:    [3]float64{2, 3, 4},
 			Camera:   1,
 			Mesh:     2,
 			Skin:     3,
@@ -259,9 +259,9 @@ func TestPBRMetallicRoughness_UnmarshalJSON(t *testing.T) {
 		want    *PBRMetallicRoughness
 		wantErr bool
 	}{
-		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: [4]float32{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1}, false},
+		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: [4]float64{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1}, false},
 		{"nodefault", new(PBRMetallicRoughness), args{[]byte(`{"baseColorFactor": [0.1,0.2,0.6,0.7],"metallicFactor":0.5,"roughnessFactor":0.1}`)}, &PBRMetallicRoughness{
-			BaseColorFactor: [4]float32{0.1, 0.2, 0.6, 0.7}, MetallicFactor: 0.5, RoughnessFactor: 0.1,
+			BaseColorFactor: [4]float64{0.1, 0.2, 0.6, 0.7}, MetallicFactor: 0.5, RoughnessFactor: 0.1,
 		}, false},
 	}
 	for _, tt := range tests {
@@ -639,26 +639,26 @@ func TestNode_MarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", &Node{
-			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-			Rotation: [4]float32{0, 0, 0, 1},
-			Scale:    [3]float32{1, 1, 1},
+			Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float64{0, 0, 0, 1},
+			Scale:    [3]float64{1, 1, 1},
 			Camera:   -1,
 			Skin:     -1,
 			Mesh:     -1,
 		}, []byte("{}"), false},
 		{"empty", &Node{
-			Matrix:   [16]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-			Rotation: [4]float32{0, 0, 0, 0},
-			Scale:    [3]float32{0, 0, 0},
+			Matrix:   [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation: [4]float64{0, 0, 0, 0},
+			Scale:    [3]float64{0, 0, 0},
 			Camera:   0,
 			Skin:     0,
 			Mesh:     0,
 		}, []byte(`{"camera":0,"skin":0,"matrix":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"mesh":0,"rotation":[0,0,0,0],"scale":[0,0,0]}`), false},
 		{"nodefault", &Node{
-			Matrix:      [16]float32{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-			Rotation:    [4]float32{1, 0, 0, 0},
-			Scale:       [3]float32{1, 0, 0},
-			Translation: [3]float32{1, 0, 0},
+			Matrix:      [16]float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation:    [4]float64{1, 0, 0, 0},
+			Scale:       [3]float64{1, 0, 0},
+			Translation: [3]float64{1, 0, 0},
 			Camera:      1,
 			Skin:        1,
 			Mesh:        1,
@@ -810,9 +810,9 @@ func TestPBRMetallicRoughness_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &PBRMetallicRoughness{MetallicFactor: -1, RoughnessFactor: -1, BaseColorFactor: [4]float32{1, 1, 1, 1}}, []byte(`{}`), false},
-		{"empty", &PBRMetallicRoughness{MetallicFactor: 0, RoughnessFactor: 0, BaseColorFactor: [4]float32{0, 0, 0, 0}}, []byte(`{"baseColorFactor":[0,0,0,0],"metallicFactor":0,"roughnessFactor":0}`), false},
-		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: [4]float32{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":1,"roughnessFactor":1}`), false},
+		{"default", &PBRMetallicRoughness{MetallicFactor: -1, RoughnessFactor: -1, BaseColorFactor: [4]float64{1, 1, 1, 1}}, []byte(`{}`), false},
+		{"empty", &PBRMetallicRoughness{MetallicFactor: 0, RoughnessFactor: 0, BaseColorFactor: [4]float64{0, 0, 0, 0}}, []byte(`{"baseColorFactor":[0,0,0,0],"metallicFactor":0,"roughnessFactor":0}`), false},
+		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: [4]float64{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":1,"roughnessFactor":1}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -49,7 +49,7 @@ func TestEncoder_Encode(t *testing.T) {
 		{"withExtensions", args{&Document{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, ExtensionsUsed: []string{"c"}, ExtensionsRequired: []string{"d", "e"}}}, false},
 		{"withAsset", args{&Document{Asset: Asset{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Copyright: "@2019", Generator: "qmuntal/gltf", Version: "2.0", MinVersion: "1.0"}}}, false},
 		{"withAccessors", args{&Document{Accessors: []Accessor{
-			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "acc_1", BufferView: 0, ByteOffset: 50, ComponentType: Byte, Normalized: true, Count: 5, Type: Vec3, Max: []float32{1, 2}, Min: []float32{2.4}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "acc_1", BufferView: 0, ByteOffset: 50, ComponentType: Byte, Normalized: true, Count: 5, Type: Vec3, Max: []float64{1, 2}, Min: []float64{2.4}},
 			{BufferView: 0, Normalized: false, Count: 50, Type: Vec4, Sparse: &Sparse{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Count: 2,
 				Values:  SparseValues{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, BufferView: 1, ByteOffset: 2},
 				Indices: SparseIndices{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, BufferView: 1, ByteOffset: 2, ComponentType: Float}},
@@ -84,10 +84,10 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "external", URI: "https://web.com/a", MimeType: "data:image/png"},
 		}}}, false},
 		{"withMaterials", args{&Document{Materials: []Material{
-			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "base", EmissiveFactor: [3]float32{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: 0.5, AlphaMode: Opaque},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "base", EmissiveFactor: [3]float64{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: 0.5, AlphaMode: Opaque},
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "pbr", AlphaCutoff: 0.5, AlphaMode: Opaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
-					Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, MetallicFactor: 1, RoughnessFactor: 2, BaseColorFactor: [4]float32{1, 2, 3, 4},
+					Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, MetallicFactor: 1, RoughnessFactor: 2, BaseColorFactor: [4]float64{1, 2, 3, 4},
 					BaseColorTexture:         &TextureInfo{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Index: 1, TexCoord: 3},
 					MetallicRoughnessTexture: &TextureInfo{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Index: 6, TexCoord: 5},
 				},
@@ -101,7 +101,7 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "emmisice", AlphaCutoff: 0.5, AlphaMode: Mask, EmissiveTexture: &TextureInfo{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Index: 4, TexCoord: 50}},
 		}}}, false},
 		{"withMeshes", args{&Document{Meshes: []Mesh{
-			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "mesh_1", Weights: []float32{1.2, 2}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "mesh_1", Weights: []float64{1.2, 2}},
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "mesh_2", Primitives: []Primitive{
 				{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Attributes: Attribute{"POSITION": 1}, Indices: 2, Material: 1, Mode: Lines},
 				{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: 2, Material: 1, Mode: Lines},
@@ -109,9 +109,9 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []Node{
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "n-1", Camera: 1, Children: []uint32{1, 2}, Skin: 3,
-				Matrix: [16]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: 15, Rotation: [4]float32{1.5, 1.3, 12, 0}, Scale: [3]float32{1, 3, 4}, Translation: [3]float32{0, 7.8, 9}, Weights: []float32{1, 3}},
+				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: 15, Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "n-2", Camera: 1, Children: []uint32{1, 2}, Skin: 3,
-				Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: 15, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}},
+				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: 15, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 		}}}, false},
 		{"withSampler", args{&Document{Samplers: []Sampler{
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: ClampToEdge, WrapT: MirroredRepeat},
@@ -119,12 +119,12 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withScene", args{&Document{Scene: 1}}, false},
 		{"withScenes", args{&Document{Scenes: []Scene{
-			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "s_1", Nodes: []uint32{1,2}},
-			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "s_2", Nodes: []uint32{2,3}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "s_1", Nodes: []uint32{1, 2}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "s_2", Nodes: []uint32{2, 3}},
 		}}}, false},
 		{"withSkins", args{&Document{Skins: []Skin{
-			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "skin_1", InverseBindMatrices: 2, Skeleton: 4, Joints: []uint32{5,6}},
-			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "skin_2", InverseBindMatrices: 3, Skeleton: 4, Joints: []uint32{7,8}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "skin_1", InverseBindMatrices: 2, Skeleton: 4, Joints: []uint32{5, 6}},
+			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "skin_2", InverseBindMatrices: 3, Skeleton: 4, Joints: []uint32{7, 8}},
 		}}}, false},
 		{"withTextures", args{&Document{Textures: []Texture{
 			{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "t_1", Sampler: 2, Source: 3},
