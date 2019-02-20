@@ -60,8 +60,7 @@ func (e *Encoder) Encode(doc *Document) error {
 	}
 
 	for i := externalBufferIndex; i < len(doc.Buffers); i++ {
-		buffer := &doc.Buffers[i]
-		if err = e.encodeBuffer(buffer); err != nil {
+		if err = e.encodeBuffer(&doc.Buffers[i]); err != nil {
 			return err
 		}
 	}
@@ -102,7 +101,7 @@ func (e *Encoder) encodeBinary(doc *Document) error {
 	}
 	binPaddedLength := ((binBufferLength + 3) / 4) * 4
 	binPadding := make([]byte, binPaddedLength-binBufferLength)
-	binHeader.Length = uint32(len(binPadding))
+	binHeader.Length = binPaddedLength
 
 	header.JSONHeader.Length = uint32(((len(jsonText) + 3) / 4) * 4)
 	header.Length = uint32(unsafe.Sizeof(header)+unsafe.Sizeof(binHeader)) + header.JSONHeader.Length + binHeader.Length
