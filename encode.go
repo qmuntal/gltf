@@ -47,6 +47,9 @@ func NewEncoder(w io.Writer, cb WriteResourceCallback, asBinary bool) *Encoder {
 
 // Encode writes the encoding of doc to the stream.
 func (e *Encoder) Encode(doc *Document) error {
+	if doc.Asset.Version == "" {
+		doc.Asset.Version = "2.0"
+	}
 	var err error
 	var externalBufferIndex = 0
 	if e.asBinary {

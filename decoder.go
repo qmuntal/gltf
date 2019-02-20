@@ -35,6 +35,7 @@ func Open(name string) (*Document, error) {
 	}
 	doc := new(Document)
 	err = NewDecoder(f, cb).Decode(doc)
+	f.Close()
 	return doc, err
 }
 
