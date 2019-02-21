@@ -9,7 +9,7 @@
 A Go package for simple, efficient, and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/) 
 
 ## Features
-* Moderate parsing time and memory consumption.
+* High parsing time and moderate memory consumption.
 * glTF specification v2.0.0
   * [x] ASCII glTF.
   * [x] Binary glTF(GLB).
@@ -35,7 +35,11 @@ A Go package for simple, efficient, and robust serialization/deserialization of 
   * [ ] KHR_materials_unlit
   * [ ] KHR_techniques_webgl
   * [ ] KHR_texture_transform
-  
+
+## Perfomance
+All the functionality is benchmarked and tested using the official [glTF Samples](https://github.com/KhronosGroup/glTF-Sample-Models) in the utility package [qmuntal/gltf-bench](https://github.com/qmuntal/gltf-bench/).
+The results show that the perfomance of this package is equivalent to [fx-gltf](https://github.com/jessey-git/fx-gltf), a reference perfomance-driven glTF implementation for C++, .
+
 ## Examples
 ### Read
 ```go
