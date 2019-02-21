@@ -785,9 +785,9 @@ func TestOcclusionTexture_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &OcclusionTexture{Index: -1, Strength: -1}, []byte(`{}`), false},
+		{"default", &OcclusionTexture{Index: -1, Strength: 1}, []byte(`{}`), false},
 		{"empty", &OcclusionTexture{Index: 0, Strength: 0}, []byte(`{"index":0,"strength":0}`), false},
-		{"nodefault", &OcclusionTexture{Index: 1, Strength: 1}, []byte(`{"index":1,"strength":1}`), false},
+		{"nodefault", &OcclusionTexture{Index: 1, Strength: 0.5}, []byte(`{"index":1,"strength":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -810,9 +810,9 @@ func TestPBRMetallicRoughness_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &PBRMetallicRoughness{MetallicFactor: -1, RoughnessFactor: -1, BaseColorFactor: [4]float64{1, 1, 1, 1}}, []byte(`{}`), false},
+		{"default", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: [4]float64{1, 1, 1, 1}}, []byte(`{}`), false},
 		{"empty", &PBRMetallicRoughness{MetallicFactor: 0, RoughnessFactor: 0, BaseColorFactor: [4]float64{0, 0, 0, 0}}, []byte(`{"baseColorFactor":[0,0,0,0],"metallicFactor":0,"roughnessFactor":0}`), false},
-		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: [4]float64{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":1,"roughnessFactor":1}`), false},
+		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 0.5, RoughnessFactor: 0.5, BaseColorFactor: [4]float64{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

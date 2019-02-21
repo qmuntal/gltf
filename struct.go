@@ -504,11 +504,6 @@ func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 	return out, err
 }
 
-// NewOcclusionTexture returns a default OcclusionTexture.
-func NewOcclusionTexture(index int32) *OcclusionTexture {
-	return &OcclusionTexture{Index: index, Strength: 1}
-}
-
 // An OcclusionTexture references to an occlusion texture
 type OcclusionTexture struct {
 	Extensions Extensions  `json:"extensions,omitempty"`
@@ -516,6 +511,11 @@ type OcclusionTexture struct {
 	Index      int32       `json:"index" validate:"gte=-1"`
 	TexCoord   uint32      `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
 	Strength   float64     `json:"strength" validate:"gte=0,lte=1"`
+}
+
+// NewOcclusionTexture returns a default OcclusionTexture.
+func NewOcclusionTexture(index int32) *OcclusionTexture {
+	return &OcclusionTexture{Index: index, Strength: 1}
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
@@ -537,8 +537,8 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 		if o.Index == -1 {
 			out = removeProperty([]byte(`"index":-1`), out)
 		}
-		if o.Strength == -1 {
-			out = removeProperty([]byte(`"strength":-1`), out)
+		if o.Strength == 1 {
+			out = removeProperty([]byte(`"strength":1`), out)
 		}
 		out = sanitizeJSON(out)
 	}
@@ -577,11 +577,11 @@ func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 	type alias PBRMetallicRoughness
 	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(p)})
 	if err == nil {
-		if p.MetallicFactor == -1 {
-			out = removeProperty([]byte(`"metallicFactor":-1`), out)
+		if p.MetallicFactor == 1 {
+			out = removeProperty([]byte(`"metallicFactor":1`), out)
 		}
-		if p.RoughnessFactor == -1 {
-			out = removeProperty([]byte(`"roughnessFactor":-1`), out)
+		if p.RoughnessFactor == 1 {
+			out = removeProperty([]byte(`"roughnessFactor":1`), out)
 		}
 		if p.BaseColorFactor == [4]float64{1, 1, 1, 1} {
 			out = removeProperty([]byte(`"baseColorFactor":[1,1,1,1]`), out)
