@@ -54,7 +54,7 @@ fmt.Print(doc.Asset)
 doc := &gltf.Document{
   Scene: 0, 
   Asset: gltf.Asset{Generator: "qmuntal/gltf"}, 
-  Scenes: []gltf.Scene{{Extensions: 8.0, Extras: map[string]interface{}{"a": "b"}, Name: "s_1"}}
+  Scenes: []gltf.Scene{{Extras: 8.0, Extensions: Extensions{"a": "b"}, Name: "s_1"}}
 }
  
 if err := gltf.Save(doc, "./a.gltf", true); err != nil {
