@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-type Extensions map[string]interface{}
-
 // An Asset is metadata about the glTF asset.
 type Asset struct {
 	Extensions Extensions  `json:"extensions,omitempty"`
