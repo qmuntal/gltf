@@ -147,7 +147,7 @@ type Buffer struct {
 	Extensions interface{}            `json:"extensions,omitempty"`
 	Extras     map[string]interface{} `json:"extras,omitempty"`
 	Name       string                 `json:"name,omitempty"`
-	URI        string                 `json:"uri,omitempty" validate:"omitempty,uri|datauri"`
+	URI        string                 `json:"uri,omitempty" validate:"omitempty"`
 	ByteLength uint32                 `json:"byteLength" validate:"required"`
 	Data       []uint8                `json:"-"`
 }
@@ -702,7 +702,7 @@ type Image struct {
 	Extensions interface{}            `json:"extensions,omitempty"`
 	Extras     map[string]interface{} `json:"extras,omitempty"`
 	Name       string                 `json:"name,omitempty"`
-	URI        string                 `json:"uri,omitempty" validate:"omitempty,uri|datauri"`
+	URI        string                 `json:"uri,omitempty" validate:"omitempty"`
 	MimeType   string                 `json:"mimeType,omitempty" validate:"omitempty,oneof=image/jpeg image/png"` // Manadatory if BufferView is defined.
 	BufferView uint32                 `json:"bufferView,omitempty"`                                               // Use this instead of the image's uri property.
 }
