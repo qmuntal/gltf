@@ -54,7 +54,7 @@ fmt.Print(doc.Asset)
 doc := &gltf.Document{
   Scene: 0, 
   Asset: gltf.Asset{Generator: "qmuntal/gltf"}, 
-  Scenes: []gltf.Scene{{Extras: 8.0, Extensions: Extensions{"a": "b"}, Name: "s_1"}}
+  Scenes: []gltf.Scene{{Extras: 8.0, Extensions: gltf.Extensions{"a": "b"}, Name: "s_1"}}
 }
  
 if err := gltf.Save(doc, "./a.gltf", true); err != nil {
@@ -64,36 +64,36 @@ if err := gltf.Save(doc, "./a.gltf", true); err != nil {
 
 ### Write complex
 ```go
-doc := &Document{
-  Accessors: []Accessor{
-    {BufferView: 0, ByteOffset: 0, ComponentType: UnsignedShort, Count: 36, Type: Scalar},
-    {BufferView: 1, ByteOffset: 0, ComponentType: Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: Vec3},
-    {BufferView: 2, ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec3},
-    {BufferView: 3, ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec4},
-    {BufferView: 4, ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec2},
+doc := &gltf.Document{
+  Accessors: []gltf.Accessor{
+    {BufferView: 0, ByteOffset: 0, ComponentType: gltf.UnsignedShort, Count: 36, Type: gltf.Scalar},
+    {BufferView: 1, ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: gltf.Vec3},
+    {BufferView: 2, ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Type: gltf.Vec3},
+    {BufferView: 3, ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Type: gltf.Vec4},
+    {BufferView: 4, ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Type: gltf.Vec2},
   },
-  Asset: Asset{Version: "2.0", Generator: "FBX2glTF"},
-  BufferViews: []BufferView{
-    {Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: ElementArrayBuffer},
-    {Buffer: 0, ByteLength: 288, ByteOffset: 72, Target: ArrayBuffer},
-    {Buffer: 0, ByteLength: 288, ByteOffset: 360, Target: ArrayBuffer},
-    {Buffer: 0, ByteLength: 384, ByteOffset: 648, Target: ArrayBuffer},
-    {Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: ArrayBuffer},
+  Asset: gltf.Asset{Version: "2.0", Generator: "FBX2glTF"},
+  BufferViews: []gltf.BufferView{
+    {Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: gltf.ElementArrayBuffer},
+    {Buffer: 0, ByteLength: 288, ByteOffset: 72, Target: gltf.ArrayBuffer},
+    {Buffer: 0, ByteLength: 288, ByteOffset: 360, Target: gltf.ArrayBuffer},
+    {Buffer: 0, ByteLength: 384, ByteOffset: 648, Target: gltf.ArrayBuffer},
+    {Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: gltf.ArrayBuffer},
   },
-  Buffers: []Buffer{{ByteLength: 1224, Data: readFile("testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb")[1628+20+8:]}},
-  Materials: []Material{{Name: "Default", AlphaMode: Opaque, AlphaCutoff: 0.5, 
-    PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: [4]float64{0.8, 0.8, 0.8, 1}, MetallicFactor: 0.1, RoughnessFactor: 0.99}}
+  Buffers: []gltf.Buffer{{ByteLength: 1224, Data: readFile("testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb")[1628+20+8:]}},
+  Materials: []gltf.Material{{Name: "Default", AlphaMode: gltf.Opaque, AlphaCutoff: 0.5, 
+    PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: [4]float64{0.8, 0.8, 0.8, 1}, MetallicFactor: 0.1, RoughnessFactor: 0.99}}
   },
-  Meshes: []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: 0, Material: 0, Mode: Triangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
-  Nodes: []Node{
+  Meshes: []gltf.Mesh{{Name: "Cube", Primitives: []gltf.Primitive{{Indices: 0, Material: 0, Mode: gltf.Triangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
+  Nodes: []gltf.Node{
     {Name: "RootNode", Mesh: -1, Camera: -1, Skin: -1, Children: []uint32{1, 2, 3}, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
     {Name: "Mesh", Mesh: -1, Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
     {Name: "Cube", Mesh: 0, Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
     {Name: "Texture Group", Mesh: -1, Camera: -1, Skin: -1, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
   },
-  Samplers: []Sampler{{WrapS: Repeat, WrapT: Repeat}},
+  Samplers: []gltf.Sampler{{WrapS: gltf.Repeat, WrapT: gltf.Repeat}},
   Scene: 0,
-  Scenes: []Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
+  Scenes: []gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
 }
 if err := gltf.Save(doc, "./a.gltf", true); err != nil {
   panic(err)
