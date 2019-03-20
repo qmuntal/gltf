@@ -1,4 +1,4 @@
-module gltf
+module github.com/qmuntal/gltf
 
 require (
 	github.com/go-playground/locales v0.12.1 // indirect
