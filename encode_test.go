@@ -49,20 +49,20 @@ func TestEncoder_Encode(t *testing.T) {
 		{"withExtensions", args{&Document{Extras: 8.0, ExtensionsUsed: []string{"c"}, ExtensionsRequired: []string{"d", "e"}}}, false},
 		{"withAsset", args{&Document{Asset: Asset{Extras: 8.0, Copyright: "@2019", Generator: "qmuntal/gltf", Version: "2.0", MinVersion: "1.0"}}}, false},
 		{"withAccessors", args{&Document{Accessors: []Accessor{
-			{Extras: 8.0, Name: "acc_1", BufferView: 0, ByteOffset: 50, ComponentType: Byte, Normalized: true, Count: 5, Type: Vec3, Max: []float64{1, 2}, Min: []float64{2.4}},
-			{BufferView: 0, Normalized: false, Count: 50, Type: Vec4, Sparse: &Sparse{Extras: 8.0, Count: 2,
+			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: Byte, Normalized: true, Count: 5, Type: Vec3, Max: []float64{1, 2}, Min: []float64{2.4}},
+			{BufferView: Index(0), Normalized: false, Count: 50, Type: Vec4, Sparse: &Sparse{Extras: 8.0, Count: 2,
 				Values:  SparseValues{Extras: 8.0, BufferView: 1, ByteOffset: 2},
 				Indices: SparseIndices{Extras: 8.0, BufferView: 1, ByteOffset: 2, ComponentType: Float}},
 			},
 		}}}, false},
 		{"withAnimations", args{&Document{Animations: []Animation{
 			{Extras: 8.0, Name: "an_1", Channels: []Channel{
-				{Extras: 8.0, Sampler: 1, Target: ChannelTarget{Extras: 8.0, Node: 10, Path: Rotation}},
-				{Extras: 8.0, Sampler: 2, Target: ChannelTarget{Extras: 8.0, Node: 10, Path: Scale}},
+				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: Rotation}},
+				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: Scale}},
 			}},
 			{Extras: 8.0, Name: "an_2", Channels: []Channel{
-				{Extras: 8.0, Sampler: 1, Target: ChannelTarget{Extras: 8.0, Node: 3, Path: Weights}},
-				{Extras: 8.0, Sampler: 2, Target: ChannelTarget{Extras: 8.0, Node: 5, Path: Translation}},
+				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(3), Path: Weights}},
+				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: Translation}},
 			}},
 		}}}, false},
 		{"withBuffer", args{&Document{Buffers: []Buffer{
@@ -75,8 +75,8 @@ func TestEncoder_Encode(t *testing.T) {
 			{Buffer: 10, ByteOffset: 10, ByteLength: 20, ByteStride: 50, Target: ElementArrayBuffer},
 		}}}, false},
 		{"withCameras", args{&Document{Cameras: []Camera{
-			{Extras: 8.0, Name: "cam_1", Type: OrthographicType, Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
-			{Extras: 8.0, Name: "cam_2", Type: PerspectiveType, Perspective: &Perspective{Extras: 8.0, AspectRatio: 1, Yfov: 2, Zfar: 3, Znear: 4}},
+			{Extras: 8.0, Name: "cam_1", Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
+			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: 1, Yfov: 2, Zfar: 3, Znear: 4}},
 		}}}, false},
 		{"withImages", args{&Document{Images: []Image{
 			{Extras: 8.0, Name: "binary", BufferView: 1, MimeType: "data:image/png"},
@@ -88,47 +88,47 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "pbr", AlphaCutoff: 0.5, AlphaMode: Opaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
 					Extras: 8.0, MetallicFactor: 1, RoughnessFactor: 2, BaseColorFactor: [4]float64{1, 2, 3, 4},
-					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: 1, TexCoord: 3},
-					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: 6, TexCoord: 5},
+					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: Index(1), TexCoord: 3},
+					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: Index(6), TexCoord: 5},
 				},
 			},
 			{Extras: 8.0, Name: "normal", AlphaCutoff: 0.7, AlphaMode: Blend,
-				NormalTexture: &NormalTexture{Extras: 8.0, Index: 1, TexCoord: 2, Scale: 2.0},
+				NormalTexture: &NormalTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Scale: 2.0},
 			},
 			{Extras: 8.0, Name: "occlusion", AlphaCutoff: 0.5, AlphaMode: Mask,
-				OcclusionTexture: &OcclusionTexture{Extras: 8.0, Index: 1, TexCoord: 2, Strength: 2.0},
+				OcclusionTexture: &OcclusionTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Strength: 2.0},
 			},
-			{Extras: 8.0, Name: "emmisice", AlphaCutoff: 0.5, AlphaMode: Mask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
+			{Extras: 8.0, Name: "emmisice", AlphaCutoff: 0.5, AlphaMode: Mask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: Index(4), TexCoord: 50}},
 		}}}, false},
 		{"withMeshes", args{&Document{Meshes: []Mesh{
 			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
 			{Extras: 8.0, Name: "mesh_2", Primitives: []Primitive{
-				{Extras: 8.0, Attributes: Attribute{"POSITION": 1}, Indices: 2, Material: 1, Mode: Lines},
-				{Extras: 8.0, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: 2, Material: 1, Mode: Lines},
+				{Extras: 8.0, Attributes: Attribute{"POSITION": 1}, Indices: Index(2), Material: Index(1), Mode: Lines},
+				{Extras: 8.0, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: Lines},
 			}},
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []Node{
-			{Extras: 8.0, Name: "n-1", Camera: 1, Children: []uint32{1, 2}, Skin: 3,
-				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: 15, Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
-			{Extras: 8.0, Name: "n-2", Camera: 1, Children: []uint32{1, 2}, Skin: 3,
-				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: 15, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
+			{Extras: 8.0, Name: "n-1", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
+				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
+			{Extras: 8.0, Name: "n-2", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
+				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 		}}}, false},
 		{"withSampler", args{&Document{Samplers: []Sampler{
 			{Extras: 8.0, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: ClampToEdge, WrapT: MirroredRepeat},
 			{Extras: 8.0, Name: "s_2", MagFilter: MagNearest, MinFilter: MinLinearMipMapLinear, WrapS: MirroredRepeat, WrapT: Repeat},
 		}}}, false},
-		{"withScene", args{&Document{Scene: 1}}, false},
+		{"withScene", args{&Document{Scene: Index(1)}}, false},
 		{"withScenes", args{&Document{Scenes: []Scene{
 			{Extras: 8.0, Name: "s_1", Nodes: []uint32{1, 2}},
 			{Extras: 8.0, Name: "s_2", Nodes: []uint32{2, 3}},
 		}}}, false},
 		{"withSkins", args{&Document{Skins: []Skin{
-			{Extras: 8.0, Name: "skin_1", InverseBindMatrices: 2, Skeleton: 4, Joints: []uint32{5, 6}},
-			{Extras: 8.0, Name: "skin_2", InverseBindMatrices: 3, Skeleton: 4, Joints: []uint32{7, 8}},
+			{Extras: 8.0, Name: "skin_1", InverseBindMatrices: Index(2), Skeleton: Index(4), Joints: []uint32{5, 6}},
+			{Extras: 8.0, Name: "skin_2", InverseBindMatrices: Index(3), Skeleton: Index(4), Joints: []uint32{7, 8}},
 		}}}, false},
 		{"withTextures", args{&Document{Textures: []Texture{
-			{Extras: 8.0, Name: "t_1", Sampler: 2, Source: 3},
-			{Extras: 8.0, Name: "t_2", Sampler: 3, Source: 4},
+			{Extras: 8.0, Name: "t_1", Sampler: Index(2), Source: Index(3)},
+			{Extras: 8.0, Name: "t_2", Sampler: Index(3), Source: Index(4)},
 		}}}, false},
 	}
 	for _, tt := range tests {
