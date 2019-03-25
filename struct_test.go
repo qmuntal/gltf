@@ -573,3 +573,57 @@ func TestNormalTexture_ScaleOrDefault(t *testing.T) {
 		})
 	}
 }
+
+func TestMaterial_AlphaCutoffOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		m    *Material
+		want float64
+	}{
+		{"empty", &Material{}, 0.5},
+		{"other", &Material{AlphaCutoff: Float64(2)}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.AlphaCutoffOrDefault(); got != tt.want {
+				t.Errorf("Material.AlphaCutoffOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPBRMetallicRoughness_MetallicFactorOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		p    *PBRMetallicRoughness
+		want float64
+	}{
+		{"empty", &PBRMetallicRoughness{}, 1},
+		{"other", &PBRMetallicRoughness{MetallicFactor: Float64(2)}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.p.MetallicFactorOrDefault(); got != tt.want {
+				t.Errorf("PBRMetallicRoughness.MetallicFactorOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPBRMetallicRoughness_RoughnessFactorOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		p    *PBRMetallicRoughness
+		want float64
+	}{
+		{"empty", &PBRMetallicRoughness{}, 1},
+		{"other", &PBRMetallicRoughness{RoughnessFactor: Float64(2)}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.p.RoughnessFactorOrDefault(); got != tt.want {
+				t.Errorf("PBRMetallicRoughness.RoughnessFactorOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
