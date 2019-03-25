@@ -66,11 +66,11 @@ if err := gltf.Save(doc, "./a.gltf", true); err != nil {
 ```go
 doc := &gltf.Document{
   Accessors: []gltf.Accessor{
-    {BufferView: gltf.Index(0), ByteOffset: 0, ComponentType: gltf.UnsignedShort, Count: 36, Type: gltf.Scalar},
-    {BufferView: gltf.Index(1), ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: gltf.Vec3},
-    {BufferView: gltf.Index(2), ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Type: gltf.Vec3},
-    {BufferView: gltf.Index(3), ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Type: gltf.Vec4},
-    {BufferView: gltf.Index(4), ByteOffset: 0, ComponentType: gltf.Float, Count: 24, Type: gltf.Vec2},
+    {BufferView: gltf.Index(0), ComponentType: gltf.UnsignedShort, Count: 36, Type: gltf.Scalar},
+    {BufferView: gltf.Index(1), ComponentType: gltf.Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: gltf.Vec3},
+    {BufferView: gltf.Index(2), ComponentType: gltf.Float, Count: 24, Type: gltf.Vec3},
+    {BufferView: gltf.Index(3), ComponentType: gltf.Float, Count: 24, Type: gltf.Vec4},
+    {BufferView: gltf.Index(4), ComponentType: gltf.Float, Count: 24, Type: gltf.Vec2},
   },
   Asset: gltf.Asset{Version: "2.0", Generator: "FBX2glTF"},
   BufferViews: []gltf.BufferView{
@@ -88,7 +88,7 @@ doc := &gltf.Document{
   Nodes: []gltf.Node{
     {Name: "RootNode", Children: []uint32{1, 2, 3}},
     {Name: "Mesh"},
-    {Name: "Cube", Mesh: 0},
+    {Name: "Cube", Mesh: gltf.Index(0)},
     {Name: "Texture Group"},
   },
   Samplers: []gltf.Sampler{{WrapS: gltf.Repeat, WrapT: gltf.Repeat}},
