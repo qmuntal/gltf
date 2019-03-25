@@ -156,19 +156,15 @@ type Node struct {
 	Weights     []float64   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
 
-// NewNode returns a default Node.
-func NewNode() *Node {
-	return &Node{
+// UnmarshalJSON unmarshal the node with the correct default values.
+func (n *Node) UnmarshalJSON(data []byte) error {
+	type alias Node
+	def := Node{
 		Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
 		Rotation: [4]float64{0, 0, 0, 1},
 		Scale:    [3]float64{1, 1, 1},
 	}
-}
-
-// UnmarshalJSON unmarshal the node with the correct default values.
-func (n *Node) UnmarshalJSON(data []byte) error {
-	type alias Node
-	tmp := alias(*NewNode())
+	tmp := alias(def)
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*n = Node(tmp)
@@ -183,13 +179,22 @@ func (n *Node) MarshalJSON() ([]byte, error) {
 	if err == nil {
 		if n.Matrix == [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1} {
 			out = removeProperty([]byte(`"matrix":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]`), out)
+		} else if n.Matrix == [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {
+			out = removeProperty([]byte(`"matrix":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]`), out)
 		}
+
 		if n.Rotation == [4]float64{0, 0, 0, 1} {
 			out = removeProperty([]byte(`"rotation":[0,0,0,1]`), out)
+		} else if n.Rotation == [4]float64{0, 0, 0, 0} {
+			out = removeProperty([]byte(`"rotation":[0,0,0,0]`), out)
 		}
+
 		if n.Scale == [3]float64{1, 1, 1} {
 			out = removeProperty([]byte(`"scale":[1,1,1]`), out)
+		} else if n.Scale == [3]float64{0, 0, 0} {
+			out = removeProperty([]byte(`"scale":[0,0,0]`), out)
 		}
+
 		if n.Translation == [3]float64{0, 0, 0} {
 			out = removeProperty([]byte(`"translation":[0,0,0]`), out)
 		}

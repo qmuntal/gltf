@@ -258,6 +258,11 @@ func TestNode_MarshalJSON(t *testing.T) {
 			Rotation: [4]float64{0, 0, 0, 1},
 			Scale:    [3]float64{1, 1, 1},
 		}, []byte("{}"), false},
+		{"default2", &Node{
+			Matrix:   [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation: [4]float64{0, 0, 0, 0},
+			Scale:    [3]float64{0, 0, 0},
+		}, []byte("{}"), false},
 		{"empty", &Node{
 			Matrix:   [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			Rotation: [4]float64{0, 0, 0, 0},
@@ -265,7 +270,7 @@ func TestNode_MarshalJSON(t *testing.T) {
 			Camera:   Index(0),
 			Skin:     Index(0),
 			Mesh:     Index(0),
-		}, []byte(`{"camera":0,"skin":0,"matrix":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"mesh":0,"rotation":[0,0,0,0],"scale":[0,0,0]}`), false},
+		}, []byte(`{"camera":0,"skin":0,"mesh":0}`), false},
 		{"nodefault", &Node{
 			Matrix:      [16]float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			Rotation:    [4]float64{1, 0, 0, 0},
