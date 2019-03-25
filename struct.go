@@ -9,9 +9,14 @@ import (
 	"strings"
 )
 
-// Index is an utility function that returns a pointer to a uin32.
+// Index is an utility function that returns a pointer to a uint32.
 func Index(i uint32) *uint32 {
 	return &i
+}
+
+// Float64 is an utility function that returns a pointer to a float64.
+func Float64(val float64) *float64 {
+	return &val
 }
 
 // An Asset is metadata about the glTF asset.
@@ -325,19 +330,22 @@ type Material struct {
 	EmissiveTexture      *TextureInfo          `json:"emissiveTexture,omitempty"`
 	EmissiveFactor       [3]float64            `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
 	AlphaMode            AlphaMode             `json:"alphaMode,omitempty" validate:"lte=2"`
-	AlphaCutoff          float64               `json:"alphaCutoff" validate:"gte=0"`
+	AlphaCutoff          *float64              `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
 	DoubleSided          bool                  `json:"doubleSided,omitempty"`
 }
 
-// NewMaterial create a default Material.
-func NewMaterial() *Material {
-	return &Material{AlphaCutoff: 0.5}
+// AlphaCutoffOrDefault returns the scale if it is not nil, else return the default one.
+func (m *Material) AlphaCutoffOrDefault() float64 {
+	if m.AlphaCutoff == nil {
+		return 0.5
+	}
+	return *m.AlphaCutoff
 }
 
 // UnmarshalJSON unmarshal the material with the correct default values.
 func (m *Material) UnmarshalJSON(data []byte) error {
 	type alias Material
-	tmp := alias(*NewMaterial())
+	tmp := alias(Material{AlphaCutoff: Float64(0.5)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*m = Material(tmp)
@@ -350,7 +358,7 @@ func (m *Material) MarshalJSON() ([]byte, error) {
 	type alias Material
 	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(m)})
 	if err == nil {
-		if m.AlphaCutoff == 0.5 {
+		if m.AlphaCutoff != nil && *m.AlphaCutoff == 0.5 {
 			out = removeProperty([]byte(`"alphaCutoff":0.5`), out)
 		}
 		if m.EmissiveFactor == [3]float64{0, 0, 0} {
@@ -367,18 +375,21 @@ type NormalTexture struct {
 	Extras     interface{} `json:"extras,omitempty"`
 	Index      *uint32     `json:"index,omitempty"`
 	TexCoord   uint32      `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
-	Scale      float64     `json:"scale"`
+	Scale      *float64    `json:"scale,omitempty"`
 }
 
-// NewNormalTexture returns a default NormalTexture.
-func NewNormalTexture() *NormalTexture {
-	return &NormalTexture{Scale: 1}
+// ScaleOrDefault returns the scale if it is not nil, else return the default one.
+func (n *NormalTexture) ScaleOrDefault() float64 {
+	if n.Scale == nil {
+		return 1
+	}
+	return *n.Scale
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 	type alias NormalTexture
-	tmp := alias(*NewNormalTexture())
+	tmp := alias(NormalTexture{Scale: Float64(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*n = NormalTexture(tmp)
@@ -389,7 +400,7 @@ func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the texture info with the correct default values.
 func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 	type alias NormalTexture
-	if n.Scale == 1 {
+	if n.Scale != nil && *n.Scale == 1 {
 		return json.Marshal(&struct {
 			Scale float64 `json:"scale,omitempty"`
 			*alias
@@ -407,18 +418,21 @@ type OcclusionTexture struct {
 	Extras     interface{} `json:"extras,omitempty"`
 	Index      *uint32     `json:"index,omitempty"`
 	TexCoord   uint32      `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
-	Strength   float64     `json:"strength" validate:"gte=0,lte=1"`
+	Strength   *float64    `json:"strength,omitempty" validate:"omitempty,gte=0,lte=1"`
 }
 
-// NewOcclusionTexture returns a default OcclusionTexture.
-func NewOcclusionTexture() *OcclusionTexture {
-	return &OcclusionTexture{Strength: 1}
+// StrengthOrDefault returns the strength if it is not nil, else return the default one.
+func (o *OcclusionTexture) StrengthOrDefault() float64 {
+	if o.Strength == nil {
+		return 1
+	}
+	return *o.Strength
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
 func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 	type alias OcclusionTexture
-	tmp := alias(*NewOcclusionTexture())
+	tmp := alias(OcclusionTexture{Strength: Float64(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*o = OcclusionTexture(tmp)
@@ -429,7 +443,7 @@ func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the texture info with the correct default values.
 func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 	type alias OcclusionTexture
-	if o.Strength == 1 {
+	if o.Strength != nil && *o.Strength == 1 {
 		return json.Marshal(&struct {
 			Strength float64 `json:"strength,omitempty"`
 			*alias
@@ -473,14 +487,25 @@ type PBRMetallicRoughness struct {
 	Extras                   interface{}  `json:"extras,omitempty"`
 	BaseColorFactor          *RGBA        `json:"baseColorFactor,omitempty"`
 	BaseColorTexture         *TextureInfo `json:"baseColorTexture,omitempty"`
-	MetallicFactor           float64      `json:"metallicFactor" validate:"gte=0,lte=1"`
-	RoughnessFactor          float64      `json:"roughnessFactor" validate:"gte=0,lte=1"`
+	MetallicFactor           *float64     `json:"metallicFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	RoughnessFactor          *float64     `json:"roughnessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
 	MetallicRoughnessTexture *TextureInfo `json:"metallicRoughnessTexture,omitempty"`
 }
 
-// NewPBRMetallicRoughness returns a default PBRMetallicRoughness.
-func NewPBRMetallicRoughness() *PBRMetallicRoughness {
-	return &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: 1, RoughnessFactor: 1}
+// MetallicFactorOrDefault returns the metallic factor if it is not nil, else return the default one.
+func (p *PBRMetallicRoughness) MetallicFactorOrDefault() float64 {
+	if p.MetallicFactor == nil {
+		return 1
+	}
+	return *p.MetallicFactor
+}
+
+// RoughnessFactorOrDefault returns the roughness factor if it is not nil, else return the default one.
+func (p *PBRMetallicRoughness) RoughnessFactorOrDefault() float64 {
+	if p.RoughnessFactor == nil {
+		return 1
+	}
+	return *p.RoughnessFactor
 }
 
 // BaseColorFactorOrDefault returns the base color factor if it is not nil, else return the default one.
@@ -494,7 +519,7 @@ func (p *PBRMetallicRoughness) BaseColorFactorOrDefault() RGBA {
 // UnmarshalJSON unmarshal the pbr with the correct default values.
 func (p *PBRMetallicRoughness) UnmarshalJSON(data []byte) error {
 	type alias PBRMetallicRoughness
-	tmp := alias(*NewPBRMetallicRoughness())
+	tmp := alias(PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*p = PBRMetallicRoughness(tmp)
@@ -507,10 +532,10 @@ func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 	type alias PBRMetallicRoughness
 	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(p)})
 	if err == nil {
-		if p.MetallicFactor == 1 {
+		if p.MetallicFactor != nil && *p.MetallicFactor == 1 {
 			out = removeProperty([]byte(`"metallicFactor":1`), out)
 		}
-		if p.RoughnessFactor == 1 {
+		if p.RoughnessFactor != nil && *p.RoughnessFactor == 1 {
 			out = removeProperty([]byte(`"roughnessFactor":1`), out)
 		}
 		if p.BaseColorFactor != nil && *p.BaseColorFactor == *NewRGBA() {

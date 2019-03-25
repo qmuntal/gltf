@@ -44,7 +44,7 @@ func TestOpen(t *testing.T) {
 			},
 			Buffers:   []Buffer{{ByteLength: 1800, URI: "Cube.bin", Data: readFile("testdata/Cube/glTF/Cube.bin")}},
 			Images:    []Image{{URI: "Cube_BaseColor.png"}, {URI: "Cube_MetallicRoughness.png"}},
-			Materials: []Material{{Name: "Cube", AlphaMode: Opaque, AlphaCutoff: 0.5, PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: 1, RoughnessFactor: 1, BaseColorTexture: &TextureInfo{Index: Index(0)}, MetallicRoughnessTexture: &TextureInfo{Index: Index(1)}}}},
+			Materials: []Material{{Name: "Cube", AlphaMode: Opaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorTexture: &TextureInfo{Index: Index(0)}, MetallicRoughnessTexture: &TextureInfo{Index: Index(1)}}}},
 			Meshes:    []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: Index(0), Material: Index(0), Mode: Triangles, Attributes: map[string]uint32{"NORMAL": 2, "POSITION": 1, "TANGENT": 3, "TEXCOORD_0": 4}}}}},
 			Nodes:     []Node{{Mesh: Index(0), Name: "Cube", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}}},
 			Samplers:  []Sampler{{WrapS: Repeat, WrapT: Repeat}},
@@ -95,7 +95,7 @@ func TestOpen(t *testing.T) {
 				{Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: ArrayBuffer},
 			},
 			Buffers:   []Buffer{{ByteLength: 1224, Data: readFile("testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb")[1628+20+8:]}},
-			Materials: []Material{{Name: "Default", AlphaMode: Opaque, AlphaCutoff: 0.5, PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1}, MetallicFactor: 0.1, RoughnessFactor: 0.99}}},
+			Materials: []Material{{Name: "Default", AlphaMode: Opaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1}, MetallicFactor: Float64(0.1), RoughnessFactor: Float64(0.99)}}},
 			Meshes:    []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: Index(0), Material: Index(0), Mode: Triangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
 			Nodes: []Node{
 				{Name: "RootNode", Children: []uint32{1, 2, 3}, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},

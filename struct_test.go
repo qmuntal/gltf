@@ -145,8 +145,8 @@ func TestMaterial_UnmarshalJSON(t *testing.T) {
 		want    *Material
 		wantErr bool
 	}{
-		{"default", new(Material), args{[]byte("{}")}, &Material{AlphaCutoff: 0.5, AlphaMode: Opaque}, false},
-		{"nodefault", new(Material), args{[]byte(`{"alphaCutoff": 0.2, "alphaMode": "MASK"}`)}, &Material{AlphaCutoff: 0.2, AlphaMode: Mask}, false},
+		{"default", new(Material), args{[]byte("{}")}, &Material{AlphaCutoff: Float64(0.5), AlphaMode: Opaque}, false},
+		{"nodefault", new(Material), args{[]byte(`{"alphaCutoff": 0.2, "alphaMode": "MASK"}`)}, &Material{AlphaCutoff: Float64(0.2), AlphaMode: Mask}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -172,9 +172,9 @@ func TestNormalTexture_UnmarshalJSON(t *testing.T) {
 		want    *NormalTexture
 		wantErr bool
 	}{
-		{"default", new(NormalTexture), args{[]byte("{}")}, &NormalTexture{Scale: 1}, false},
-		{"empty", new(NormalTexture), args{[]byte(`{"scale": 0, "index": 0}`)}, &NormalTexture{Scale: 0, Index: Index(0)}, false},
-		{"nodefault", new(NormalTexture), args{[]byte(`{"scale": 0.5, "index":2}`)}, &NormalTexture{Scale: 0.5, Index: Index(2)}, false},
+		{"default", new(NormalTexture), args{[]byte("{}")}, &NormalTexture{Scale: Float64(1)}, false},
+		{"empty", new(NormalTexture), args{[]byte(`{"scale": 0, "index": 0}`)}, &NormalTexture{Scale: Float64(0), Index: Index(0)}, false},
+		{"nodefault", new(NormalTexture), args{[]byte(`{"scale": 0.5, "index":2}`)}, &NormalTexture{Scale: Float64(0.5), Index: Index(2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -200,9 +200,9 @@ func TestOcclusionTexture_UnmarshalJSON(t *testing.T) {
 		want    *OcclusionTexture
 		wantErr bool
 	}{
-		{"default", new(OcclusionTexture), args{[]byte("{}")}, &OcclusionTexture{Strength: 1}, false},
-		{"empty", new(OcclusionTexture), args{[]byte(`{"strength": 0, "index": 0}`)}, &OcclusionTexture{Strength: 0, Index: Index(0)}, false},
-		{"nodefault", new(OcclusionTexture), args{[]byte(`{"strength": 0.5, "index":2}`)}, &OcclusionTexture{Strength: 0.5, Index: Index(2)}, false},
+		{"default", new(OcclusionTexture), args{[]byte("{}")}, &OcclusionTexture{Strength: Float64(1)}, false},
+		{"empty", new(OcclusionTexture), args{[]byte(`{"strength": 0, "index": 0}`)}, &OcclusionTexture{Strength: Float64(0), Index: Index(0)}, false},
+		{"nodefault", new(OcclusionTexture), args{[]byte(`{"strength": 0.5, "index":2}`)}, &OcclusionTexture{Strength: Float64(0.5), Index: Index(2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -228,9 +228,9 @@ func TestPBRMetallicRoughness_UnmarshalJSON(t *testing.T) {
 		want    *PBRMetallicRoughness
 		wantErr bool
 	}{
-		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: 1, RoughnessFactor: 1}, false},
+		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1)}, false},
 		{"nodefault", new(PBRMetallicRoughness), args{[]byte(`{"baseColorFactor": [0.1,0.2,0.6,0.7],"metallicFactor":0.5,"roughnessFactor":0.1}`)}, &PBRMetallicRoughness{
-			BaseColorFactor: &RGBA{R: 0.1, G: 0.2, B: 0.6, A: 0.7}, MetallicFactor: 0.5, RoughnessFactor: 0.1,
+			BaseColorFactor: &RGBA{R: 0.1, G: 0.2, B: 0.6, A: 0.7}, MetallicFactor: Float64(0.5), RoughnessFactor: Float64(0.1),
 		}, false},
 	}
 	for _, tt := range tests {
@@ -302,9 +302,9 @@ func TestMaterial_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &Material{AlphaCutoff: 0.5, AlphaMode: Opaque}, []byte(`{}`), false},
-		{"empty", &Material{AlphaCutoff: 0, AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":0}`), false},
-		{"nodefault", &Material{AlphaCutoff: 1, AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
+		{"default", &Material{AlphaCutoff: Float64(0.5), AlphaMode: Opaque}, []byte(`{}`), false},
+		{"empty", &Material{AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND"}`), false},
+		{"nodefault", &Material{AlphaCutoff: Float64(1), AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -327,9 +327,9 @@ func TestNormalTexture_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &NormalTexture{Scale: 1}, []byte(`{}`), false},
-		{"empty", &NormalTexture{Index: Index(0), Scale: 0}, []byte(`{"index":0,"scale":0}`), false},
-		{"nodefault", &NormalTexture{Index: Index(1), Scale: 0.5}, []byte(`{"index":1,"scale":0.5}`), false},
+		{"default", &NormalTexture{Scale: Float64(1)}, []byte(`{}`), false},
+		{"empty", &NormalTexture{Index: Index(0)}, []byte(`{"index":0}`), false},
+		{"nodefault", &NormalTexture{Index: Index(1), Scale: Float64(0.5)}, []byte(`{"index":1,"scale":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -352,9 +352,9 @@ func TestOcclusionTexture_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &OcclusionTexture{Strength: 1}, []byte(`{}`), false},
-		{"empty", &OcclusionTexture{Index: Index(0), Strength: 0}, []byte(`{"index":0,"strength":0}`), false},
-		{"nodefault", &OcclusionTexture{Index: Index(1), Strength: 0.5}, []byte(`{"index":1,"strength":0.5}`), false},
+		{"default", &OcclusionTexture{Strength: Float64(1)}, []byte(`{}`), false},
+		{"empty", &OcclusionTexture{Index: Index(0)}, []byte(`{"index":0}`), false},
+		{"nodefault", &OcclusionTexture{Index: Index(1), Strength: Float64(0.5)}, []byte(`{"index":1,"strength":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -377,9 +377,9 @@ func TestPBRMetallicRoughness_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: NewRGBA()}, []byte(`{}`), false},
-		{"empty", &PBRMetallicRoughness{MetallicFactor: 0, RoughnessFactor: 0}, []byte(`{"metallicFactor":0,"roughnessFactor":0}`), false},
-		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 0.5, RoughnessFactor: 0.5, BaseColorFactor: &RGBA{R: 1, G: 0.5, B: 1, A: 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
+		{"default", &PBRMetallicRoughness{MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorFactor: NewRGBA()}, []byte(`{}`), false},
+		{"empty", &PBRMetallicRoughness{MetallicFactor: Float64(0), RoughnessFactor: Float64(0)}, []byte(`{"metallicFactor":0,"roughnessFactor":0}`), false},
+		{"nodefault", &PBRMetallicRoughness{MetallicFactor: Float64(0.5), RoughnessFactor: Float64(0.5), BaseColorFactor: &RGBA{R: 1, G: 0.5, B: 1, A: 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -533,6 +533,42 @@ func TestPBRMetallicRoughness_BaseColorFactorOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.BaseColorFactorOrDefault(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PBRMetallicRoughness.BaseColorFactorOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestOcclusionTexture_StrengthOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		o    *OcclusionTexture
+		want float64
+	}{
+		{"empty", &OcclusionTexture{}, 1},
+		{"other", &OcclusionTexture{Strength: Float64(2)}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.o.StrengthOrDefault(); got != tt.want {
+				t.Errorf("OcclusionTexture.StrengthOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalTexture_ScaleOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		n    *NormalTexture
+		want float64
+	}{
+		{"empty", &NormalTexture{}, 1},
+		{"other", &NormalTexture{Scale: Float64(2)}, 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.n.ScaleOrDefault(); got != tt.want {
+				t.Errorf("NormalTexture.ScaleOrDefault() = %v, want %v", got, tt.want)
 			}
 		})
 	}
