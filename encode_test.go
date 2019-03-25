@@ -64,6 +64,9 @@ func TestEncoder_Encode(t *testing.T) {
 				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(3), Path: Weights}},
 				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: Translation}},
 			}},
+			{Extras: 8.0, Name: "an_3", Samplers: []AnimationSampler{
+				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: CubicSpline},
+			}},
 		}}}, false},
 		{"withBuffer", args{&Document{Buffers: []Buffer{
 			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1, 2, 3}},
