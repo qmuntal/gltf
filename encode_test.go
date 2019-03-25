@@ -29,9 +29,8 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	rcb := func(uri string) (io.ReadCloser, error) {
 		if chunk, ok := chunks[uri]; ok {
 			return ioutil.NopCloser(chunk), nil
-		} else {
-			return nil, nil
 		}
+		return nil, nil
 	}
 	return NewDecoder(buff, rcb), nil
 }
