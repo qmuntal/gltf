@@ -1,6 +1,7 @@
 package specular
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -56,6 +57,22 @@ func TestPBRSpecularGlossiness_MarshalJSON(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PBRSpecularGlossiness.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
+func TestNew(t *testing.T) {
+	tests := []struct {
+		name string
+		want json.Unmarshaler
+	}{
+		{"base", new(PBRSpecularGlossiness)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := New(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("New() = %v, want %v", got, tt.want)
 			}
 		})
 	}
