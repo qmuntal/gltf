@@ -156,13 +156,42 @@ type Node struct {
 	Weights     []float64   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
 
+// MatrixOrDefault returns the node matrix if it represents a valid affine matrix, else return the default one.
+func (n *Node) MatrixOrDefault() [16]float64 {
+	if n.Matrix == emptyMatrix {
+		return DefaultMatrix
+	}
+	return n.Matrix
+}
+
+// RotationOrDefault returns the node rotation if it represents a valid quaternion, else return the default one.
+func (n *Node) RotationOrDefault() [4]float64 {
+	if n.Rotation == emptyRotation {
+		return DefaultRotation
+	}
+	return n.Rotation
+}
+
+// ScaleOrDefault returns the node scale if it represents a valid scale factor, else return the default one.
+func (n *Node) ScaleOrDefault() [3]float64 {
+	if n.Scale == emptyScale {
+		return DefaultScale
+	}
+	return n.Scale
+}
+
+// TranslationOrDefault returns the node translation.
+func (n *Node) TranslationOrDefault() [3]float64 {
+	return n.Translation
+}
+
 // UnmarshalJSON unmarshal the node with the correct default values.
 func (n *Node) UnmarshalJSON(data []byte) error {
 	type alias Node
 	def := Node{
-		Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-		Rotation: [4]float64{0, 0, 0, 1},
-		Scale:    [3]float64{1, 1, 1},
+		Matrix:   DefaultMatrix,
+		Rotation: DefaultRotation,
+		Scale:    DefaultScale,
 	}
 	tmp := alias(def)
 	err := json.Unmarshal(data, &tmp)
@@ -177,25 +206,25 @@ func (n *Node) MarshalJSON() ([]byte, error) {
 	type alias Node
 	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
 	if err == nil {
-		if n.Matrix == [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1} {
+		if n.Matrix == DefaultMatrix {
 			out = removeProperty([]byte(`"matrix":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]`), out)
-		} else if n.Matrix == [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {
+		} else if n.Matrix == emptyMatrix {
 			out = removeProperty([]byte(`"matrix":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]`), out)
 		}
 
-		if n.Rotation == [4]float64{0, 0, 0, 1} {
+		if n.Rotation == DefaultRotation {
 			out = removeProperty([]byte(`"rotation":[0,0,0,1]`), out)
-		} else if n.Rotation == [4]float64{0, 0, 0, 0} {
+		} else if n.Rotation == emptyRotation {
 			out = removeProperty([]byte(`"rotation":[0,0,0,0]`), out)
 		}
 
-		if n.Scale == [3]float64{1, 1, 1} {
+		if n.Scale == DefaultScale {
 			out = removeProperty([]byte(`"scale":[1,1,1]`), out)
-		} else if n.Scale == [3]float64{0, 0, 0} {
+		} else if n.Scale == emptyScale {
 			out = removeProperty([]byte(`"scale":[0,0,0]`), out)
 		}
 
-		if n.Translation == [3]float64{0, 0, 0} {
+		if n.Translation == DefaultTranslation {
 			out = removeProperty([]byte(`"translation":[0,0,0]`), out)
 		}
 		out = sanitizeJSON(out)
@@ -412,11 +441,37 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct{ *alias }{alias: (*alias)(o)})
 }
 
+// The RGBA components of the base color of the material.
+// Each element must be greater than or equal to 0 and less than or equal to 1.
+type RGBA struct {
+	R, G, B, A float64 `validate:"gte=0,lte=1"`
+}
+
+// NewRGBA returns a default RGBA color.
+func NewRGBA() *RGBA {
+	return &RGBA{1, 1, 1, 1}
+}
+
+// UnmarshalJSON unmarshal the color with the correct default values.
+func (c *RGBA) UnmarshalJSON(data []byte) error {
+	tmp := [4]float64{1, 1, 1, 1}
+	err := json.Unmarshal(data, &tmp)
+	if err == nil {
+		c.R, c.G, c.B, c.A = tmp[0], tmp[1], tmp[2], tmp[3]
+	}
+	return err
+}
+
+// MarshalJSON marshal the color with the correct default values.
+func (c *RGBA) MarshalJSON() ([]byte, error) {
+	return json.Marshal([4]float64{c.R, c.G, c.B, c.A})
+}
+
 // PBRMetallicRoughness defines a set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
 type PBRMetallicRoughness struct {
 	Extensions               Extensions   `json:"extensions,omitempty"`
 	Extras                   interface{}  `json:"extras,omitempty"`
-	BaseColorFactor          [4]float64   `json:"baseColorFactor" validate:"dive,gte=0,lte=1"`
+	BaseColorFactor          *RGBA        `json:"baseColorFactor,omitempty"`
 	BaseColorTexture         *TextureInfo `json:"baseColorTexture,omitempty"`
 	MetallicFactor           float64      `json:"metallicFactor" validate:"gte=0,lte=1"`
 	RoughnessFactor          float64      `json:"roughnessFactor" validate:"gte=0,lte=1"`
@@ -425,7 +480,15 @@ type PBRMetallicRoughness struct {
 
 // NewPBRMetallicRoughness returns a default PBRMetallicRoughness.
 func NewPBRMetallicRoughness() *PBRMetallicRoughness {
-	return &PBRMetallicRoughness{BaseColorFactor: [4]float64{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1}
+	return &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: 1, RoughnessFactor: 1}
+}
+
+// BaseColorFactorOrDefault returns the base color factor if it is not nil, else return the default one.
+func (p *PBRMetallicRoughness) BaseColorFactorOrDefault() RGBA {
+	if p.BaseColorFactor == nil {
+		return *NewRGBA()
+	}
+	return *p.BaseColorFactor
 }
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.
@@ -450,7 +513,7 @@ func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 		if p.RoughnessFactor == 1 {
 			out = removeProperty([]byte(`"roughnessFactor":1`), out)
 		}
-		if p.BaseColorFactor == [4]float64{1, 1, 1, 1} {
+		if p.BaseColorFactor != nil && *p.BaseColorFactor == *NewRGBA() {
 			out = removeProperty([]byte(`"baseColorFactor":[1,1,1,1]`), out)
 		}
 		out = sanitizeJSON(out)

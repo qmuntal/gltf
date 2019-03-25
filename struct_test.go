@@ -228,9 +228,9 @@ func TestPBRMetallicRoughness_UnmarshalJSON(t *testing.T) {
 		want    *PBRMetallicRoughness
 		wantErr bool
 	}{
-		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: [4]float64{1, 1, 1, 1}, MetallicFactor: 1, RoughnessFactor: 1}, false},
+		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: 1, RoughnessFactor: 1}, false},
 		{"nodefault", new(PBRMetallicRoughness), args{[]byte(`{"baseColorFactor": [0.1,0.2,0.6,0.7],"metallicFactor":0.5,"roughnessFactor":0.1}`)}, &PBRMetallicRoughness{
-			BaseColorFactor: [4]float64{0.1, 0.2, 0.6, 0.7}, MetallicFactor: 0.5, RoughnessFactor: 0.1,
+			BaseColorFactor: &RGBA{R: 0.1, G: 0.2, B: 0.6, A: 0.7}, MetallicFactor: 0.5, RoughnessFactor: 0.1,
 		}, false},
 	}
 	for _, tt := range tests {
@@ -377,9 +377,9 @@ func TestPBRMetallicRoughness_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: [4]float64{1, 1, 1, 1}}, []byte(`{}`), false},
-		{"empty", &PBRMetallicRoughness{MetallicFactor: 0, RoughnessFactor: 0, BaseColorFactor: [4]float64{0, 0, 0, 0}}, []byte(`{"baseColorFactor":[0,0,0,0],"metallicFactor":0,"roughnessFactor":0}`), false},
-		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 0.5, RoughnessFactor: 0.5, BaseColorFactor: [4]float64{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
+		{"default", &PBRMetallicRoughness{MetallicFactor: 1, RoughnessFactor: 1, BaseColorFactor: NewRGBA()}, []byte(`{}`), false},
+		{"empty", &PBRMetallicRoughness{MetallicFactor: 0, RoughnessFactor: 0}, []byte(`{"metallicFactor":0,"roughnessFactor":0}`), false},
+		{"nodefault", &PBRMetallicRoughness{MetallicFactor: 0.5, RoughnessFactor: 0.5, BaseColorFactor: &RGBA{R: 1, G: 0.5, B: 1, A: 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -440,6 +440,99 @@ func TestCamera_MarshalJSON(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Camera.MarshalJSON() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNode_MatrixOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		n    *Node
+		want [16]float64
+	}{
+		{"default", &Node{Matrix: DefaultMatrix}, DefaultMatrix},
+		{"zeros", &Node{Matrix: emptyMatrix}, DefaultMatrix},
+		{"other", &Node{Matrix: [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}}, [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.n.MatrixOrDefault(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Node.MatrixOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNode_RotationOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		n    *Node
+		want [4]float64
+	}{
+		{"default", &Node{Rotation: DefaultRotation}, DefaultRotation},
+		{"zeros", &Node{Rotation: emptyRotation}, DefaultRotation},
+		{"other", &Node{Rotation: [4]float64{1, 2, 3, 4}}, [4]float64{1, 2, 3, 4}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.n.RotationOrDefault(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Node.RotationOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNode_ScaleOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		n    *Node
+		want [3]float64
+	}{
+		{"default", &Node{Scale: DefaultScale}, DefaultScale},
+		{"zeros", &Node{Scale: emptyScale}, DefaultScale},
+		{"other", &Node{Scale: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.n.ScaleOrDefault(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Node.ScaleOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNode_TranslationOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		n    *Node
+		want [3]float64
+	}{
+		{"default", &Node{Translation: DefaultTranslation}, DefaultTranslation},
+		{"other", &Node{Translation: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.n.TranslationOrDefault(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Node.TranslationOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPBRMetallicRoughness_BaseColorFactorOrDefault(t *testing.T) {
+	tests := []struct {
+		name string
+		p    *PBRMetallicRoughness
+		want RGBA
+	}{
+		{"empty", &PBRMetallicRoughness{}, *NewRGBA()},
+		{"other", &PBRMetallicRoughness{BaseColorFactor: &RGBA{0.8, 0.8, 0.8, 0.5}}, RGBA{0.8, 0.8, 0.8, 0.5}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.p.BaseColorFactorOrDefault(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PBRMetallicRoughness.BaseColorFactorOrDefault() = %v, want %v", got, tt.want)
 			}
 		})
 	}

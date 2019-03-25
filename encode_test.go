@@ -87,7 +87,7 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float64{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: 0.5, AlphaMode: Opaque},
 			{Extras: 8.0, Name: "pbr", AlphaCutoff: 0.5, AlphaMode: Opaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
-					Extras: 8.0, MetallicFactor: 1, RoughnessFactor: 2, BaseColorFactor: [4]float64{1, 2, 3, 4},
+					Extras: 8.0, MetallicFactor: 1, RoughnessFactor: 2, BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1},
 					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: Index(1), TexCoord: 3},
 					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: Index(6), TexCoord: 5},
 				},
