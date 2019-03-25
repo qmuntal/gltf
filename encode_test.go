@@ -27,7 +27,11 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 		return nil, err
 	}
 	rcb := func(uri string) (io.ReadCloser, error) {
-		return ioutil.NopCloser(chunks[uri]), nil
+		if chunk, ok := chunks[uri]; ok {
+			return ioutil.NopCloser(chunk), nil
+		} else {
+			return nil, nil
+		}
 	}
 	return NewDecoder(buff, rcb), nil
 }
@@ -72,6 +76,7 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1, 2, 3}},
 			{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
 			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []uint8{4, 5, 6, 7}},
+			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc"},
 		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []BufferView{
 			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: ArrayBuffer},

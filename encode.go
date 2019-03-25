@@ -75,6 +75,11 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	if buffer.IsEmbeddedResource() {
 		return nil
 	}
+
+	if len(buffer.Data) == 0 {
+		return nil
+	}
+
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}

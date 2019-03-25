@@ -97,6 +97,8 @@ type SparseIndices struct {
 }
 
 // A Buffer points to binary geometry, animation, or skins.
+// If Data length is 0 and the Buffer is an external resource the Data won't be flushed,
+// which can be useful when there is no need to load data in memory.
 type Buffer struct {
 	Extensions Extensions  `json:"extensions,omitempty"`
 	Extras     interface{} `json:"extras,omitempty"`
@@ -119,10 +121,14 @@ func (b *Buffer) EmbeddedResource() {
 // marshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
 func (b *Buffer) marshalData() ([]uint8, error) {
 	if !b.IsEmbeddedResource() {
-		return []uint8{}, nil
+		return nil, nil
 	}
 	startPos := len(mimetypeApplicationOctet) + 1
-	return base64.StdEncoding.DecodeString(b.URI[startPos:])
+	sl, err := base64.StdEncoding.DecodeString(b.URI[startPos:])
+	if len(sl) == 0 || err != nil {
+		return nil, err
+	}
+	return sl, nil
 }
 
 // BufferView is a view into a buffer generally representing a subset of the buffer.

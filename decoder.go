@@ -22,6 +22,7 @@ type ReadQuotas struct {
 
 // ReadResourceCallback defines a callback that will be called when an external resource should be loaded.
 // The string parameter is the URI of the resource.
+// If the reader and the error are nil the buffer data won't be loaded into memory.
 type ReadResourceCallback = func(string) (io.ReadCloser, error)
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -149,7 +150,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
 		r, err = d.cb(buffer.URI)
-		if err == nil {
+		if r != nil && err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
 			_, err = r.Read(buffer.Data)
 			r.Close()
