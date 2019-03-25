@@ -1,6 +1,7 @@
 package gltf
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -623,6 +624,56 @@ func TestPBRMetallicRoughness_RoughnessFactorOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.RoughnessFactorOrDefault(); got != tt.want {
 				t.Errorf("PBRMetallicRoughness.RoughnessFactorOrDefault() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+type fakeExt struct {
+	A int `json:"a"`
+}
+
+func (f *fakeExt) UnmarshalJSON(data []byte) error {
+	type alias fakeExt
+	tmp := alias(fakeExt{})
+	err := json.Unmarshal(data, &tmp)
+	if err == nil {
+		*f = fakeExt(tmp)
+	}
+	return err
+}
+
+func TestExtensions_UnmarshalJSON(t *testing.T) {
+	RegisterExtension("fake_ext", func() json.Unmarshaler { return new(fakeExt) })
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Extensions
+		wantErr bool
+	}{
+		{"fake_ext", args{[]byte(`{"fake_ext": {"a":2}}`)}, &Extensions{
+			"fake_ext": &fakeExt{A: 2},
+		}, false},
+		{"err", args{[]byte(`{"fake_ext": {{"a":2}}`)}, &Extensions{}, true},
+		{"errext", args{[]byte(`{"fake_ext": {"a":"incorrect"}}`)}, &Extensions{
+			"fake_ext": json.RawMessage([]byte(`{"a":"incorrect"}`)),
+		}, false},
+		{"noregistered", args{[]byte(`{"fake_ext_1": {"a":"incorrect"}}`)}, &Extensions{
+			"fake_ext_1": json.RawMessage([]byte(`{"a":"incorrect"}`)),
+		}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ext := Extensions{}
+			if err := ext.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("Extensions.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(&ext, tt.want) {
+				t.Errorf("PBRSpecularGlossiness.MarshalJSON() = %v, want %v", &ext, tt.want)
 			}
 		})
 	}

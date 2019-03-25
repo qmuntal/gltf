@@ -193,12 +193,11 @@ func (n *Node) TranslationOrDefault() [3]float64 {
 // UnmarshalJSON unmarshal the node with the correct default values.
 func (n *Node) UnmarshalJSON(data []byte) error {
 	type alias Node
-	def := Node{
+	tmp := alias(Node{
 		Matrix:   DefaultMatrix,
 		Rotation: DefaultRotation,
 		Scale:    DefaultScale,
-	}
-	tmp := alias(def)
+	})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*n = Node(tmp)
@@ -455,7 +454,7 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct{ *alias }{alias: (*alias)(o)})
 }
 
-// The RGBA components of the base color of the material.
+// The RGBA components of a color.
 // Each element must be greater than or equal to 0 and less than or equal to 1.
 type RGBA struct {
 	R, G, B, A float64 `validate:"gte=0,lte=1"`
@@ -479,6 +478,32 @@ func (c *RGBA) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the color with the correct default values.
 func (c *RGBA) MarshalJSON() ([]byte, error) {
 	return json.Marshal([4]float64{c.R, c.G, c.B, c.A})
+}
+
+// The RGB components of a color.
+// Each element must be greater than or equal to 0 and less than or equal to 1.
+type RGB struct {
+	R, G, B float64 `validate:"gte=0,lte=1"`
+}
+
+// NewRGB returns a default RGB color.
+func NewRGB() *RGB {
+	return &RGB{1, 1, 1}
+}
+
+// UnmarshalJSON unmarshal the color with the correct default values.
+func (c *RGB) UnmarshalJSON(data []byte) error {
+	tmp := [3]float64{1, 1, 1}
+	err := json.Unmarshal(data, &tmp)
+	if err == nil {
+		c.R, c.G, c.B = tmp[0], tmp[1], tmp[2]
+	}
+	return err
+}
+
+// MarshalJSON marshal the color with the correct default values.
+func (c *RGB) MarshalJSON() ([]byte, error) {
+	return json.Marshal([3]float64{c.R, c.G, c.B})
 }
 
 // PBRMetallicRoughness defines a set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
@@ -639,6 +664,48 @@ type ChannelTarget struct {
 	Extras     interface{} `json:"extras,omitempty"`
 	Node       *uint32     `json:"node,omitempty"`
 	Path       TRSProperty `json:"path" validate:"lte=4"`
+}
+
+// Extensions is map where the keys are the extension identifiers and the values are the extensions payloads.
+// If a key matches with one of the supported extensions the value will be marshalled as a pointer to the extension struct.
+// If a key does not match with any of the supported extensions the value will be a json.RawMessage so its decoding can be delayed.
+type Extensions map[string]interface{}
+
+type envelope map[string]json.RawMessage
+
+var extensions = make(map[string]func() json.Unmarshaler)
+
+// RegisterExtension registers a function that returns a new extension of the given
+// byte array. This is intended to be called from the init function in
+// packages that implement extensions.
+func RegisterExtension(key string, f func() json.Unmarshaler) {
+	extensions[key] = f
+}
+
+// UnmarshalJSON unmarshal the extensions with the supported extensions initialized.
+func (ext *Extensions) UnmarshalJSON(data []byte) error {
+	if len(*ext) == 0 {
+		*ext = make(Extensions)
+	}
+	var raw envelope
+	err := json.Unmarshal(data, &raw)
+	if err == nil {
+		for key, value := range raw {
+			if extFactory, ok := extensions[key]; ok {
+				n := extFactory()
+				err := json.Unmarshal(value, n)
+				if err != nil {
+					(*ext)[key] = value
+				} else {
+					(*ext)[key] = n
+				}
+			} else {
+				(*ext)[key] = value
+			}
+		}
+	}
+
+	return err
 }
 
 func removeProperty(str []byte, b []byte) []byte {
