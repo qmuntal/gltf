@@ -90,12 +90,15 @@ func (d *Decoder) Decode(doc *Document) error {
 	return nil
 }
 
-func (d *Decoder) decodeDocument(doc *Document) (isBinary bool, err error) {
+func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 	glbHeader, err := d.readGLBHeader()
 	if err != nil {
-		return
+		return false, err
 	}
-	var jd *json.Decoder
+	var (
+		jd       *json.Decoder
+		isBinary bool
+	)
 	if glbHeader != nil {
 		jd = json.NewDecoder(&io.LimitedReader{R: d.r, N: int64(glbHeader.JSONHeader.Length)})
 		isBinary = true
@@ -105,7 +108,11 @@ func (d *Decoder) decodeDocument(doc *Document) (isBinary bool, err error) {
 	}
 
 	err = jd.Decode(doc)
-	return
+	if err == nil && len(doc.Buffers) > d.quotas.MaxBufferCount {
+		err = errors.New("gltf: Quota exceeded, number of buffer > MaxBufferCount")
+	}
+
+	return isBinary, err
 }
 
 func (d *Decoder) readGLBHeader() (*glbHeader, error) {
@@ -120,13 +127,17 @@ func (d *Decoder) readGLBHeader() (*glbHeader, error) {
 		return nil, nil
 	}
 	d.r.Read(chunk)
+	return &header, d.validateGLBHeader(&header)
+}
+
+func (d *Decoder) validateGLBHeader(header *glbHeader) error {
 	if int(header.Length) > d.quotas.MaxMemoryAllocation {
-		return nil, errors.New("gltf: Quota exceeded, bytes of glb buffer > MaxMemoryAllocation")
+		return errors.New("gltf: Quota exceeded, bytes of glb buffer > MaxMemoryAllocation")
 	}
 	if header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(unsafe.Sizeof(header))) > header.Length {
-		return nil, errors.New("gltf: Invalid GLB JSON header")
+		return errors.New("gltf: Invalid GLB JSON header")
 	}
-	return &header, nil
+	return nil
 }
 
 func (d *Decoder) chunkHeader() (*chunkHeader, error) {
