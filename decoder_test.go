@@ -44,7 +44,7 @@ func TestOpen(t *testing.T) {
 			},
 			Buffers:   []Buffer{{ByteLength: 1800, URI: "Cube.bin", Data: readFile("testdata/Cube/glTF/Cube.bin")}},
 			Images:    []Image{{URI: "Cube_BaseColor.png"}, {URI: "Cube_MetallicRoughness.png"}},
-			Materials: []Material{{Name: "Cube", AlphaMode: Opaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorTexture: &TextureInfo{Index: Index(0)}, MetallicRoughnessTexture: &TextureInfo{Index: Index(1)}}}},
+			Materials: []Material{{Name: "Cube", AlphaMode: Opaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorTexture: &TextureInfo{Index: 0}, MetallicRoughnessTexture: &TextureInfo{Index: 1}}}},
 			Meshes:    []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: Index(0), Material: Index(0), Mode: Triangles, Attributes: map[string]uint32{"NORMAL": 2, "POSITION": 1, "TANGENT": 3, "TEXCOORD_0": 4}}}}},
 			Nodes:     []Node{{Mesh: Index(0), Name: "Cube", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}}},
 			Samplers:  []Sampler{{WrapS: Repeat, WrapT: Repeat}},
@@ -66,7 +66,7 @@ func TestOpen(t *testing.T) {
 			},
 			Buffers: []Buffer{{ByteLength: 60, URI: "simpleSquare.bin", Data: readFile("testdata/Cameras/glTF/simpleSquare.bin")}},
 			Cameras: []Camera{
-				{Perspective: &Perspective{AspectRatio: 1.0, Yfov: 0.7, Zfar: 100, Znear: 0.01}},
+				{Perspective: &Perspective{AspectRatio: Float64(1.0), Yfov: 0.7, Zfar: Float64(100), Znear: 0.01}},
 				{Orthographic: &Orthographic{Xmag: 1.0, Ymag: 1.0, Zfar: 100, Znear: 0.01}},
 			},
 			Meshes: []Mesh{{Primitives: []Primitive{{Indices: Index(0), Mode: Triangles, Attributes: map[string]uint32{"POSITION": 1}}}}},
