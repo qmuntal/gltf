@@ -49,20 +49,8 @@ if err != nil {
 }
 fmt.Print(doc.Asset)
 ```
-### Write
-```go
-doc := &gltf.Document{
-  Scene: 0, 
-  Asset: gltf.Asset{Generator: "qmuntal/gltf"}, 
-  Scenes: []gltf.Scene{{Extras: 8.0, Extensions: gltf.Extensions{"a": "b"}, Name: "s_1"}}
-}
- 
-if err := gltf.Save(doc, "./a.gltf", true); err != nil {
-  panic(err)
-}
-```
 
-### Write complex
+### Save
 ```go
 doc := &gltf.Document{
   Accessors: []gltf.Accessor{
@@ -80,10 +68,11 @@ doc := &gltf.Document{
     {Buffer: 0, ByteLength: 384, ByteOffset: 648, Target: gltf.ArrayBuffer},
     {Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: gltf.ArrayBuffer},
   },
-  Buffers: []gltf.Buffer{{ByteLength: 1224, Data: readFile("testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb")[1628+20+8:]}},
-  Materials: []gltf.Material{{Name: "Default", AlphaMode: gltf.Opaque, AlphaCutoff: gltf.Float64(0.5), 
-    PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: [4]float64{0.8, 0.8, 0.8, 1}, MetallicFactor: gltf.Float64(0.1), RoughnessFactor: gltf.Float64(0.99)}}
-  },
+  Buffers: []gltf.Buffer{{ByteLength: 1224, Data: []uint8{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}}},
+  Materials: []gltf.Material{{
+		Name: "Default", AlphaMode: gltf.Opaque, AlphaCutoff: gltf.Float64(0.5),
+		PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: &gltf.RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1}, MetallicFactor: gltf.Float64(0.1), RoughnessFactor: gltf.Float64(0.99)},
+	}},
   Meshes: []gltf.Mesh{{Name: "Cube", Primitives: []gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.Triangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
   Nodes: []gltf.Node{
     {Name: "RootNode", Children: []uint32{1, 2, 3}},

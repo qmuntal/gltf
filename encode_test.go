@@ -29,9 +29,8 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	rcb := func(uri string) (io.ReadCloser, error) {
 		if chunk, ok := chunks[uri]; ok {
 			return ioutil.NopCloser(chunk), nil
-		} else {
-			return nil, nil
 		}
+		return nil, nil
 	}
 	return NewDecoder(buff, rcb), nil
 }
@@ -84,7 +83,7 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withCameras", args{&Document{Cameras: []Camera{
 			{Extras: 8.0, Name: "cam_1", Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
-			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: 1, Yfov: 2, Zfar: 3, Znear: 4}},
+			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: Float64(1), Yfov: 2, Zfar: Float64(3), Znear: 4}},
 		}}}, false},
 		{"withImages", args{&Document{Images: []Image{
 			{Extras: 8.0, Name: "binary", BufferView: 1, MimeType: "data:image/png"},
@@ -96,8 +95,8 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "pbr", AlphaCutoff: Float64(0.5), AlphaMode: Opaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
 					Extras: 8.0, MetallicFactor: Float64(1), RoughnessFactor: Float64(2), BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1},
-					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: Index(1), TexCoord: 3},
-					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: Index(6), TexCoord: 5},
+					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: 1, TexCoord: 3},
+					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: 6, TexCoord: 5},
 				},
 			},
 			{Extras: 8.0, Name: "normal", AlphaCutoff: Float64(0.7), AlphaMode: Blend,
@@ -106,7 +105,7 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "occlusion", AlphaCutoff: Float64(0.5), AlphaMode: Mask,
 				OcclusionTexture: &OcclusionTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Strength: Float64(2.0)},
 			},
-			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float64(0.5), AlphaMode: Mask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: Index(4), TexCoord: 50}},
+			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float64(0.5), AlphaMode: Mask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
 		}}}, false},
 		{"withMeshes", args{&Document{Meshes: []Mesh{
 			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
