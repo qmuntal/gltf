@@ -140,7 +140,7 @@ func TestOpen(t *testing.T) {
 }
 
 func readCallback(name string) (io.ReadCloser, error) {
-	return ioutil.NopCloser(bytes.NewBufferString("a")), nil
+	return ioutil.NopCloser(bytes.NewBufferString("abcdefg")), nil
 }
 
 func TestDecoder_decodeBuffer(t *testing.T) {
