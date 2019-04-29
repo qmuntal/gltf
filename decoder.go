@@ -163,7 +163,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		r, err = d.cb(buffer.URI)
 		if r != nil && err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
-			_, err = r.Read(buffer.Data)
+			_, err = io.ReadFull(r, buffer.Data)
 			r.Close()
 		}
 	}
@@ -182,7 +182,7 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 		return errors.New("gltf: Invalid GLB BIN header")
 	}
 	buffer.Data = make([]uint8, buffer.ByteLength)
-	_, err = d.r.Read(buffer.Data)
+	_, err = io.ReadFull(d.r, buffer.Data)
 	return err
 }
 
