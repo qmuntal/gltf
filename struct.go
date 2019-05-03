@@ -607,7 +607,7 @@ type Image struct {
 	Name       string      `json:"name,omitempty"`
 	URI        string      `json:"uri,omitempty" validate:"omitempty"`
 	MimeType   string      `json:"mimeType,omitempty" validate:"omitempty,oneof=image/jpeg image/png"` // Manadatory if BufferView is defined.
-	BufferView uint32      `json:"bufferView,omitempty"`                                               // Use this instead of the image's uri property.
+	BufferView *uint32      `json:"bufferView,omitempty"`                                               // Use this instead of the image's uri property.
 }
 
 // IsEmbeddedResource returns true if the buffer points to an embedded resource.

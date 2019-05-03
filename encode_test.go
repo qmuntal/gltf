@@ -82,7 +82,7 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: 1, Yfov: 2, Zfar: 3, Znear: 4}},
 		}}}, false},
 		{"withImages", args{&Document{Images: []Image{
-			{Extras: 8.0, Name: "binary", BufferView: 1, MimeType: "data:image/png"},
+			{Extras: 8.0, Name: "binary", BufferView: Index(1), MimeType: "data:image/png"},
 			{Extras: 8.0, Name: "embedded", URI: "data:image/png;base64,dsjdsaGGUDXGA", MimeType: "data:image/png"},
 			{Extras: 8.0, Name: "external", URI: "https://web.com/a", MimeType: "data:image/png"},
 		}}}, false},
