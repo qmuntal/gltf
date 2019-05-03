@@ -96,7 +96,7 @@ func TestValidateDocument(t *testing.T) {
 		{"Document.Images[0].URI", &Document{Asset: Asset{Version: "1.0"},
 			Images: []Image{{URI: "a.png"}}}, false},
 		{"Document.Images[0].MimeType", &Document{Asset: Asset{Version: "1.0"},
-			Images: []Image{{BufferView: 1}}}, true},
+			Images: []Image{{BufferView: Index(1)}}}, true},
 		{"Document.Animations[0].Channels", &Document{Asset: Asset{Version: "1.0"},
 			Animations: []Animation{{Samplers: []AnimationSampler{{}}}}}, true},
 		{"Document.Animations[0].Channels[0].Target.Path", &Document{Asset: Asset{Version: "1.0"},
