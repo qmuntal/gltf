@@ -254,12 +254,12 @@ func (m *MagFilter) MarshalJSON() ([]byte, error) {
 type MinFilter uint16
 
 const (
+	// MinLinear corresponds to a linear minification filter.
+	MinLinear MinFilter = iota
 	// MinNearestMipMapLinear corresponds to a nearest mipmap linear minification filter.
-	MinNearestMipMapLinear MinFilter = iota
+	MinNearestMipMapLinear
 	// MinNearest corresponds to a nearest minification filter.
 	MinNearest
-	// MinLinear corresponds to a linear minification filter.
-	MinLinear
 	// MinNearestMipMapNearest corresponds to a nearest mipmap nearest minification filter.
 	MinNearestMipMapNearest
 	// MinLinearMipMapNearest corresponds to a linear mipmap nearest minification filter.

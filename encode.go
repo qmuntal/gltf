@@ -63,7 +63,11 @@ func (e *Encoder) Encode(doc *Document) error {
 	}
 
 	for i := externalBufferIndex; i < len(doc.Buffers); i++ {
-		if err = e.encodeBuffer(&doc.Buffers[i]); err != nil {
+		buffer := &doc.Buffers[i]
+		if len(buffer.Data) == 0 || buffer.IsEmbeddedResource() {
+			continue
+		}
+		if err = e.encodeBuffer(buffer); err != nil {
 			return err
 		}
 	}
@@ -72,16 +76,19 @@ func (e *Encoder) Encode(doc *Document) error {
 }
 
 func (e *Encoder) encodeBuffer(buffer *Buffer) error {
-	if buffer.IsEmbeddedResource() {
+	if len(buffer.Data) == 0 || buffer.IsEmbeddedResource() {
 		return nil
 	}
+
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}
+
 	r, err := e.cb(buffer.URI, int(buffer.ByteLength))
 	if err != nil {
 		return err
 	}
+
 	_, err = r.Write(buffer.Data)
 	if err != nil {
 		return err

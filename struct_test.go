@@ -403,9 +403,9 @@ func TestBuffer_marshalData(t *testing.T) {
 		want    []uint8
 		wantErr bool
 	}{
-		{"error", &Buffer{URI: "data:application/octet-stream;base64,_"}, []uint8{}, true},
-		{"external", &Buffer{URI: "http://web.com"}, []uint8{}, false},
-		{"empty", &Buffer{URI: "data:application/octet-stream;base64,"}, []uint8{}, false},
+		{"error", &Buffer{URI: "data:application/octet-stream;base64,_"}, nil, true},
+		{"external", &Buffer{URI: "http://web.com"}, nil, false},
+		{"empty", &Buffer{URI: "data:application/octet-stream;base64,"}, nil, false},
 		{"test", &Buffer{URI: "data:application/octet-stream;base64,TEST"}, []uint8{76, 68, 147}, false},
 		{"complex", &Buffer{URI: "data:application/octet-stream;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []uint8{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
 	}

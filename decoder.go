@@ -22,6 +22,7 @@ type ReadQuotas struct {
 
 // ReadResourceCallback defines a callback that will be called when an external resource should be loaded.
 // The string parameter is the URI of the resource.
+// If the reader and the error are nil the buffer data won't be loaded into memory.
 type ReadResourceCallback = func(string) (io.ReadCloser, error)
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -89,12 +90,15 @@ func (d *Decoder) Decode(doc *Document) error {
 	return nil
 }
 
-func (d *Decoder) decodeDocument(doc *Document) (isBinary bool, err error) {
+func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 	glbHeader, err := d.readGLBHeader()
 	if err != nil {
-		return
+		return false, err
 	}
-	var jd *json.Decoder
+	var (
+		jd       *json.Decoder
+		isBinary bool
+	)
 	if glbHeader != nil {
 		jd = json.NewDecoder(&io.LimitedReader{R: d.r, N: int64(glbHeader.JSONHeader.Length)})
 		isBinary = true
@@ -104,7 +108,11 @@ func (d *Decoder) decodeDocument(doc *Document) (isBinary bool, err error) {
 	}
 
 	err = jd.Decode(doc)
-	return
+	if err == nil && len(doc.Buffers) > d.quotas.MaxBufferCount {
+		err = errors.New("gltf: Quota exceeded, number of buffer > MaxBufferCount")
+	}
+
+	return isBinary, err
 }
 
 func (d *Decoder) readGLBHeader() (*glbHeader, error) {
@@ -119,13 +127,17 @@ func (d *Decoder) readGLBHeader() (*glbHeader, error) {
 		return nil, nil
 	}
 	d.r.Read(chunk)
+	return &header, d.validateGLBHeader(&header)
+}
+
+func (d *Decoder) validateGLBHeader(header *glbHeader) error {
 	if int(header.Length) > d.quotas.MaxMemoryAllocation {
-		return nil, errors.New("gltf: Quota exceeded, bytes of glb buffer > MaxMemoryAllocation")
+		return errors.New("gltf: Quota exceeded, bytes of glb buffer > MaxMemoryAllocation")
 	}
 	if header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(unsafe.Sizeof(header))) > header.Length {
-		return nil, errors.New("gltf: Invalid GLB JSON header")
+		return errors.New("gltf: Invalid GLB JSON header")
 	}
-	return &header, nil
+	return nil
 }
 
 func (d *Decoder) chunkHeader() (*chunkHeader, error) {
@@ -149,9 +161,9 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
 		r, err = d.cb(buffer.URI)
-		if err == nil {
+		if r != nil && err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
-			_, err = r.Read(buffer.Data)
+			_, err = io.ReadFull(r, buffer.Data)
 			r.Close()
 		}
 	}
@@ -170,7 +182,7 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 		return errors.New("gltf: Invalid GLB BIN header")
 	}
 	buffer.Data = make([]uint8, buffer.ByteLength)
-	_, err = d.r.Read(buffer.Data)
+	_, err = io.ReadFull(d.r, buffer.Data)
 	return err
 }
 
