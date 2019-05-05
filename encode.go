@@ -76,10 +76,6 @@ func (e *Encoder) Encode(doc *Document) error {
 }
 
 func (e *Encoder) encodeBuffer(buffer *Buffer) error {
-	if len(buffer.Data) == 0 || buffer.IsEmbeddedResource() {
-		return nil
-	}
-
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}

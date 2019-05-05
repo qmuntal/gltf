@@ -1,11 +1,11 @@
 package gltf
 
 import (
-	"reflect"
 	"bytes"
 	"errors"
 	"io"
 	"io/ioutil"
+	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -147,10 +147,10 @@ type chunkedReader struct {
 
 func (c *chunkedReader) Read(p []byte) (n int, err error) {
 	c.n++
-	if c.n == len(c.s) + 1 {
+	if c.n == len(c.s)+1 {
 		return 0, io.EOF
 	}
-	p[0] = c.s[c.n-1:c.n][0]
+	p[0] = c.s[c.n-1 : c.n][0]
 	return 1, nil
 }
 
@@ -168,7 +168,7 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		name    string
 		d       *Decoder
 		args    args
-		want 	[]byte
+		want    []byte
 		wantErr bool
 	}{
 		{"byteLength_0", &Decoder{quotas: ReadQuotas{MaxMemoryAllocation: 2}}, args{&Buffer{ByteLength: 0, URI: "a.bin"}}, nil, true},
@@ -200,16 +200,16 @@ func TestDecoder_decodeBinaryBuffer(t *testing.T) {
 		name    string
 		d       *Decoder
 		args    args
-		want []byte
+		want    []byte
 		wantErr bool
 	}{
-		{"base", NewDecoder(bytes.NewBuffer([]byte{0x06, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}), 
+		{"base", NewDecoder(bytes.NewBuffer([]byte{0x06, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}),
 			nil), args{&Buffer{ByteLength: 6}},
 			[]byte{1, 2, 3, 4, 5, 6}, false},
-		{"smallbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}), 
+		{"smallbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}),
 			nil), args{&Buffer{ByteLength: 5}},
 			[]byte{1, 2, 3, 4, 5}, false},
-		{"bigbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}), 
+		{"bigbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}),
 			nil), args{&Buffer{ByteLength: 7}},
 			nil, true},
 		{"invalidBuffer", new(Decoder), args{&Buffer{ByteLength: 0}}, nil, true},
