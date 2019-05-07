@@ -10,29 +10,26 @@ import (
 	"github.com/go-test/deep"
 )
 
-type writeCloser struct {
-	io.Writer
-}
-
-func (w *writeCloser) Close() error { return nil }
-
 func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
-	chunks := make(map[string]*bytes.Buffer)
-	wcb := func(uri string, size int) (io.WriteCloser, error) {
-		chunks[uri] = bytes.NewBuffer(make([]byte, 0, size))
-		return &writeCloser{chunks[uri]}, nil
+	chunks := make(map[string][]byte)
+	wcb := func(uri string, data []byte) error {
+		chunks[uri] = data
+		return nil
 	}
-	if err := NewEncoder(buff, wcb, asBinary).Encode(doc); err != nil {
+	e := NewEncoder(buff)
+	e.WithCallback(wcb)
+	e.AsBinary = asBinary
+	if err := e.Encode(doc); err != nil {
 		return nil, err
 	}
 	rcb := func(uri string) (io.ReadCloser, error) {
 		if chunk, ok := chunks[uri]; ok {
-			return ioutil.NopCloser(chunk), nil
+			return ioutil.NopCloser(bytes.NewReader(chunk)), nil
 		}
 		return nil, nil
 	}
-	return NewDecoder(buff, rcb), nil
+	return NewDecoder(buff).WithCallback(rcb), nil
 }
 
 func TestEncoder_Encode(t *testing.T) {
