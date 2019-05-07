@@ -171,13 +171,12 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"byteLength_0", &Decoder{quotas: ReadQuotas{MaxMemoryAllocation: 2}}, args{&Buffer{ByteLength: 0, URI: "a.bin"}}, nil, true},
-		{"noURI", &Decoder{quotas: ReadQuotas{MaxMemoryAllocation: 2}}, args{&Buffer{ByteLength: 1, URI: ""}}, nil, true},
-		{"invalidURI", &Decoder{quotas: ReadQuotas{MaxMemoryAllocation: 2}}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
-		{"maxQuota", &Decoder{quotas: ReadQuotas{MaxMemoryAllocation: 2}}, args{&Buffer{ByteLength: 3, URI: "a.bin"}}, nil, true},
-		{"cbErr", NewDecoder(nil, func(name string) (io.ReadCloser, error) { return nil, errors.New("") }), args{&Buffer{ByteLength: 3, URI: "a.bin"}}, nil, true},
-		{"noFilBuf", NewDecoder(nil, readCallback("")), args{&Buffer{ByteLength: 30, URI: "a.bin"}}, make([]byte, 30), true},
-		{"base", NewDecoder(nil, readCallback("abcdfg")), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
+		{"byteLength_0", &Decoder{}, args{&Buffer{ByteLength: 0, URI: "a.bin"}}, nil, true},
+		{"noURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: ""}}, nil, true},
+		{"invalidURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
+		{"cbErr", NewDecoder(nil).WithCallback(func(name string) (io.ReadCloser, error) { return nil, errors.New("") }), args{&Buffer{ByteLength: 3, URI: "a.bin"}}, nil, true},
+		{"noFilBuf", NewDecoder(nil).WithCallback(readCallback("")), args{&Buffer{ByteLength: 30, URI: "a.bin"}}, make([]byte, 30), true},
+		{"base", NewDecoder(nil).WithCallback(readCallback("abcdfg")), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -203,18 +202,15 @@ func TestDecoder_decodeBinaryBuffer(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"base", NewDecoder(bytes.NewBuffer([]byte{0x06, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}),
-			nil), args{&Buffer{ByteLength: 6}},
-			[]byte{1, 2, 3, 4, 5, 6}, false},
-		{"smallbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}),
-			nil), args{&Buffer{ByteLength: 5}},
-			[]byte{1, 2, 3, 4, 5}, false},
-		{"bigbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6}),
-			nil), args{&Buffer{ByteLength: 7}},
-			nil, true},
+		{"base", NewDecoder(bytes.NewBuffer([]byte{0x06, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6})),
+			args{&Buffer{ByteLength: 6}}, []byte{1, 2, 3, 4, 5, 6}, false},
+		{"smallbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6})),
+			args{&Buffer{ByteLength: 5}}, []byte{1, 2, 3, 4, 5}, false},
+		{"bigbuffer", NewDecoder(bytes.NewBuffer([]byte{0x6, 0x00, 0x00, 0x00, 0x42, 0x49, 0x4e, 0x00, 1, 2, 3, 4, 5, 6})),
+			args{&Buffer{ByteLength: 7}}, nil, true},
 		{"invalidBuffer", new(Decoder), args{&Buffer{ByteLength: 0}}, nil, true},
-		{"readErr", NewDecoder(bytes.NewBufferString(""), nil), args{&Buffer{ByteLength: 1}}, nil, true},
-		{"invalidHeader", NewDecoder(bytes.NewBufferString("aaaaaaaa"), nil), args{&Buffer{ByteLength: 1}}, nil, true},
+		{"readErr", NewDecoder(bytes.NewBufferString("")), args{&Buffer{ByteLength: 1}}, nil, true},
+		{"invalidHeader", NewDecoder(bytes.NewBufferString("aaaaaaaa")), args{&Buffer{ByteLength: 1}}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -239,14 +235,12 @@ func TestDecoder_Decode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}"), readCallback("abcdfg")), args{new(Document)}, false},
-		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e}), readCallback("abcdfg")), args{new(Document)}, true},
-		{"glbMaxMemory", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e}), readCallback("abcdfg")).SetQuotas(ReadQuotas{MaxMemoryAllocation: 0}), args{new(Document)}, true},
-		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e}), readCallback("abcdfg")), args{new(Document)}, true},
-		{"empty", NewDecoder(bytes.NewBufferString(""), nil), args{new(Document)}, true},
-		{"invalidJSON", NewDecoder(bytes.NewBufferString("{asset: {}}"), nil), args{new(Document)}, true},
-		{"invalidBuffer", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 0}]}"), nil), args{new(Document)}, true},
-		{"maxBuffers", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 0}]}"), nil).SetQuotas(ReadQuotas{MaxBufferCount: 0}), args{new(Document)}, true},
+		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}")).WithCallback(readCallback("abcdfg")), args{new(Document)}, false},
+		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e})).WithCallback(readCallback("abcdfg")), args{new(Document)}, true},
+		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e})).WithCallback(readCallback("abcdfg")), args{new(Document)}, true},
+		{"empty", NewDecoder(bytes.NewBufferString("")), args{new(Document)}, true},
+		{"invalidJSON", NewDecoder(bytes.NewBufferString("{asset: {}}")), args{new(Document)}, true},
+		{"invalidBuffer", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 0}]}")), args{new(Document)}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

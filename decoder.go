@@ -14,16 +14,14 @@ import (
 	"unsafe"
 )
 
-// ReadQuotas defines maximum allocation sizes to prevent DOS's from malicious files.
-type ReadQuotas struct {
-	MaxBufferCount      int
-	MaxMemoryAllocation int
-}
-
 // ReadResourceCallback defines a callback that will be called when an external resource should be loaded.
 // The string parameter is the URI of the resource.
 // If the reader and the error are nil the buffer data won't be loaded into memory.
 type ReadResourceCallback = func(string) (io.ReadCloser, error)
+
+func nilReadData(uri string) (io.ReadCloser, error) {
+	return nil, nil
+}
 
 // Open will open a glTF or GLB file specified by name and return the Document.
 func Open(name string) (*Document, error) {
@@ -35,32 +33,31 @@ func Open(name string) (*Document, error) {
 		return os.Open(filepath.Join(filepath.Dir(name), uri))
 	}
 	doc := new(Document)
-	err = NewDecoder(f, cb).Decode(doc)
+	err = NewDecoder(f).WithCallback(cb).Decode(doc)
 	f.Close()
 	return doc, err
 }
 
 // A Decoder reads and decodes glTF and GLB values from an input stream.
+// Callback is called to read external resources.
+// If Callback is nil the external resource data in not loaded.
 type Decoder struct {
-	r      *bufio.Reader
-	cb     ReadResourceCallback
-	quotas ReadQuotas
+	Callback ReadResourceCallback
+	r        *bufio.Reader
 }
 
 // NewDecoder returns a new decoder that reads from r.
-func NewDecoder(r io.Reader, cb ReadResourceCallback) *Decoder {
+// By default the external buffers are not read.
+func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
-		r:  bufio.NewReader(r),
-		cb: cb,
-		quotas: ReadQuotas{
-			MaxBufferCount:      8,
-			MaxMemoryAllocation: 32 * 1024 * 1024,
-		}}
+		Callback: nilReadData,
+		r:        bufio.NewReader(r),
+	}
 }
 
-// SetQuotas sets the read memory limits. The return value is the same decoder.
-func (d *Decoder) SetQuotas(quotas ReadQuotas) *Decoder {
-	d.quotas = quotas
+// WithCallback sets the ReadResourceCallback.
+func (d *Decoder) WithCallback(c ReadResourceCallback) *Decoder {
+	d.Callback = c
 	return d
 }
 
@@ -70,9 +67,6 @@ func (d *Decoder) Decode(doc *Document) error {
 	isBinary, err := d.decodeDocument(doc)
 	if err != nil {
 		return err
-	}
-	if len(doc.Buffers) > d.quotas.MaxBufferCount {
-		return errors.New("gltf: Quota exceeded, number of buffer > MaxBufferCount")
 	}
 
 	var externalBufferIndex = 0
@@ -107,12 +101,7 @@ func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 		isBinary = false
 	}
 
-	err = jd.Decode(doc)
-	if err == nil && len(doc.Buffers) > d.quotas.MaxBufferCount {
-		err = errors.New("gltf: Quota exceeded, number of buffer > MaxBufferCount")
-	}
-
-	return isBinary, err
+	return isBinary, jd.Decode(doc)
 }
 
 func (d *Decoder) readGLBHeader() (*glbHeader, error) {
@@ -131,9 +120,6 @@ func (d *Decoder) readGLBHeader() (*glbHeader, error) {
 }
 
 func (d *Decoder) validateGLBHeader(header *glbHeader) error {
-	if int(header.Length) > d.quotas.MaxMemoryAllocation {
-		return errors.New("gltf: Quota exceeded, bytes of glb buffer > MaxMemoryAllocation")
-	}
 	if header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(unsafe.Sizeof(header))) > header.Length {
 		return errors.New("gltf: Invalid GLB JSON header")
 	}
@@ -160,7 +146,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
-		r, err = d.cb(buffer.URI)
+		r, err = d.Callback(buffer.URI)
 		if r != nil && err == nil {
 			buffer.Data = make([]uint8, buffer.ByteLength)
 			_, err = io.ReadFull(r, buffer.Data)
@@ -189,10 +175,6 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 func (d *Decoder) validateBuffer(buffer *Buffer) error {
 	if buffer.ByteLength == 0 {
 		return errors.New("gltf: Invalid buffer.byteLength value = 0")
-	}
-
-	if int(buffer.ByteLength) > d.quotas.MaxMemoryAllocation {
-		return errors.New("gltf: Quota exceeded, bytes of buffer > MaxMemoryAllocation")
 	}
 	return nil
 }
