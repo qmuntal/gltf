@@ -2,7 +2,6 @@ package gltf
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"io/ioutil"
 	"reflect"
@@ -174,8 +173,7 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		{"byteLength_0", &Decoder{}, args{&Buffer{ByteLength: 0, URI: "a.bin"}}, nil, true},
 		{"noURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: ""}}, nil, true},
 		{"invalidURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
-		{"cbErr", NewDecoder(nil).WithCallback(func(name string) (io.ReadCloser, error) { return nil, errors.New("") }), args{&Buffer{ByteLength: 3, URI: "a.bin"}}, nil, true},
-		{"noFilBuf", NewDecoder(nil).WithCallback(readCallback("")), args{&Buffer{ByteLength: 30, URI: "a.bin"}}, make([]byte, 30), true},
+		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, true},
 		{"base", NewDecoder(nil).WithCallback(readCallback("abcdfg")), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
 	}
 	for _, tt := range tests {
