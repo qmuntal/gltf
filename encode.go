@@ -18,12 +18,12 @@ func discardWriteData(uri string, data []byte) error {
 }
 
 // Save will save a document as a glTF with the specified by name.
-func Save(doc *Document, name string, asBinary bool) error {
+func Save(doc *Document, name string) error {
 	return save(doc, name, false)
 }
 
 // Save will save a document as a GLB file with the specified by name.
-func SaveBinary(doc *Document, name string, asBinary bool) error {
+func SaveBinary(doc *Document, name string) error {
 	return save(doc, name, true)
 }
 

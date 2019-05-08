@@ -84,7 +84,7 @@ doc := &gltf.Document{
   Scene: gltf.Index(0),
   Scenes: []gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
 }
-if err := gltf.Save(doc, "./a.gltf", true); err != nil {
+if err := gltf.SaveBinary(doc, "./a.gltf"); err != nil {
   panic(err)
 }
 ```
