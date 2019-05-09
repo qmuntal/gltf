@@ -8,67 +8,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"unsafe"
 )
 
-// ProtocolReadHandler defines a ReadFull interface.
+// ReadHandler defines a ReadFull interface.
 //
 // ReadFull should behaves as io.ReadFull in terms of reading the external resource.
 // The data already has the correct size so it can be used directly to store the read output.
-type ProtocolReadHandler interface {
-	ReadFull(scheme, uri string, data []byte) error
-}
-
-// ProtocolRegistry implements a secure ProtocolReadHandler supporting http, https and relative paths.
-// If Dir is empty the os.Getws will be used. It comes with directory traversal protection.
-// If HTTPClient is nil http[s] will not be supported.
-type ProtocolRegistry struct {
-	Dir        string
-	HTTPClient *http.Client
-}
-
-func (reg *ProtocolRegistry) readRelativeFile(uri string, data []byte) (err error) {
-	dir := reg.Dir
-	if dir == "" {
-		if dir, err = os.Getwd(); err != nil {
-			return
-		}
-	}
-	var f http.File
-	f, err = http.Dir(dir).Open(uri)
-	if err != nil {
-		return
-	}
-	_, err = io.ReadFull(f, data)
-	return
-}
-
-// ReadFull should as io.ReadFull in terms of reading the external resource.
-// An error is returned when the scheme is not supported.
-func (reg *ProtocolRegistry) ReadFull(scheme, uri string, data []byte) error {
-	switch scheme {
-	case "": // probably relative path
-		return reg.readRelativeFile(uri, data)
-	case "http://", "https://":
-		if reg.HTTPClient != nil {
-			resp, err := reg.HTTPClient.Get(uri)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
-			if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-				return fmt.Errorf("gltf: server responded with %d", resp.StatusCode)
-			}
-			_, err = io.ReadFull(resp.Body, data)
-			return err
-		}
-	}
-	return errors.New("gltf: scheme not supported")
+type ReadHandler interface {
+	ReadFull(uri string, data []byte) error
 }
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -77,32 +28,41 @@ func Open(name string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
+	dec := NewDecoder(f).WithReadHandler(&ProtocolRegistry{
+		"": &RelativeFileHandler{Dir: filepath.Dir(name)},
+	})
 	doc := new(Document)
-	err = NewDecoder(f).WithProtocolReadHandler(&ProtocolRegistry{Dir: filepath.Dir(name)}).Decode(doc)
-	f.Close()
+	if err = dec.Decode(doc); err != nil {
+		doc = nil
+	}
 	return doc, err
 }
 
 // A Decoder reads and decodes glTF and GLB values from an input stream.
-// Callback is called to read external resources.
-// If Callback is nil the external resource data in not loaded.
+// ReadHandler is called to read external resources.
 type Decoder struct {
-	ProtocolReadHandler ProtocolReadHandler
-	r                   *bufio.Reader
+	ReadHandler ReadHandler
+	r           *bufio.Reader
 }
 
 // NewDecoder returns a new decoder that reads from r.
-// By default the external buffers are not read.
+//
+// By default the external buffers in a relative path is supported.
+// The supported external buffer URIs can be easily extended using ProtocolRegistry
+// and adding custom handlers, such as for https:// or ftp://.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
-		ProtocolReadHandler: new(ProtocolRegistry),
-		r:                   bufio.NewReader(r),
+		r: bufio.NewReader(r),
+		ReadHandler: &ProtocolRegistry{
+			"": new(RelativeFileHandler),
+		},
 	}
 }
 
-// WithProtocolReadHandler sets the ProtocolReadHandler.
-func (d *Decoder) WithProtocolReadHandler(reg ProtocolReadHandler) *Decoder {
-	d.ProtocolReadHandler = reg
+// WithReadHandler sets the ReadHandler.
+func (d *Decoder) WithReadHandler(reg ReadHandler) *Decoder {
+	d.ReadHandler = reg
 	return d
 }
 
@@ -191,11 +151,10 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
 		buffer.Data = make([]uint8, buffer.ByteLength)
-		var u *url.URL
-		u, err = url.Parse(buffer.URI)
-		if err == nil {
-			err = d.ProtocolReadHandler.ReadFull(u.Scheme, buffer.URI, buffer.Data)
-		}
+		err = d.ReadHandler.ReadFull(buffer.URI, buffer.Data)
+	}
+	if err != nil {
+		buffer.Data = nil
 	}
 	return err
 }
