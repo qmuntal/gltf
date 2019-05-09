@@ -3,12 +3,19 @@ package gltf
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/go-test/deep"
 )
+
+type mockChunkReadHandler struct {
+	Chunks map[string][]byte
+}
+
+func (m mockChunkReadHandler) ReadFull(uri string, data []byte) error {
+	copy(data, m.Chunks[uri])
+	return nil
+}
 
 func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
@@ -23,13 +30,8 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	if err := e.Encode(doc); err != nil {
 		return nil, err
 	}
-	rcb := func(uri string) (io.ReadCloser, error) {
-		if chunk, ok := chunks[uri]; ok {
-			return ioutil.NopCloser(bytes.NewReader(chunk)), nil
-		}
-		return nil, nil
-	}
-	return NewDecoder(buff).WithCallback(rcb), nil
+
+	return NewDecoder(buff).WithReadHandler(&mockChunkReadHandler{chunks}), nil
 }
 
 func TestEncoder_Encode(t *testing.T) {
@@ -72,7 +74,7 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1, 2, 3}},
 			{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
 			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []uint8{4, 5, 6, 7}},
-			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc"},
+			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []uint8{0, 0, 0, 0}},
 		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []BufferView{
 			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: ArrayBuffer},

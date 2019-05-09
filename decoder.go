@@ -14,13 +14,12 @@ import (
 	"unsafe"
 )
 
-// ReadResourceCallback defines a callback that will be called when an external resource should be loaded.
-// The string parameter is the URI of the resource.
-// If the reader and the error are nil the buffer data won't be loaded into memory.
-type ReadResourceCallback = func(string) (io.ReadCloser, error)
-
-func nilReadData(uri string) (io.ReadCloser, error) {
-	return nil, nil
+// ReadHandler defines a ReadFull interface.
+//
+// ReadFull should behaves as io.ReadFull in terms of reading the external resource.
+// The data already has the correct size so it can be used directly to store the read output.
+type ReadHandler interface {
+	ReadFull(uri string, data []byte) error
 }
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -29,35 +28,41 @@ func Open(name string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
-	cb := func(uri string) (io.ReadCloser, error) {
-		return os.Open(filepath.Join(filepath.Dir(name), uri))
-	}
+	defer f.Close()
+	dec := NewDecoder(f).WithReadHandler(&ProtocolRegistry{
+		"": &RelativeFileHandler{Dir: filepath.Dir(name)},
+	})
 	doc := new(Document)
-	err = NewDecoder(f).WithCallback(cb).Decode(doc)
-	f.Close()
+	if err = dec.Decode(doc); err != nil {
+		doc = nil
+	}
 	return doc, err
 }
 
 // A Decoder reads and decodes glTF and GLB values from an input stream.
-// Callback is called to read external resources.
-// If Callback is nil the external resource data in not loaded.
+// ReadHandler is called to read external resources.
 type Decoder struct {
-	Callback ReadResourceCallback
-	r        *bufio.Reader
+	ReadHandler ReadHandler
+	r           *bufio.Reader
 }
 
 // NewDecoder returns a new decoder that reads from r.
-// By default the external buffers are not read.
+//
+// By default the external buffers in a relative path is supported.
+// The supported external buffer URIs can be easily extended using ProtocolRegistry
+// and adding custom handlers, such as for https:// or ftp://.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
-		Callback: nilReadData,
-		r:        bufio.NewReader(r),
+		r: bufio.NewReader(r),
+		ReadHandler: &ProtocolRegistry{
+			"": new(RelativeFileHandler),
+		},
 	}
 }
 
-// WithCallback sets the ReadResourceCallback.
-func (d *Decoder) WithCallback(c ReadResourceCallback) *Decoder {
-	d.Callback = c
+// WithReadHandler sets the ReadHandler.
+func (d *Decoder) WithReadHandler(reg ReadHandler) *Decoder {
+	d.ReadHandler = reg
 	return d
 }
 
@@ -142,16 +147,14 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		return errors.New("gltf: buffer without URI")
 	}
 	var err error
-	var r io.ReadCloser
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
-		r, err = d.Callback(buffer.URI)
-		if r != nil && err == nil {
-			buffer.Data = make([]uint8, buffer.ByteLength)
-			_, err = io.ReadFull(r, buffer.Data)
-			r.Close()
-		}
+		buffer.Data = make([]uint8, buffer.ByteLength)
+		err = d.ReadHandler.ReadFull(buffer.URI, buffer.Data)
+	}
+	if err != nil {
+		buffer.Data = nil
 	}
 	return err
 }

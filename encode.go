@@ -22,7 +22,7 @@ func Save(doc *Document, name string) error {
 	return save(doc, name, false)
 }
 
-// Save will save a document as a GLB file with the specified by name.
+// SaveBinary will save a document as a GLB file with the specified by name.
 func SaveBinary(doc *Document, name string) error {
 	return save(doc, name, true)
 }

@@ -2,7 +2,6 @@ package gltf
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"io/ioutil"
 	"reflect"
@@ -154,10 +153,13 @@ func (c *chunkedReader) Read(p []byte) (n int, err error) {
 	return 1, nil
 }
 
-func readCallback(payload string) func(string) (io.ReadCloser, error) {
-	return func(name string) (io.ReadCloser, error) {
-		return ioutil.NopCloser(&chunkedReader{s: []byte(payload)}), nil
-	}
+type mockReadHandler struct {
+	Payload string
+}
+
+func (m mockReadHandler) ReadFull(uri string, data []byte) error {
+	copy(data, []byte(m.Payload))
+	return nil
 }
 
 func TestDecoder_decodeBuffer(t *testing.T) {
@@ -174,9 +176,8 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		{"byteLength_0", &Decoder{}, args{&Buffer{ByteLength: 0, URI: "a.bin"}}, nil, true},
 		{"noURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: ""}}, nil, true},
 		{"invalidURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
-		{"cbErr", NewDecoder(nil).WithCallback(func(name string) (io.ReadCloser, error) { return nil, errors.New("") }), args{&Buffer{ByteLength: 3, URI: "a.bin"}}, nil, true},
-		{"noFilBuf", NewDecoder(nil).WithCallback(readCallback("")), args{&Buffer{ByteLength: 30, URI: "a.bin"}}, make([]byte, 30), true},
-		{"base", NewDecoder(nil).WithCallback(readCallback("abcdfg")), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
+		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, true},
+		{"base", NewDecoder(nil).WithReadHandler(&mockReadHandler{"abcdfg"}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -235,9 +236,9 @@ func TestDecoder_Decode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}")).WithCallback(readCallback("abcdfg")), args{new(Document)}, false},
-		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e})).WithCallback(readCallback("abcdfg")), args{new(Document)}, true},
-		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e})).WithCallback(readCallback("abcdfg")), args{new(Document)}, true},
+		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}")).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, false},
+		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e})).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
+		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e})).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
 		{"empty", NewDecoder(bytes.NewBufferString("")), args{new(Document)}, true},
 		{"invalidJSON", NewDecoder(bytes.NewBufferString("{asset: {}}")), args{new(Document)}, true},
 		{"invalidBuffer", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 0}]}")), args{new(Document)}, true},
