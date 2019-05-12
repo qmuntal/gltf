@@ -14,6 +14,11 @@ import (
 	"unsafe"
 )
 
+const (
+	defaultMaxExternalBufferCount = 10
+	defaultMaxMemoryAllocation    = 4 * 1024 * 1024 * 1024 // 4GB
+)
+
 // ReadHandler is the interface that wraps the ReadFullResource method.
 //
 // ReadFullResource should behaves as io.ReadFull in terms of reading the external resource.
@@ -40,16 +45,20 @@ func Open(name string) (*Document, error) {
 // A Decoder reads and decodes glTF and GLB values from an input stream.
 // ReadHandler is called to read external resources.
 type Decoder struct {
-	ReadHandler ReadHandler
-	r           *bufio.Reader
+	ReadHandler            ReadHandler
+	MaxExternalBufferCount int
+	MaxMemoryAllocation    int
+	r                      *bufio.Reader
 }
 
 // NewDecoder returns a new decoder that reads from r
 // with relative external buffers support.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
-		r:           bufio.NewReader(r),
-		ReadHandler: new(RelativeFileHandler),
+		ReadHandler:            new(RelativeFileHandler),
+		MaxExternalBufferCount: defaultMaxExternalBufferCount,
+		MaxMemoryAllocation:    defaultMaxMemoryAllocation,
+		r:                      bufio.NewReader(r),
 	}
 }
 
@@ -82,6 +91,27 @@ func (d *Decoder) Decode(doc *Document) error {
 	return nil
 }
 
+func (d *Decoder) validateDocumentQuotas(doc *Document, isBinary bool) error {
+	var externalCount int
+	var allocs int
+	for i, b := range doc.Buffers {
+		if i == 0 && isBinary {
+			continue
+		}
+		if !b.IsEmbeddedResource() {
+			externalCount++
+			allocs += int(b.ByteLength)
+		}
+	}
+	if externalCount > d.MaxExternalBufferCount {
+		return errors.New("gltf: External buffer count quota exceeded")
+	}
+	if allocs > d.MaxMemoryAllocation {
+		return errors.New("gltf: Memory allocation count quota exceeded")
+	}
+	return nil
+}
+
 func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 	glbHeader, err := d.readGLBHeader()
 	if err != nil {
@@ -99,7 +129,11 @@ func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 		isBinary = false
 	}
 
-	return isBinary, jd.Decode(doc)
+	err = jd.Decode(doc)
+	if err == nil {
+		err = d.validateDocumentQuotas(doc, isBinary)
+	}
+	return isBinary, err
 }
 
 func (d *Decoder) readGLBHeader() (*glbHeader, error) {

@@ -251,3 +251,37 @@ func TestDecoder_Decode(t *testing.T) {
 		})
 	}
 }
+
+func TestDecoder_validateDocumentQuotas(t *testing.T) {
+	type args struct {
+		doc      *Document
+		isBinary bool
+	}
+	tests := []struct {
+		name    string
+		d       *Decoder
+		args    args
+		wantErr bool
+	}{
+		{
+			"exceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
+			args{&Document{Buffers: make([]Buffer, 2)}, false}, true,
+		}, {
+			"noExceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
+			args{&Document{Buffers: make([]Buffer, 2)}, true}, false,
+		}, {
+			"exceedAllocs", &Decoder{MaxMemoryAllocation: 10, MaxExternalBufferCount: 100},
+			args{&Document{Buffers: []Buffer{{ByteLength: 11}}}, false}, true,
+		}, {
+			"noExceedAllocs", &Decoder{MaxMemoryAllocation: 11, MaxExternalBufferCount: 100},
+			args{&Document{Buffers: []Buffer{{ByteLength: 11}}}, true}, false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.d.validateDocumentQuotas(tt.args.doc, tt.args.isBinary); (err != nil) != tt.wantErr {
+				t.Errorf("Decoder.validateDocumentQuotas() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
