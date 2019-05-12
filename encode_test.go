@@ -12,26 +12,26 @@ type mockChunkReadHandler struct {
 	Chunks map[string][]byte
 }
 
-func (m mockChunkReadHandler) ReadFull(uri string, data []byte) error {
+func (m mockChunkReadHandler) ReadFullResource(uri string, data []byte) error {
 	copy(data, m.Chunks[uri])
+	return nil
+}
+
+func (m mockChunkReadHandler) WriteResource(uri string, data []byte) error {
+	m.Chunks[uri] = data
 	return nil
 }
 
 func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
-	chunks := make(map[string][]byte)
-	wcb := func(uri string, data []byte) error {
-		chunks[uri] = data
-		return nil
-	}
-	e := NewEncoder(buff)
-	e.WithCallback(wcb)
+	m := &mockChunkReadHandler{Chunks: make(map[string][]byte)}
+	e := NewEncoder(buff).WithWriteHandler(m)
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		return nil, err
 	}
 
-	return NewDecoder(buff).WithReadHandler(&mockChunkReadHandler{chunks}), nil
+	return NewDecoder(buff).WithReadHandler(m), nil
 }
 
 func TestEncoder_Encode(t *testing.T) {

@@ -1,11 +1,11 @@
 package gltf
 
 import (
-	"errors"
 	"io"
-	"net/http"
-	"net/url"
+	"io/ioutil"
 	"os"
+	"path"
+	"path/filepath"
 )
 
 // RelativeFileHandler implements a secure ReadHandler supporting relative paths.
@@ -14,35 +14,29 @@ type RelativeFileHandler struct {
 	Dir string
 }
 
-// ReadFull should as io.ReadFull in terms of reading the external resource.
-func (h *RelativeFileHandler) ReadFull(uri string, data []byte) (err error) {
+func (h *RelativeFileHandler) fullName(uri string) string {
 	dir := h.Dir
 	if dir == "" {
+		var err error
 		if dir, err = os.Getwd(); err != nil {
-			return
+			return ""
 		}
 	}
-	var f http.File
-	f, err = http.Dir(dir).Open(uri)
-	if err != nil {
-		return
-	}
-	_, err = io.ReadFull(f, data)
-	return
+	return filepath.Join(dir, filepath.FromSlash(path.Clean("/"+uri)))
 }
 
-// ProtocolRegistry implements a secure ProtocolReadHandler as a map of supported schemes.
-type ProtocolRegistry map[string]ReadHandler
+// WriteResource writes the resource using io.WriteFile.
+func (h *RelativeFileHandler) WriteResource(uri string, data []byte) error {
+	return ioutil.WriteFile(uri, data, 0664)
+}
 
-// ReadFull should as io.ReadFull in terms of reading the external resource.
-// An error is returned when the scheme is not supported.
-func (reg ProtocolRegistry) ReadFull(uri string, data []byte) error {
-	u, err := url.Parse(uri)
+// ReadFullResource reads all the resource data using io.ReadFull.
+func (h *RelativeFileHandler) ReadFullResource(uri string, data []byte) error {
+	f, err := os.Open(h.fullName(uri))
 	if err != nil {
 		return err
 	}
-	if f, ok := reg[u.Scheme]; ok {
-		return f.ReadFull(uri, data)
-	}
-	return errors.New("gltf: not supported scheme")
+	_, err = io.ReadFull(f, data)
+	f.Close()
+	return err
 }

@@ -2,7 +2,7 @@ package gltf
 
 import "testing"
 
-func TestRelativeFileHandler_ReadFull(t *testing.T) {
+func TestRelativeFileHandler_ReadFullResource(t *testing.T) {
 	type args struct {
 		uri  string
 		data []byte
@@ -17,30 +17,8 @@ func TestRelativeFileHandler_ReadFull(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.h.ReadFull(tt.args.uri, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("RelativeFileHandler.ReadFull() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestProtocolRegistry_ReadFull(t *testing.T) {
-	type args struct {
-		uri  string
-		data []byte
-	}
-	tests := []struct {
-		name    string
-		reg     ProtocolRegistry
-		args    args
-		wantErr bool
-	}{
-		{"invalid url", make(ProtocolRegistry), args{"%$·$·23", []byte{}}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.reg.ReadFull(tt.args.uri, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("ProtocolRegistry.ReadFull() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tt.h.ReadFullResource(tt.args.uri, tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("ReadFullResource.ReadFull() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

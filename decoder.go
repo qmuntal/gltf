@@ -14,12 +14,12 @@ import (
 	"unsafe"
 )
 
-// ReadHandler defines a ReadFull interface.
+// ReadHandler is the interface that wraps the ReadFullResource method.
 //
-// ReadFull should behaves as io.ReadFull in terms of reading the external resource.
+// ReadFullResource should behaves as io.ReadFull in terms of reading the external resource.
 // The data already has the correct size so it can be used directly to store the read output.
 type ReadHandler interface {
-	ReadFull(uri string, data []byte) error
+	ReadFullResource(uri string, data []byte) error
 }
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -29,9 +29,7 @@ func Open(name string) (*Document, error) {
 		return nil, err
 	}
 	defer f.Close()
-	dec := NewDecoder(f).WithReadHandler(&ProtocolRegistry{
-		"": &RelativeFileHandler{Dir: filepath.Dir(name)},
-	})
+	dec := NewDecoder(f).WithReadHandler(&RelativeFileHandler{Dir: filepath.Dir(name)})
 	doc := new(Document)
 	if err = dec.Decode(doc); err != nil {
 		doc = nil
@@ -46,23 +44,18 @@ type Decoder struct {
 	r           *bufio.Reader
 }
 
-// NewDecoder returns a new decoder that reads from r.
-//
-// By default the external buffers in a relative path is supported.
-// The supported external buffer URIs can be easily extended using ProtocolRegistry
-// and adding custom handlers, such as for https:// or ftp://.
+// NewDecoder returns a new decoder that reads from r
+// with relative external buffers support.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
-		r: bufio.NewReader(r),
-		ReadHandler: &ProtocolRegistry{
-			"": new(RelativeFileHandler),
-		},
+		r:           bufio.NewReader(r),
+		ReadHandler: new(RelativeFileHandler),
 	}
 }
 
 // WithReadHandler sets the ReadHandler.
-func (d *Decoder) WithReadHandler(reg ReadHandler) *Decoder {
-	d.ReadHandler = reg
+func (d *Decoder) WithReadHandler(h ReadHandler) *Decoder {
+	d.ReadHandler = h
 	return d
 }
 
@@ -151,7 +144,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
 		buffer.Data = make([]uint8, buffer.ByteLength)
-		err = d.ReadHandler.ReadFull(buffer.URI, buffer.Data)
+		err = d.ReadHandler.ReadFullResource(buffer.URI, buffer.Data)
 	}
 	if err != nil {
 		buffer.Data = nil

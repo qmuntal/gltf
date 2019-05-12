@@ -157,7 +157,7 @@ type mockReadHandler struct {
 	Payload string
 }
 
-func (m mockReadHandler) ReadFull(uri string, data []byte) error {
+func (m mockReadHandler) ReadFullResource(uri string, data []byte) error {
 	copy(data, []byte(m.Payload))
 	return nil
 }

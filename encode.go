@@ -4,17 +4,16 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 	"unsafe"
 )
 
-// WriteResourceCallback defines a callback that will be called when an external resource should be writed.
-// The string parameter is the URI of the resource.
-type WriteResourceCallback = func(string, []byte) error
-
-func discardWriteData(uri string, data []byte) error {
-	return nil
+// WriteHandler is the interface that wraps the Write method.
+//
+// WriteResource should behaves as io.Write in terms of reading the writing resource.
+type WriteHandler interface {
+	WriteResource(uri string, data []byte) error
 }
 
 // Save will save a document as a glTF with the specified by name.
@@ -32,11 +31,8 @@ func save(doc *Document, name string, asBinary bool) error {
 	if err != nil {
 		return err
 	}
-	e := NewEncoder(f)
+	e := NewEncoder(f).WithWriteHandler(&RelativeFileHandler{Dir: filepath.Dir(name)})
 	e.AsBinary = asBinary
-	e.WithCallback(func(uri string, data []byte) error {
-		return ioutil.WriteFile(uri, data, 0664)
-	})
 	if err := e.Encode(doc); err != nil {
 		f.Close()
 		return err
@@ -44,27 +40,26 @@ func save(doc *Document, name string, asBinary bool) error {
 	return f.Close()
 }
 
-// An Encoder writes a GLTF to an output stream.
-// The callback is called when an external resource shouldbe writed.
+// An Encoder writes a GLTF to an output stream
+// with relative external buffers support.
 type Encoder struct {
-	AsBinary bool
-	Callback WriteResourceCallback
-	w        io.Writer
+	AsBinary     bool
+	WriteHandler WriteHandler
+	w            io.Writer
 }
 
 // NewEncoder returns a new encoder that writes to w as a normal glTF file.
-// By default the file is writed as binary and external buffers data is discarded.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		AsBinary: true,
-		Callback: discardWriteData,
-		w:        w,
+		AsBinary:     true,
+		WriteHandler: new(RelativeFileHandler),
+		w:            w,
 	}
 }
 
-// WithCallback sets the ReadResourceCallback.
-func (e *Encoder) WithCallback(c WriteResourceCallback) *Encoder {
-	e.Callback = c
+// WithCallback sets the WriteHandler.
+func (e *Encoder) WithWriteHandler(h WriteHandler) *Encoder {
+	e.WriteHandler = h
 	return e
 }
 
@@ -103,7 +98,7 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 		return err
 	}
 
-	return e.Callback(buffer.URI, buffer.Data)
+	return e.WriteHandler.WriteResource(buffer.URI, buffer.Data)
 }
 
 func (e *Encoder) encodeBinary(doc *Document) error {
