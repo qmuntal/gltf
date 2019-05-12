@@ -57,7 +57,7 @@ func NewEncoder(w io.Writer) *Encoder {
 	}
 }
 
-// WithCallback sets the WriteHandler.
+// WithWriteHandler sets the WriteHandler.
 func (e *Encoder) WithWriteHandler(h WriteHandler) *Encoder {
 	e.WriteHandler = h
 	return e
