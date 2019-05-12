@@ -94,14 +94,14 @@ func (d *Decoder) Decode(doc *Document) error {
 func (d *Decoder) validateDocumentQuotas(doc *Document, isBinary bool) error {
 	var externalCount int
 	var allocs int
-	for i, b := range doc.Buffers {
-		if i == 0 && isBinary {
-			continue
-		}
+	for _, b := range doc.Buffers {
+		allocs += int(b.ByteLength)
 		if !b.IsEmbeddedResource() {
 			externalCount++
-			allocs += int(b.ByteLength)
 		}
+	}
+	if isBinary {
+		externalCount--
 	}
 	if externalCount > d.MaxExternalBufferCount {
 		return errors.New("gltf: External buffer count quota exceeded")
