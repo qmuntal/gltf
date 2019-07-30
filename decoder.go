@@ -14,13 +14,17 @@ import (
 	"unsafe"
 )
 
-// ReadResourceCallback defines a callback that will be called when an external resource should be loaded.
-// The string parameter is the URI of the resource.
-// If the reader and the error are nil the buffer data won't be loaded into memory.
-type ReadResourceCallback = func(string) (io.ReadCloser, error)
+const (
+	defaultMaxExternalBufferCount = 10
+	defaultMaxMemoryAllocation    = 4 * 1024 * 1024 * 1024 // 4GB
+)
 
-func nilReadData(uri string) (io.ReadCloser, error) {
-	return nil, nil
+// ReadHandler is the interface that wraps the ReadFullResource method.
+//
+// ReadFullResource should behaves as io.ReadFull in terms of reading the external resource.
+// The data already has the correct size so it can be used directly to store the read output.
+type ReadHandler interface {
+	ReadFullResource(uri string, data []byte) error
 }
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -29,35 +33,38 @@ func Open(name string) (*Document, error) {
 	if err != nil {
 		return nil, err
 	}
-	cb := func(uri string) (io.ReadCloser, error) {
-		return os.Open(filepath.Join(filepath.Dir(name), uri))
-	}
+	defer f.Close()
+	dec := NewDecoder(f).WithReadHandler(&RelativeFileHandler{Dir: filepath.Dir(name)})
 	doc := new(Document)
-	err = NewDecoder(f).WithCallback(cb).Decode(doc)
-	f.Close()
+	if err = dec.Decode(doc); err != nil {
+		doc = nil
+	}
 	return doc, err
 }
 
 // A Decoder reads and decodes glTF and GLB values from an input stream.
-// Callback is called to read external resources.
-// If Callback is nil the external resource data in not loaded.
+// ReadHandler is called to read external resources.
 type Decoder struct {
-	Callback ReadResourceCallback
-	r        *bufio.Reader
+	ReadHandler            ReadHandler
+	MaxExternalBufferCount int
+	MaxMemoryAllocation    int
+	r                      *bufio.Reader
 }
 
-// NewDecoder returns a new decoder that reads from r.
-// By default the external buffers are not read.
+// NewDecoder returns a new decoder that reads from r
+// with relative external buffers support.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
-		Callback: nilReadData,
-		r:        bufio.NewReader(r),
+		ReadHandler:            new(RelativeFileHandler),
+		MaxExternalBufferCount: defaultMaxExternalBufferCount,
+		MaxMemoryAllocation:    defaultMaxMemoryAllocation,
+		r:                      bufio.NewReader(r),
 	}
 }
 
-// WithCallback sets the ReadResourceCallback.
-func (d *Decoder) WithCallback(c ReadResourceCallback) *Decoder {
-	d.Callback = c
+// WithReadHandler sets the ReadHandler.
+func (d *Decoder) WithReadHandler(h ReadHandler) *Decoder {
+	d.ReadHandler = h
 	return d
 }
 
@@ -84,6 +91,27 @@ func (d *Decoder) Decode(doc *Document) error {
 	return nil
 }
 
+func (d *Decoder) validateDocumentQuotas(doc *Document, isBinary bool) error {
+	var externalCount int
+	var allocs int
+	for _, b := range doc.Buffers {
+		allocs += int(b.ByteLength)
+		if !b.IsEmbeddedResource() {
+			externalCount++
+		}
+	}
+	if isBinary {
+		externalCount--
+	}
+	if externalCount > d.MaxExternalBufferCount {
+		return errors.New("gltf: External buffer count quota exceeded")
+	}
+	if allocs > d.MaxMemoryAllocation {
+		return errors.New("gltf: Memory allocation count quota exceeded")
+	}
+	return nil
+}
+
 func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 	glbHeader, err := d.readGLBHeader()
 	if err != nil {
@@ -101,7 +129,11 @@ func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 		isBinary = false
 	}
 
-	return isBinary, jd.Decode(doc)
+	err = jd.Decode(doc)
+	if err == nil {
+		err = d.validateDocumentQuotas(doc, isBinary)
+	}
+	return isBinary, err
 }
 
 func (d *Decoder) readGLBHeader() (*glbHeader, error) {
@@ -142,16 +174,14 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 		return errors.New("gltf: buffer without URI")
 	}
 	var err error
-	var r io.ReadCloser
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
-		r, err = d.Callback(buffer.URI)
-		if r != nil && err == nil {
-			buffer.Data = make([]uint8, buffer.ByteLength)
-			_, err = io.ReadFull(r, buffer.Data)
-			r.Close()
-		}
+		buffer.Data = make([]uint8, buffer.ByteLength)
+		err = d.ReadHandler.ReadFullResource(buffer.URI, buffer.Data)
+	}
+	if err != nil {
+		buffer.Data = nil
 	}
 	return err
 }
