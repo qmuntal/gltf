@@ -677,8 +677,6 @@ type ChannelTarget struct {
 // If a key does not match with any of the supported extensions the value will be a json.RawMessage so its decoding can be delayed.
 type Extensions map[string]interface{}
 
-type envelope map[string]json.RawMessage
-
 var extensions = make(map[string]func() json.Unmarshaler)
 
 // RegisterExtension registers a function that returns a new extension of the given
@@ -693,7 +691,7 @@ func (ext *Extensions) UnmarshalJSON(data []byte) error {
 	if len(*ext) == 0 {
 		*ext = make(Extensions)
 	}
-	var raw envelope
+	var raw map[string]json.RawMessage
 	err := json.Unmarshal(data, &raw)
 	if err == nil {
 		for key, value := range raw {

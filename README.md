@@ -32,7 +32,7 @@ A Go package for simple, efficient, and robust serialization/deserialization of 
   * [ ] KHR_draco_mesh_compression
   * [ ] KHR_lights_punctual
   * [x] KHR_materials_pbrSpecularGlossiness
-  * [ ] KHR_materials_unlit
+  * [x] KHR_materials_unlit
   * [ ] KHR_techniques_webgl
   * [ ] KHR_texture_transform
 

@@ -673,7 +673,7 @@ func TestExtensions_UnmarshalJSON(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(&ext, tt.want) {
-				t.Errorf("PBRSpecularGlossiness.MarshalJSON() = %v, want %v", &ext, tt.want)
+				t.Errorf("Extensions.UnmarshalJSON() = %v, want %v", &ext, tt.want)
 			}
 		})
 	}
