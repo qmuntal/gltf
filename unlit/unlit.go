@@ -23,7 +23,7 @@ func init() {
 // Unlit defines an unlit shading model.
 // When present, the extension indicates that a material should be unlit.
 // Additional properties on the extension object are allowed, but may lead to undefined behaviour in conforming viewers.
-type Unlit map[string]interface{}
+type Unlit map[string]iterface{}
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.
 func (u *Unlit) UnmarshalJSON(data []byte) error {
