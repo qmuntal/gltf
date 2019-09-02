@@ -7,9 +7,12 @@ import (
 	"github.com/qmuntal/gltf"
 )
 
-// DefaultScale defines a scaling that does not modify the size of the object.
-var DefaultScale = [2]float64{1, 1}
-var emptyScale = [2]float64{0, 0}
+var (
+	// DefaultScale defines a scaling that does not modify the size of the object.
+	DefaultScale = [2]float64{1, 1}
+	emptyScale   = [2]float64{0, 0}
+	emptyOffset  = [2]float64{0, 0}
+)
 
 const (
 	// ExtTextureTransform defines the ExtTextureTransform unique key.
@@ -28,7 +31,7 @@ func init() {
 // TextureTranform can be used in textureInfo to pack many low-res texture into a single large texture atlas.
 type TextureTranform struct {
 	Offset   [2]float64 `json:"offset"`
-	Rotation float64    `json:"rotation"`
+	Rotation float64    `json:"rotation,omitempty"`
 	Scale    [2]float64 `json:"scale"`
 	TexCoord *uint32    `json:"texCoord,omitempty"`
 }
@@ -61,6 +64,9 @@ func (t *TextureTranform) MarshalJSON() ([]byte, error) {
 			out = removeProperty([]byte(`"scale":[1,1]`), out)
 		} else if t.Scale == emptyScale {
 			out = removeProperty([]byte(`"scale":[0,0]`), out)
+		}
+		if t.Offset == emptyOffset {
+			out = removeProperty([]byte(`"offset":[0,0]`), out)
 		}
 		out = sanitizeJSON(out)
 	}

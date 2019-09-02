@@ -35,7 +35,7 @@ A Go package for simple, efficient, and robust serialization/deserialization of 
   * [x] KHR_materials_pbrSpecularGlossiness
   * [x] KHR_materials_unlit
   * [ ] KHR_techniques_webgl
-  * [ ] KHR_texture_transform
+  * [x] KHR_texture_transform
 
 ## Perfomance
 All the functionality is benchmarked and tested using the official [glTF Samples](https://github.com/KhronosGroup/glTF-Sample-Models) in the utility package [qmuntal/gltf-bench](https://github.com/qmuntal/gltf-bench/).
