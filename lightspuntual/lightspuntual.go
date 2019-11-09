@@ -75,13 +75,12 @@ type Lights []*Light
 // Light defines a directional, point, or spot light.
 // When a light's type is spot, the spot property on the light is required.
 type Light struct {
+	Type      string    `json:"type"`
 	Name      string    `json:"name,omitempty"`
 	Color     *gltf.RGB `json:"color,omitempty"`
 	Intensity *float64  `json:"intensity,omitempty"`
-	Type      string    `json:"type"`
-	// When 0, range is assumed to be infinite.
-	Range *float64 `json:"range,omitempty"`
-	Spot  *Spot    `json:"spot,omitempty"`
+	Range     *float64  `json:"range,omitempty"`
+	Spot      *Spot     `json:"spot,omitempty"`
 }
 
 // IntensityOrDefault returns the itensity if it is not nil, else return the default one.
