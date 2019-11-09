@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	// ExtUnlit defines the Unlit unique key.
-	ExtUnlit = "KHR_materials_unlit"
+	// ExtensionName defines the Unlit unique key.
+	ExtensionName = "KHR_materials_unlit"
 )
 
 // New returns a new unlit.Unlit.
@@ -17,7 +17,7 @@ func New() json.Unmarshaler {
 }
 
 func init() {
-	gltf.RegisterExtension(ExtUnlit, New)
+	gltf.RegisterExtension(ExtensionName, New)
 }
 
 // Unlit defines an unlit shading model.

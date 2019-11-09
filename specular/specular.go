@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	// ExtPBRSpecularGlossiness defines the PBRSpecularGlossiness unique key.
-	ExtPBRSpecularGlossiness = "KHR_materials_pbrSpecularGlossiness"
+	// ExtensionName defines the PBRSpecularGlossiness unique key.
+	ExtensionName = "KHR_materials_pbrSpecularGlossiness"
 )
 
 // New returns a new specular.PBRSpecularGlossiness.
@@ -18,7 +18,7 @@ func New() json.Unmarshaler {
 }
 
 func init() {
-	gltf.RegisterExtension(ExtPBRSpecularGlossiness, New)
+	gltf.RegisterExtension(ExtensionName, New)
 }
 
 // PBRSpecularGlossiness defines a specular-glossiness material model.
