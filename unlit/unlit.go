@@ -11,13 +11,15 @@ const (
 	ExtensionName = "KHR_materials_unlit"
 )
 
-// New returns a new unlit.Unlit.
-func New() json.Unmarshaler {
-	return new(Unlit)
+// Unmarshal decodes the json data into the correct type.
+func Unmarshal(data []byte) (interface{}, error) {
+	u := new(Unlit)
+	err := json.Unmarshal(data, u)
+	return u, err
 }
 
 func init() {
-	gltf.RegisterExtension(ExtensionName, New)
+	gltf.RegisterExtension(ExtensionName, Unmarshal)
 }
 
 // Unlit defines an unlit shading model.
