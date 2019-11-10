@@ -12,32 +12,57 @@ A Go package for simple, efficient, and robust serialization/deserialization of 
 
 ## Features
 
-* High parsing speed and moderate memory consumption.
+* High parsing speed and moderate memory consumption
 * glTF specification v2.0.0
-  * [x] ASCII glTF.
-  * [x] Binary glTF(GLB).
-  * [x] PBR material description.
+  * [x] ASCII glTF
+  * [x] Binary glTF(GLB)
+  * [x] PBR material description
 * glTF validaton
-  * [x] Validate against schemas.
-  * [ ] Validate coherence.
+  * [x] Validate against schemas
+  * [ ] Validate coherence
 * Buffers
-  * [x] Parse BASE64 encoded embedded buffer data(DataURI).
-  * [x] Load .bin file.
+  * [x] Parse BASE64 encoded embedded buffer data(DataURI)
+  * [x] Load .bin file
 * Read from io.Reader
-  * [x] Boilerplate for disk loading.
-  * [x] Custom callback handlers.
-  * [x] Automatic ASCII / glTF detection.
+  * [x] Boilerplate for disk loading
+  * [x] Custom callback handlers
+  * [x] Automatic ASCII / glTF detection
 * Write to io.Writer
-  * [x] Boilerplate for disk saving.
-  * [x] Custom callback handlers.
+  * [x] Boilerplate for disk saving
+  * [x] Custom callback handlers
   * [x] ASCII / Binary
 * Extensions
   * [ ] KHR_draco_mesh_compression
-  * [ ] KHR_lights_punctual
+  * [x] KHR_lights_punctual
   * [x] KHR_materials_pbrSpecularGlossiness
   * [x] KHR_materials_unlit
   * [ ] KHR_techniques_webgl
   * [x] KHR_texture_transform
+  * [x] Support custom extensions
+
+## Extensions
+
+This module is designed to support dynamic extensions. By default only the core specification is decoded and the data inside the extensions objects are stored as `json.RawMessage` so they can be decoded outside this package or automatically encoded when saving the document.
+
+To decode one of the supported extensions the only required action is to import the associated package, this way the extension will not be stored as `json.RawMessage` but as the type defined in the extension package:
+
+```go
+import (
+  "github.com/qmuntal/gltf"
+  "github.com/qmuntal/gltf/lightspuntual"
+)
+
+func ExampleExension() {
+  doc, _ := gltf.Open("...")
+  if v, ok := doc.Extensions[lightspuntual.ExtensionName]; ok {
+      for _, l := range v.(lightspuntual.Lights) {
+          fmt.Print(l.Type)
+      }
+  }
+}
+```
+
+To support custom extensions you should use the `gltf.RegisterExtension` method.
 
 ## Perfomance
 
