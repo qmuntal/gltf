@@ -15,6 +15,10 @@ const (
 	ExtensionName = "KHR_lights_punctual"
 )
 
+func init() {
+	gltf.RegisterExtension(ExtensionName, Unmarshal)
+}
+
 type envelop struct {
 	Lights Lights
 	Light  *LightIndex
