@@ -18,7 +18,7 @@ A Go package for simple, efficient, and robust serialization/deserialization of 
   * [x] Binary glTF(GLB)
   * [x] PBR material description
 * glTF validaton
-  * [x] Validate against schemas
+  * [ ] Validate against schemas
   * [ ] Validate coherence
 * Buffers
   * [x] Parse BASE64 encoded embedded buffer data(DataURI)
