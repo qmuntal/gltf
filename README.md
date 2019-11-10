@@ -49,7 +49,7 @@ To decode one of the supported extensions the only required action is to import 
 ```go
 import (
   "github.com/qmuntal/gltf"
-  "github.com/qmuntal/gltf/lightspuntual"
+  "github.com/qmuntal/gltf/ext/lightspuntual"
 )
 
 func ExampleExension() {
