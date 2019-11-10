@@ -224,8 +224,7 @@ func (ext *Extensions) UnmarshalJSON(data []byte) error {
 	if err == nil {
 		for key, value := range raw {
 			if extFactory, ok := extensions[key]; ok {
-				n := extFactory()
-				err := json.Unmarshal(value, n)
+				n, err := extFactory(value)
 				if err != nil {
 					(*ext)[key] = value
 				} else {

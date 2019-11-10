@@ -15,17 +15,19 @@ var (
 )
 
 const (
-	// ExtTextureTransform defines the ExtTextureTransform unique key.
-	ExtTextureTransform = "KHR_texture_transform"
+	// ExtensionName defines the ExtTextureTransform unique key.
+	ExtensionName = "KHR_texture_transform"
 )
 
-// New returns a new TextureTranform.
-func New() json.Unmarshaler {
-	return new(TextureTranform)
+// Unmarshal decodes the json data into the correct type.
+func Unmarshal(data []byte) (interface{}, error) {
+	t := new(TextureTranform)
+	err := json.Unmarshal(data, t)
+	return t, err
 }
 
 func init() {
-	gltf.RegisterExtension(ExtTextureTransform, New)
+	gltf.RegisterExtension(ExtensionName, Unmarshal)
 }
 
 // TextureTranform can be used in textureInfo to pack many low-res texture into a single large texture atlas.

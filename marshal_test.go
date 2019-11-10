@@ -379,7 +379,11 @@ func (f *fakeExt) UnmarshalJSON(data []byte) error {
 }
 
 func TestExtensions_UnmarshalJSON(t *testing.T) {
-	RegisterExtension("fake_ext", func() json.Unmarshaler { return new(fakeExt) })
+	RegisterExtension("fake_ext", func(data []byte) (interface{}, error) {
+		e := new(fakeExt)
+		err := json.Unmarshal(data, e)
+		return e, err
+	})
 	type args struct {
 		data []byte
 	}
