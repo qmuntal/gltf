@@ -32,7 +32,7 @@ A Go package for simple, efficient, and robust serialization/deserialization of 
   * [x] Custom callback handlers
   * [x] ASCII / Binary
 * Extensions
-  * [ ] KHR_draco_mesh_compression
+  * [x] KHR_draco_mesh_compression
   * [x] KHR_lights_punctual
   * [x] KHR_materials_pbrSpecularGlossiness
   * [x] KHR_materials_unlit
