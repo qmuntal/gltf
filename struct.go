@@ -2,7 +2,6 @@ package gltf
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -467,11 +466,11 @@ type ChannelTarget struct {
 // If a key does not match with any of the supported extensions the value will be a json.RawMessage so its decoding can be delayed.
 type Extensions map[string]interface{}
 
-var extensions = make(map[string]func() json.Unmarshaler)
+var extensions = make(map[string]func([]byte) (interface{}, error))
 
 // RegisterExtension registers a function that returns a new extension of the given
 // byte array. This is intended to be called from the init function in
 // packages that implement extensions.
-func RegisterExtension(key string, f func() json.Unmarshaler) {
+func RegisterExtension(key string, f func([]byte) (interface{}, error)) {
 	extensions[key] = f
 }
