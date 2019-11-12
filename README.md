@@ -62,7 +62,7 @@ func ExampleExension() {
 }
 ```
 
-To support custom extensions you should use the `gltf.RegisterExtension` method.
+It is not necessary to call `gltf.RegisterExtension` for built-in extensions, as these auto-register themselves on `init()`.
 
 ## Perfomance
 
