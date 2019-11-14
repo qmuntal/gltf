@@ -125,64 +125,68 @@ func (ubyteComponent) PutMat4(b []byte, v [4][4]uint8) {
 	b[15] = v[3][3]
 }
 
-func (shortComponent) PutScalar(b []byte, v int16) {
+func putInt16(b []byte, v int16) {
 	binary.LittleEndian.PutUint16(b, int16bits(v))
 }
 
+func (shortComponent) PutScalar(b []byte, v int16) {
+	putInt16(b, v)
+}
+
 func (shortComponent) PutVec2(b []byte, v [2]int16) {
-	binary.LittleEndian.PutUint16(b, int16bits(v[0]))
-	binary.LittleEndian.PutUint16(b[2:], int16bits(v[1]))
+	putInt16(b, v[0])
+	putInt16(b[2:], v[1])
 }
 
 func (shortComponent) PutVec3(b []byte, v [3]int16) {
-	binary.LittleEndian.PutUint16(b, int16bits(v[0]))
-	binary.LittleEndian.PutUint16(b[2:], int16bits(v[1]))
-	binary.LittleEndian.PutUint16(b[4:], int16bits(v[2]))
+	putInt16(b, v[0])
+	putInt16(b[2:], v[1])
+	putInt16(b[4:], v[2])
 }
 
 func (shortComponent) PutVec4(b []byte, v [4]int16) {
-	binary.LittleEndian.PutUint16(b, int16bits(v[0]))
-	binary.LittleEndian.PutUint16(b[2:], int16bits(v[1]))
-	binary.LittleEndian.PutUint16(b[4:], int16bits(v[2]))
-	binary.LittleEndian.PutUint16(b[6:], int16bits(v[3]))
+	putInt16(b, v[0])
+	putInt16(b[2:], v[1])
+	putInt16(b[4:], v[2])
+	putInt16(b[6:], v[3])
 }
 
 func (shortComponent) PutMat2(b []byte, v [2][2]int16) {
-	binary.LittleEndian.PutUint16(b, int16bits(v[0][0]))
-	binary.LittleEndian.PutUint16(b[2:], int16bits(v[1][0]))
-	binary.LittleEndian.PutUint16(b[4:], int16bits(v[0][1]))
-	binary.LittleEndian.PutUint16(b[6:], int16bits(v[1][1]))
+	putInt16(b, v[0][0])
+	putInt16(b[2:], v[1][0])
+	putInt16(b[4:], v[0][1])
+	putInt16(b[6:], v[1][1])
 }
 
 func (shortComponent) PutMat3(b []byte, v [3][3]int16) {
-	binary.LittleEndian.PutUint16(b, int16bits(v[0][0]))
-	binary.LittleEndian.PutUint16(b[2:], int16bits(v[1][0]))
-	binary.LittleEndian.PutUint16(b[4:], int16bits(v[2][0]))
-	binary.LittleEndian.PutUint16(b[8:], int16bits(v[0][1]))
-	binary.LittleEndian.PutUint16(b[10:], int16bits(v[1][1]))
-	binary.LittleEndian.PutUint16(b[12:], int16bits(v[2][1]))
-	binary.LittleEndian.PutUint16(b[16:], int16bits(v[0][2]))
-	binary.LittleEndian.PutUint16(b[18:], int16bits(v[1][2]))
-	binary.LittleEndian.PutUint16(b[20:], int16bits(v[2][2]))
+	putInt16(b, v[0][0])
+	putInt16(b[2:], v[1][0])
+	putInt16(b[4:], v[2][0])
+	putInt16(b[8:], v[0][1])
+	putInt16(b[10:], v[1][1])
+	putInt16(b[12:], v[2][1])
+	putInt16(b[16:], v[0][2])
+	putInt16(b[18:], v[1][2])
+	putInt16(b[20:], v[2][2])
 }
 
 func (shortComponent) PutMat4(b []byte, v [4][4]int16) {
-	binary.LittleEndian.PutUint16(b, int16bits(v[0][0]))
-	binary.LittleEndian.PutUint16(b[2:], int16bits(v[1][0]))
-	binary.LittleEndian.PutUint16(b[4:], int16bits(v[2][0]))
-	binary.LittleEndian.PutUint16(b[6:], int16bits(v[3][0]))
-	binary.LittleEndian.PutUint16(b[8:], int16bits(v[0][1]))
-	binary.LittleEndian.PutUint16(b[12:], int16bits(v[1][1]))
-	binary.LittleEndian.PutUint16(b[14:], int16bits(v[2][1]))
-	binary.LittleEndian.PutUint16(b[16:], int16bits(v[3][1]))
-	binary.LittleEndian.PutUint16(b[18:], int16bits(v[0][2]))
-	binary.LittleEndian.PutUint16(b[20:], int16bits(v[1][2]))
-	binary.LittleEndian.PutUint16(b[22:], int16bits(v[2][2]))
-	binary.LittleEndian.PutUint16(b[24:], int16bits(v[3][2]))
-	binary.LittleEndian.PutUint16(b[26:], int16bits(v[0][3]))
-	binary.LittleEndian.PutUint16(b[28:], int16bits(v[1][3]))
-	binary.LittleEndian.PutUint16(b[30:], int16bits(v[2][3]))
-	binary.LittleEndian.PutUint16(b[32:], int16bits(v[3][3]))
+	putInt16(b, v[0][0])
+	putInt16(b[2:], v[1][0])
+	putInt16(b[4:], v[2][0])
+	putInt16(b[6:], v[3][0])
+	putInt16(b[8:], v[0][1])
+	putInt16(b[10:], v[1][1])
+	putInt16(b[12:], v[2][1])
+	putInt16(b[14:], v[3][1])
+	putInt16(b[16:], v[0][2])
+	putInt16(b[18:], v[1][2])
+	putInt16(b[20:], v[2][2])
+	putInt16(b[22:], v[3][2])
+	putInt16(b[24:], v[0][3])
+	putInt16(b[26:], v[1][3])
+	putInt16(b[28:], v[2][3])
+	putInt16(b[30:], v[3][3])
 }
 
 func (ushortComponent) PutScalar(b []byte, v uint16) {
@@ -232,17 +236,17 @@ func (ushortComponent) PutMat4(b []byte, v [4][4]uint16) {
 	binary.LittleEndian.PutUint16(b[4:], v[2][0])
 	binary.LittleEndian.PutUint16(b[6:], v[3][0])
 	binary.LittleEndian.PutUint16(b[8:], v[0][1])
-	binary.LittleEndian.PutUint16(b[12:], v[1][1])
-	binary.LittleEndian.PutUint16(b[14:], v[2][1])
-	binary.LittleEndian.PutUint16(b[16:], v[3][1])
-	binary.LittleEndian.PutUint16(b[18:], v[0][2])
-	binary.LittleEndian.PutUint16(b[20:], v[1][2])
-	binary.LittleEndian.PutUint16(b[22:], v[2][2])
-	binary.LittleEndian.PutUint16(b[24:], v[3][2])
-	binary.LittleEndian.PutUint16(b[26:], v[0][3])
-	binary.LittleEndian.PutUint16(b[28:], v[1][3])
-	binary.LittleEndian.PutUint16(b[30:], v[2][3])
-	binary.LittleEndian.PutUint16(b[32:], v[3][3])
+	binary.LittleEndian.PutUint16(b[10:], v[1][1])
+	binary.LittleEndian.PutUint16(b[12:], v[2][1])
+	binary.LittleEndian.PutUint16(b[14:], v[3][1])
+	binary.LittleEndian.PutUint16(b[16:], v[0][2])
+	binary.LittleEndian.PutUint16(b[18:], v[1][2])
+	binary.LittleEndian.PutUint16(b[20:], v[2][2])
+	binary.LittleEndian.PutUint16(b[22:], v[3][2])
+	binary.LittleEndian.PutUint16(b[24:], v[0][3])
+	binary.LittleEndian.PutUint16(b[26:], v[1][3])
+	binary.LittleEndian.PutUint16(b[28:], v[2][3])
+	binary.LittleEndian.PutUint16(b[30:], v[3][3])
 }
 
 func (uintComponent) PutScalar(b []byte, v uint32) {
@@ -305,62 +309,66 @@ func (uintComponent) PutMat4(b []byte, v [4][4]uint32) {
 	binary.LittleEndian.PutUint32(b[60:], v[3][3])
 }
 
-func (floatComponent) PutScalar(b []byte, v float32) {
+func putFloat32(b []byte, v float32) {
 	binary.LittleEndian.PutUint32(b, math.Float32bits(v))
 }
 
+func (floatComponent) PutScalar(b []byte, v float32) {
+	putFloat32(b, v)
+}
+
 func (floatComponent) PutVec2(b []byte, v [2]float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v[0]))
-	binary.LittleEndian.PutUint32(b[4:], math.Float32bits(v[1]))
+	putFloat32(b, v[0])
+	putFloat32(b[4:], v[1])
 }
 
 func (floatComponent) PutVec3(b []byte, v [3]float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v[0]))
-	binary.LittleEndian.PutUint32(b[4:], math.Float32bits(v[1]))
-	binary.LittleEndian.PutUint32(b[8:], math.Float32bits(v[2]))
+	putFloat32(b, v[0])
+	putFloat32(b[4:], v[1])
+	putFloat32(b[8:], v[2])
 }
 
 func (floatComponent) PutVec4(b []byte, v [4]float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v[0]))
-	binary.LittleEndian.PutUint32(b[4:], math.Float32bits(v[1]))
-	binary.LittleEndian.PutUint32(b[8:], math.Float32bits(v[2]))
-	binary.LittleEndian.PutUint32(b[12:], math.Float32bits(v[3]))
+	putFloat32(b, v[0])
+	putFloat32(b[4:], v[1])
+	putFloat32(b[8:], v[2])
+	putFloat32(b[12:], v[3])
 }
 
 func (floatComponent) PutMat2(b []byte, v [2][2]float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v[0][0]))
-	binary.LittleEndian.PutUint32(b[4:], math.Float32bits(v[1][0]))
-	binary.LittleEndian.PutUint32(b[8:], math.Float32bits(v[0][1]))
-	binary.LittleEndian.PutUint32(b[12:], math.Float32bits(v[1][1]))
+	putFloat32(b, v[0][0])
+	putFloat32(b[4:], v[1][0])
+	putFloat32(b[8:], v[0][1])
+	putFloat32(b[12:], v[1][1])
 }
 
 func (floatComponent) PutMat3(b []byte, v [3][3]float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v[0][0]))
-	binary.LittleEndian.PutUint32(b[4:], math.Float32bits(v[1][0]))
-	binary.LittleEndian.PutUint32(b[8:], math.Float32bits(v[2][0]))
-	binary.LittleEndian.PutUint32(b[12:], math.Float32bits(v[0][1]))
-	binary.LittleEndian.PutUint32(b[16:], math.Float32bits(v[1][1]))
-	binary.LittleEndian.PutUint32(b[20:], math.Float32bits(v[2][1]))
-	binary.LittleEndian.PutUint32(b[24:], math.Float32bits(v[0][2]))
-	binary.LittleEndian.PutUint32(b[28:], math.Float32bits(v[1][2]))
-	binary.LittleEndian.PutUint32(b[32:], math.Float32bits(v[2][2]))
+	putFloat32(b, v[0][0])
+	putFloat32(b[4:], v[1][0])
+	putFloat32(b[8:], v[2][0])
+	putFloat32(b[12:], v[0][1])
+	putFloat32(b[16:], v[1][1])
+	putFloat32(b[20:], v[2][1])
+	putFloat32(b[24:], v[0][2])
+	putFloat32(b[28:], v[1][2])
+	putFloat32(b[32:], v[2][2])
 }
 
 func (floatComponent) PutMat4(b []byte, v [4][4]float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v[0][0]))
-	binary.LittleEndian.PutUint32(b[4:], math.Float32bits(v[1][0]))
-	binary.LittleEndian.PutUint32(b[8:], math.Float32bits(v[2][0]))
-	binary.LittleEndian.PutUint32(b[12:], math.Float32bits(v[3][0]))
-	binary.LittleEndian.PutUint32(b[16:], math.Float32bits(v[0][1]))
-	binary.LittleEndian.PutUint32(b[20:], math.Float32bits(v[1][1]))
-	binary.LittleEndian.PutUint32(b[24:], math.Float32bits(v[2][1]))
-	binary.LittleEndian.PutUint32(b[28:], math.Float32bits(v[3][1]))
-	binary.LittleEndian.PutUint32(b[32:], math.Float32bits(v[0][2]))
-	binary.LittleEndian.PutUint32(b[36:], math.Float32bits(v[1][2]))
-	binary.LittleEndian.PutUint32(b[40:], math.Float32bits(v[2][2]))
-	binary.LittleEndian.PutUint32(b[44:], math.Float32bits(v[3][2]))
-	binary.LittleEndian.PutUint32(b[48:], math.Float32bits(v[0][3]))
-	binary.LittleEndian.PutUint32(b[52:], math.Float32bits(v[1][3]))
-	binary.LittleEndian.PutUint32(b[56:], math.Float32bits(v[2][3]))
-	binary.LittleEndian.PutUint32(b[60:], math.Float32bits(v[3][3]))
+	putFloat32(b, v[0][0])
+	putFloat32(b[4:], v[1][0])
+	putFloat32(b[8:], v[2][0])
+	putFloat32(b[12:], v[3][0])
+	putFloat32(b[16:], v[0][1])
+	putFloat32(b[20:], v[1][1])
+	putFloat32(b[24:], v[2][1])
+	putFloat32(b[28:], v[3][1])
+	putFloat32(b[32:], v[0][2])
+	putFloat32(b[36:], v[1][2])
+	putFloat32(b[40:], v[2][2])
+	putFloat32(b[44:], v[3][2])
+	putFloat32(b[48:], v[0][3])
+	putFloat32(b[52:], v[1][3])
+	putFloat32(b[56:], v[2][3])
+	putFloat32(b[60:], v[3][3])
 }

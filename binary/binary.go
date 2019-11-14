@@ -1,5 +1,4 @@
-// Package binary implements simple translation between numbers and byte
-// sequences and encoding and decoding of varints.
+// Package binary implements simple translation between numbers and byte sequences.
 //
 // Numbers are translated by reading and writing fixed-size values.
 // A fixed-size value is either a fixed-size arithmetic
@@ -11,6 +10,13 @@
 // type of the value:
 //
 // type Component interface {
+// 	 Scalar([]byte) interface{}
+//   Vec2([]byte) [2]interface{}
+//   Vec3([]byte) [2]interface{}
+//   Vec4([]byte) [2]interface{}
+//   Mat2([]byte) [2][2]interface{}
+//   Mat3([]byte) [3][3]interface{}
+//   Mat4([]byte) [4][4]interface{}
 // 	 PutScalar([]byte, interface{})
 // 	 PutVec2([]byte, [2]interface{})
 // 	 PutVec3([]byte, [3]interface{})
@@ -19,25 +25,29 @@
 // 	 PutMat3([]byte, [3][3]interface{})
 // 	 PutMat4([]byte, [4][4]interface{})
 // }
+//
+// This package favors simplicity over efficiency. Clients that require
+// high-performance serialization, especially for large data structures,
+// should look at more advanced solutions such as custom encoders.
 package binary
 
 // Byte is the byte implementation of Component.
-type Byte byteComponent
+var Byte byteComponent
 
 // UnsignedByte is the usnigned byte implementation of Component.
-type UnsignedByte ubyteComponent
+var UnsignedByte ubyteComponent
 
 // Short is the byte short of Component.
-type Short shortComponent
+var Short shortComponent
 
 // UnsignedShort is the usnigned short implementation of Component.
-type UnsignedShort ushortComponent
+var UnsignedShort ushortComponent
 
 // UnsignedInt is the unsigned int implementation of Component.
-type UnsignedInt uintComponent
+var UnsignedInt uintComponent
 
 // Float is the float implementation of Component.
-type Float floatComponent
+var Float floatComponent
 
 type byteComponent struct{}
 type ubyteComponent struct{}
