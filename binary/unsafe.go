@@ -63,7 +63,7 @@ func (byteComponent) PutMat3(b []byte, v [3][3]int8) {
 }
 
 func (byteComponent) Mat4(b []byte) [4][4]int8 {
-	v := UnsignedByte.Mat3(b)
+	v := UnsignedByte.Mat4(b)
 	return *(*[4][4]int8)(unsafe.Pointer(&v))
 }
 

@@ -20,59 +20,59 @@ func Read(b []byte, data interface{}) error {
 	}
 	switch data := data.(type) {
 	case []int8:
-		for i := range b {
+		for i := range data {
 			data[i] = Byte.Scalar(b[e*i:])
 		}
 	case [][2]int8:
-		for i := range b {
+		for i := range data {
 			data[i] = Byte.Vec2(b[e*i:])
 		}
 	case [][3]int8:
-		for i := range b {
+		for i := range data {
 			data[i] = Byte.Vec3(b[e*i:])
 		}
 	case [][4]int8:
-		for i := range b {
+		for i := range data {
 			data[i] = Byte.Vec4(b[e*i:])
 		}
 	case [][2][2]int8:
-		for i := range b {
+		for i := range data {
 			data[i] = Byte.Mat2(b[e*i:])
 		}
 	case [][3][3]int8:
-		for i := range b {
+		for i := range data {
 			data[i] = Byte.Mat3(b[e*i:])
 		}
 	case [][4][4]int8:
-		for i := range b {
+		for i := range data {
 			data[i] = Byte.Mat4(b[e*i:])
 		}
 	case []uint8:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedByte.Scalar(b[e*i:])
 		}
 	case [][2]uint8:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedByte.Vec2(b[e*i:])
 		}
 	case [][3]uint8:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedByte.Vec3(b[e*i:])
 		}
 	case [][4]uint8:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedByte.Vec4(b[e*i:])
 		}
 	case [][2][2]uint8:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedByte.Mat2(b[e*i:])
 		}
 	case [][3][3]uint8:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedByte.Mat3(b[e*i:])
 		}
 	case [][4][4]uint8:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedByte.Mat4(b[e*i:])
 		}
 	case []int16:
@@ -80,27 +80,27 @@ func Read(b []byte, data interface{}) error {
 			data[i] = Short.Scalar(b[e*i:])
 		}
 	case [][2]int16:
-		for i := range b {
+		for i := range data {
 			data[i] = Short.Vec2(b[e*i:])
 		}
 	case [][3]int16:
-		for i := range b {
+		for i := range data {
 			data[i] = Short.Vec3(b[e*i:])
 		}
 	case [][4]int16:
-		for i := range b {
+		for i := range data {
 			data[i] = Short.Vec4(b[e*i:])
 		}
 	case [][2][2]int16:
-		for i := range b {
+		for i := range data {
 			data[i] = Short.Mat2(b[e*i:])
 		}
 	case [][3][3]int16:
-		for i := range b {
+		for i := range data {
 			data[i] = Short.Mat3(b[e*i:])
 		}
 	case [][4][4]int16:
-		for i := range b {
+		for i := range data {
 			data[i] = Short.Mat4(b[e*i:])
 		}
 	case []uint16:
@@ -108,27 +108,27 @@ func Read(b []byte, data interface{}) error {
 			data[i] = UnsignedShort.Scalar(b[e*i:])
 		}
 	case [][2]uint16:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedShort.Vec2(b[e*i:])
 		}
 	case [][3]uint16:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedShort.Vec3(b[e*i:])
 		}
 	case [][4]uint16:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedShort.Vec4(b[e*i:])
 		}
 	case [][2][2]uint16:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedShort.Mat2(b[e*i:])
 		}
 	case [][3][3]uint16:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedShort.Mat3(b[e*i:])
 		}
 	case [][4][4]uint16:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedShort.Mat4(b[e*i:])
 		}
 	case []float32:
@@ -136,27 +136,27 @@ func Read(b []byte, data interface{}) error {
 			data[i] = Float.Scalar(b[e*i:])
 		}
 	case [][2]float32:
-		for i := range b {
+		for i := range data {
 			data[i] = Float.Vec2(b[e*i:])
 		}
 	case [][3]float32:
-		for i := range b {
+		for i := range data {
 			data[i] = Float.Vec3(b[e*i:])
 		}
 	case [][4]float32:
-		for i := range b {
+		for i := range data {
 			data[i] = Float.Vec4(b[e*i:])
 		}
 	case [][2][2]float32:
-		for i := range b {
+		for i := range data {
 			data[i] = Float.Mat2(b[e*i:])
 		}
 	case [][3][3]float32:
-		for i := range b {
+		for i := range data {
 			data[i] = Float.Mat3(b[e*i:])
 		}
 	case [][4][4]float32:
-		for i := range b {
+		for i := range data {
 			data[i] = Float.Mat4(b[e*i:])
 		}
 	case []uint32:
@@ -164,27 +164,27 @@ func Read(b []byte, data interface{}) error {
 			data[i] = UnsignedInt.Scalar(b[e*i:])
 		}
 	case [][2]uint32:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedInt.Vec2(b[e*i:])
 		}
 	case [][3]uint32:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedInt.Vec3(b[e*i:])
 		}
 	case [][4]uint32:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedInt.Vec4(b[e*i:])
 		}
 	case [][2][2]uint32:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedInt.Mat2(b[e*i:])
 		}
 	case [][3][3]uint32:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedInt.Mat3(b[e*i:])
 		}
 	case [][4][4]uint32:
-		for i := range b {
+		for i := range data {
 			data[i] = UnsignedInt.Mat4(b[e*i:])
 		}
 	}
