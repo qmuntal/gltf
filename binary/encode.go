@@ -1,374 +1,375 @@
 package binary
 
 import (
-	"encoding/binary"
-	"math"
+	"errors"
+	"io"
+	"reflect"
 )
 
-func (byteComponent) PutScalar(b []byte, v int8) {
-	b[0] = int8bits(v)
+// Read reads structured binary data from r into data.
+// Data must be a slice of fixed-size values.
+//
+// If data length is greater than the length of b, Read returns io.ErrShortBuffer.
+func Read(b []byte, data interface{}) error {
+	e, n := intDataSize(data)
+	if e == 0 {
+		return errors.New("gltf.binary.Read: invalid type " + reflect.TypeOf(data).String())
+	}
+	if len(b) < n {
+		return io.ErrShortBuffer
+	}
+	switch data := data.(type) {
+	case []int8:
+		for i := range b {
+			data[i] = Byte.Scalar(b[e*i:])
+		}
+	case [][2]int8:
+		for i := range b {
+			data[i] = Byte.Vec2(b[e*i:])
+		}
+	case [][3]int8:
+		for i := range b {
+			data[i] = Byte.Vec3(b[e*i:])
+		}
+	case [][4]int8:
+		for i := range b {
+			data[i] = Byte.Vec4(b[e*i:])
+		}
+	case [][2][2]int8:
+		for i := range b {
+			data[i] = Byte.Mat2(b[e*i:])
+		}
+	case [][3][3]int8:
+		for i := range b {
+			data[i] = Byte.Mat3(b[e*i:])
+		}
+	case [][4][4]int8:
+		for i := range b {
+			data[i] = Byte.Mat4(b[e*i:])
+		}
+	case []uint8:
+		for i := range b {
+			data[i] = UnsignedByte.Scalar(b[e*i:])
+		}
+	case [][2]uint8:
+		for i := range b {
+			data[i] = UnsignedByte.Vec2(b[e*i:])
+		}
+	case [][3]uint8:
+		for i := range b {
+			data[i] = UnsignedByte.Vec3(b[e*i:])
+		}
+	case [][4]uint8:
+		for i := range b {
+			data[i] = UnsignedByte.Vec4(b[e*i:])
+		}
+	case [][2][2]uint8:
+		for i := range b {
+			data[i] = UnsignedByte.Mat2(b[e*i:])
+		}
+	case [][3][3]uint8:
+		for i := range b {
+			data[i] = UnsignedByte.Mat3(b[e*i:])
+		}
+	case [][4][4]uint8:
+		for i := range b {
+			data[i] = UnsignedByte.Mat4(b[e*i:])
+		}
+	case []int16:
+		for i := range data {
+			data[i] = Short.Scalar(b[e*i:])
+		}
+	case [][2]int16:
+		for i := range b {
+			data[i] = Short.Vec2(b[e*i:])
+		}
+	case [][3]int16:
+		for i := range b {
+			data[i] = Short.Vec3(b[e*i:])
+		}
+	case [][4]int16:
+		for i := range b {
+			data[i] = Short.Vec4(b[e*i:])
+		}
+	case [][2][2]int16:
+		for i := range b {
+			data[i] = Short.Mat2(b[e*i:])
+		}
+	case [][3][3]int16:
+		for i := range b {
+			data[i] = Short.Mat3(b[e*i:])
+		}
+	case [][4][4]int16:
+		for i := range b {
+			data[i] = Short.Mat4(b[e*i:])
+		}
+	case []uint16:
+		for i := range data {
+			data[i] = UnsignedShort.Scalar(b[e*i:])
+		}
+	case [][2]uint16:
+		for i := range b {
+			data[i] = UnsignedShort.Vec2(b[e*i:])
+		}
+	case [][3]uint16:
+		for i := range b {
+			data[i] = UnsignedShort.Vec3(b[e*i:])
+		}
+	case [][4]uint16:
+		for i := range b {
+			data[i] = UnsignedShort.Vec4(b[e*i:])
+		}
+	case [][2][2]uint16:
+		for i := range b {
+			data[i] = UnsignedShort.Mat2(b[e*i:])
+		}
+	case [][3][3]uint16:
+		for i := range b {
+			data[i] = UnsignedShort.Mat3(b[e*i:])
+		}
+	case [][4][4]uint16:
+		for i := range b {
+			data[i] = UnsignedShort.Mat4(b[e*i:])
+		}
+	case []float32:
+		for i := range data {
+			data[i] = Float.Scalar(b[e*i:])
+		}
+	case [][2]float32:
+		for i := range b {
+			data[i] = Float.Vec2(b[e*i:])
+		}
+	case [][3]float32:
+		for i := range b {
+			data[i] = Float.Vec3(b[e*i:])
+		}
+	case [][4]float32:
+		for i := range b {
+			data[i] = Float.Vec4(b[e*i:])
+		}
+	case [][2][2]float32:
+		for i := range b {
+			data[i] = Float.Mat2(b[e*i:])
+		}
+	case [][3][3]float32:
+		for i := range b {
+			data[i] = Float.Mat3(b[e*i:])
+		}
+	case [][4][4]float32:
+		for i := range b {
+			data[i] = Float.Mat4(b[e*i:])
+		}
+	case []uint32:
+		for i := range data {
+			data[i] = UnsignedInt.Scalar(b[e*i:])
+		}
+	case [][2]uint32:
+		for i := range b {
+			data[i] = UnsignedInt.Vec2(b[e*i:])
+		}
+	case [][3]uint32:
+		for i := range b {
+			data[i] = UnsignedInt.Vec3(b[e*i:])
+		}
+	case [][4]uint32:
+		for i := range b {
+			data[i] = UnsignedInt.Vec4(b[e*i:])
+		}
+	case [][2][2]uint32:
+		for i := range b {
+			data[i] = UnsignedInt.Mat2(b[e*i:])
+		}
+	case [][3][3]uint32:
+		for i := range b {
+			data[i] = UnsignedInt.Mat3(b[e*i:])
+		}
+	case [][4][4]uint32:
+		for i := range b {
+			data[i] = UnsignedInt.Mat4(b[e*i:])
+		}
+	}
+	return nil
 }
 
-func (byteComponent) PutVec2(b []byte, v [2]int8) {
-	b[0] = int8bits(v[0])
-	b[1] = int8bits(v[1])
-}
-
-func (byteComponent) PutVec3(b []byte, v [3]int8) {
-	b[0] = int8bits(v[0])
-	b[1] = int8bits(v[1])
-	b[2] = int8bits(v[2])
-}
-
-func (byteComponent) PutVec4(b []byte, v [4]int8) {
-	b[0] = int8bits(v[0])
-	b[1] = int8bits(v[1])
-	b[2] = int8bits(v[2])
-	b[3] = int8bits(v[3])
-}
-
-func (byteComponent) PutMat2(b []byte, v [2][2]int8) {
-	b[0] = int8bits(v[0][0])
-	b[1] = int8bits(v[1][0])
-	b[4] = int8bits(v[0][1])
-	b[5] = int8bits(v[1][1])
-}
-
-func (byteComponent) PutMat3(b []byte, v [3][3]int8) {
-	b[0] = int8bits(v[0][0])
-	b[1] = int8bits(v[1][0])
-	b[2] = int8bits(v[2][0])
-	b[4] = int8bits(v[0][1])
-	b[5] = int8bits(v[1][1])
-	b[6] = int8bits(v[2][1])
-	b[8] = int8bits(v[0][2])
-	b[9] = int8bits(v[1][2])
-	b[10] = int8bits(v[2][2])
-}
-
-func (byteComponent) PutMat4(b []byte, v [4][4]int8) {
-	b[0] = int8bits(v[0][0])
-	b[1] = int8bits(v[1][0])
-	b[2] = int8bits(v[2][0])
-	b[3] = int8bits(v[3][0])
-	b[4] = int8bits(v[0][1])
-	b[5] = int8bits(v[1][1])
-	b[6] = int8bits(v[2][1])
-	b[7] = int8bits(v[3][1])
-	b[8] = int8bits(v[0][2])
-	b[9] = int8bits(v[1][2])
-	b[10] = int8bits(v[2][2])
-	b[11] = int8bits(v[3][2])
-	b[12] = int8bits(v[0][3])
-	b[13] = int8bits(v[1][3])
-	b[14] = int8bits(v[2][3])
-	b[15] = int8bits(v[3][3])
-}
-
-func (ubyteComponent) PutScalar(b []byte, v uint8) {
-	b[0] = v
-}
-
-func (ubyteComponent) PutVec2(b []byte, v [2]uint8) {
-	b[0] = v[0]
-	b[1] = v[1]
-}
-
-func (ubyteComponent) PutVec3(b []byte, v [3]uint8) {
-	b[0] = v[0]
-	b[1] = v[1]
-	b[2] = v[2]
-}
-
-func (ubyteComponent) PutVec4(b []byte, v [4]uint8) {
-	b[0] = v[0]
-	b[1] = v[1]
-	b[2] = v[2]
-	b[3] = v[3]
-}
-
-func (ubyteComponent) PutMat2(b []byte, v [2][2]uint8) {
-	b[0] = v[0][0]
-	b[1] = v[1][0]
-	b[4] = v[0][1]
-	b[5] = v[1][1]
-}
-
-func (ubyteComponent) PutMat3(b []byte, v [3][3]uint8) {
-	b[0] = v[0][0]
-	b[1] = v[1][0]
-	b[2] = v[2][0]
-	b[4] = v[0][1]
-	b[5] = v[1][1]
-	b[6] = v[2][1]
-	b[8] = v[0][2]
-	b[9] = v[1][2]
-	b[10] = v[2][2]
-}
-
-func (ubyteComponent) PutMat4(b []byte, v [4][4]uint8) {
-	b[0] = v[0][0]
-	b[1] = v[1][0]
-	b[2] = v[2][0]
-	b[3] = v[3][0]
-	b[4] = v[0][1]
-	b[5] = v[1][1]
-	b[6] = v[2][1]
-	b[7] = v[3][1]
-	b[8] = v[0][2]
-	b[9] = v[1][2]
-	b[10] = v[2][2]
-	b[11] = v[3][2]
-	b[12] = v[0][3]
-	b[13] = v[1][3]
-	b[14] = v[2][3]
-	b[15] = v[3][3]
-}
-
-func putInt16(b []byte, v int16) {
-	binary.LittleEndian.PutUint16(b, int16bits(v))
-}
-
-func (shortComponent) PutScalar(b []byte, v int16) {
-	putInt16(b, v)
-}
-
-func (shortComponent) PutVec2(b []byte, v [2]int16) {
-	putInt16(b, v[0])
-	putInt16(b[2:], v[1])
-}
-
-func (shortComponent) PutVec3(b []byte, v [3]int16) {
-	putInt16(b, v[0])
-	putInt16(b[2:], v[1])
-	putInt16(b[4:], v[2])
-}
-
-func (shortComponent) PutVec4(b []byte, v [4]int16) {
-	putInt16(b, v[0])
-	putInt16(b[2:], v[1])
-	putInt16(b[4:], v[2])
-	putInt16(b[6:], v[3])
-}
-
-func (shortComponent) PutMat2(b []byte, v [2][2]int16) {
-	putInt16(b, v[0][0])
-	putInt16(b[2:], v[1][0])
-	putInt16(b[4:], v[0][1])
-	putInt16(b[6:], v[1][1])
-}
-
-func (shortComponent) PutMat3(b []byte, v [3][3]int16) {
-	putInt16(b, v[0][0])
-	putInt16(b[2:], v[1][0])
-	putInt16(b[4:], v[2][0])
-	putInt16(b[8:], v[0][1])
-	putInt16(b[10:], v[1][1])
-	putInt16(b[12:], v[2][1])
-	putInt16(b[16:], v[0][2])
-	putInt16(b[18:], v[1][2])
-	putInt16(b[20:], v[2][2])
-}
-
-func (shortComponent) PutMat4(b []byte, v [4][4]int16) {
-	putInt16(b, v[0][0])
-	putInt16(b[2:], v[1][0])
-	putInt16(b[4:], v[2][0])
-	putInt16(b[6:], v[3][0])
-	putInt16(b[8:], v[0][1])
-	putInt16(b[10:], v[1][1])
-	putInt16(b[12:], v[2][1])
-	putInt16(b[14:], v[3][1])
-	putInt16(b[16:], v[0][2])
-	putInt16(b[18:], v[1][2])
-	putInt16(b[20:], v[2][2])
-	putInt16(b[22:], v[3][2])
-	putInt16(b[24:], v[0][3])
-	putInt16(b[26:], v[1][3])
-	putInt16(b[28:], v[2][3])
-	putInt16(b[30:], v[3][3])
-}
-
-func (ushortComponent) PutScalar(b []byte, v uint16) {
-	binary.LittleEndian.PutUint16(b, v)
-}
-
-func (ushortComponent) PutVec2(b []byte, v [2]uint16) {
-	binary.LittleEndian.PutUint16(b, v[0])
-	binary.LittleEndian.PutUint16(b[2:], v[1])
-}
-
-func (ushortComponent) PutVec3(b []byte, v [3]uint16) {
-	binary.LittleEndian.PutUint16(b, v[0])
-	binary.LittleEndian.PutUint16(b[2:], v[1])
-	binary.LittleEndian.PutUint16(b[4:], v[2])
-}
-
-func (ushortComponent) PutVec4(b []byte, v [4]uint16) {
-	binary.LittleEndian.PutUint16(b, v[0])
-	binary.LittleEndian.PutUint16(b[2:], v[1])
-	binary.LittleEndian.PutUint16(b[4:], v[2])
-	binary.LittleEndian.PutUint16(b[6:], v[3])
-}
-
-func (ushortComponent) PutMat2(b []byte, v [2][2]uint16) {
-	binary.LittleEndian.PutUint16(b, v[0][0])
-	binary.LittleEndian.PutUint16(b[2:], v[1][0])
-	binary.LittleEndian.PutUint16(b[4:], v[0][1])
-	binary.LittleEndian.PutUint16(b[6:], v[1][1])
-}
-
-func (ushortComponent) PutMat3(b []byte, v [3][3]uint16) {
-	binary.LittleEndian.PutUint16(b, v[0][0])
-	binary.LittleEndian.PutUint16(b[2:], v[1][0])
-	binary.LittleEndian.PutUint16(b[4:], v[2][0])
-	binary.LittleEndian.PutUint16(b[8:], v[0][1])
-	binary.LittleEndian.PutUint16(b[10:], v[1][1])
-	binary.LittleEndian.PutUint16(b[12:], v[2][1])
-	binary.LittleEndian.PutUint16(b[16:], v[0][2])
-	binary.LittleEndian.PutUint16(b[18:], v[1][2])
-	binary.LittleEndian.PutUint16(b[20:], v[2][2])
-}
-
-func (ushortComponent) PutMat4(b []byte, v [4][4]uint16) {
-	binary.LittleEndian.PutUint16(b, v[0][0])
-	binary.LittleEndian.PutUint16(b[2:], v[1][0])
-	binary.LittleEndian.PutUint16(b[4:], v[2][0])
-	binary.LittleEndian.PutUint16(b[6:], v[3][0])
-	binary.LittleEndian.PutUint16(b[8:], v[0][1])
-	binary.LittleEndian.PutUint16(b[10:], v[1][1])
-	binary.LittleEndian.PutUint16(b[12:], v[2][1])
-	binary.LittleEndian.PutUint16(b[14:], v[3][1])
-	binary.LittleEndian.PutUint16(b[16:], v[0][2])
-	binary.LittleEndian.PutUint16(b[18:], v[1][2])
-	binary.LittleEndian.PutUint16(b[20:], v[2][2])
-	binary.LittleEndian.PutUint16(b[22:], v[3][2])
-	binary.LittleEndian.PutUint16(b[24:], v[0][3])
-	binary.LittleEndian.PutUint16(b[26:], v[1][3])
-	binary.LittleEndian.PutUint16(b[28:], v[2][3])
-	binary.LittleEndian.PutUint16(b[30:], v[3][3])
-}
-
-func (uintComponent) PutScalar(b []byte, v uint32) {
-	binary.LittleEndian.PutUint32(b, v)
-}
-
-func (uintComponent) PutVec2(b []byte, v [2]uint32) {
-	binary.LittleEndian.PutUint32(b, v[0])
-	binary.LittleEndian.PutUint32(b[4:], v[1])
-}
-
-func (uintComponent) PutVec3(b []byte, v [3]uint32) {
-	binary.LittleEndian.PutUint32(b, v[0])
-	binary.LittleEndian.PutUint32(b[4:], v[1])
-	binary.LittleEndian.PutUint32(b[8:], v[2])
-}
-
-func (uintComponent) PutVec4(b []byte, v [4]uint32) {
-	binary.LittleEndian.PutUint32(b, v[0])
-	binary.LittleEndian.PutUint32(b[4:], v[1])
-	binary.LittleEndian.PutUint32(b[8:], v[2])
-	binary.LittleEndian.PutUint32(b[12:], v[3])
-}
-
-func (uintComponent) PutMat2(b []byte, v [2][2]uint32) {
-	binary.LittleEndian.PutUint32(b, v[0][0])
-	binary.LittleEndian.PutUint32(b[4:], v[1][0])
-	binary.LittleEndian.PutUint32(b[8:], v[0][1])
-	binary.LittleEndian.PutUint32(b[12:], v[1][1])
-}
-
-func (uintComponent) PutMat3(b []byte, v [3][3]uint32) {
-	binary.LittleEndian.PutUint32(b, v[0][0])
-	binary.LittleEndian.PutUint32(b[4:], v[1][0])
-	binary.LittleEndian.PutUint32(b[8:], v[2][0])
-	binary.LittleEndian.PutUint32(b[12:], v[0][1])
-	binary.LittleEndian.PutUint32(b[16:], v[1][1])
-	binary.LittleEndian.PutUint32(b[20:], v[2][1])
-	binary.LittleEndian.PutUint32(b[24:], v[0][2])
-	binary.LittleEndian.PutUint32(b[28:], v[1][2])
-	binary.LittleEndian.PutUint32(b[32:], v[2][2])
-}
-
-func (uintComponent) PutMat4(b []byte, v [4][4]uint32) {
-	binary.LittleEndian.PutUint32(b, v[0][0])
-	binary.LittleEndian.PutUint32(b[4:], v[1][0])
-	binary.LittleEndian.PutUint32(b[8:], v[2][0])
-	binary.LittleEndian.PutUint32(b[12:], v[3][0])
-	binary.LittleEndian.PutUint32(b[16:], v[0][1])
-	binary.LittleEndian.PutUint32(b[20:], v[1][1])
-	binary.LittleEndian.PutUint32(b[24:], v[2][1])
-	binary.LittleEndian.PutUint32(b[28:], v[3][1])
-	binary.LittleEndian.PutUint32(b[32:], v[0][2])
-	binary.LittleEndian.PutUint32(b[36:], v[1][2])
-	binary.LittleEndian.PutUint32(b[40:], v[2][2])
-	binary.LittleEndian.PutUint32(b[44:], v[3][2])
-	binary.LittleEndian.PutUint32(b[48:], v[0][3])
-	binary.LittleEndian.PutUint32(b[52:], v[1][3])
-	binary.LittleEndian.PutUint32(b[56:], v[2][3])
-	binary.LittleEndian.PutUint32(b[60:], v[3][3])
-}
-
-func putFloat32(b []byte, v float32) {
-	binary.LittleEndian.PutUint32(b, math.Float32bits(v))
-}
-
-func (floatComponent) PutScalar(b []byte, v float32) {
-	putFloat32(b, v)
-}
-
-func (floatComponent) PutVec2(b []byte, v [2]float32) {
-	putFloat32(b, v[0])
-	putFloat32(b[4:], v[1])
-}
-
-func (floatComponent) PutVec3(b []byte, v [3]float32) {
-	putFloat32(b, v[0])
-	putFloat32(b[4:], v[1])
-	putFloat32(b[8:], v[2])
-}
-
-func (floatComponent) PutVec4(b []byte, v [4]float32) {
-	putFloat32(b, v[0])
-	putFloat32(b[4:], v[1])
-	putFloat32(b[8:], v[2])
-	putFloat32(b[12:], v[3])
-}
-
-func (floatComponent) PutMat2(b []byte, v [2][2]float32) {
-	putFloat32(b, v[0][0])
-	putFloat32(b[4:], v[1][0])
-	putFloat32(b[8:], v[0][1])
-	putFloat32(b[12:], v[1][1])
-}
-
-func (floatComponent) PutMat3(b []byte, v [3][3]float32) {
-	putFloat32(b, v[0][0])
-	putFloat32(b[4:], v[1][0])
-	putFloat32(b[8:], v[2][0])
-	putFloat32(b[12:], v[0][1])
-	putFloat32(b[16:], v[1][1])
-	putFloat32(b[20:], v[2][1])
-	putFloat32(b[24:], v[0][2])
-	putFloat32(b[28:], v[1][2])
-	putFloat32(b[32:], v[2][2])
-}
-
-func (floatComponent) PutMat4(b []byte, v [4][4]float32) {
-	putFloat32(b, v[0][0])
-	putFloat32(b[4:], v[1][0])
-	putFloat32(b[8:], v[2][0])
-	putFloat32(b[12:], v[3][0])
-	putFloat32(b[16:], v[0][1])
-	putFloat32(b[20:], v[1][1])
-	putFloat32(b[24:], v[2][1])
-	putFloat32(b[28:], v[3][1])
-	putFloat32(b[32:], v[0][2])
-	putFloat32(b[36:], v[1][2])
-	putFloat32(b[40:], v[2][2])
-	putFloat32(b[44:], v[3][2])
-	putFloat32(b[48:], v[0][3])
-	putFloat32(b[52:], v[1][3])
-	putFloat32(b[56:], v[2][3])
-	putFloat32(b[60:], v[3][3])
+// Write writes the binary representation of data into b.
+// Data must be a slice of fixed-size values.
+func Write(b []byte, data interface{}) error {
+	e, n := intDataSize(data)
+	if e == 0 {
+		return errors.New("gltf.binary.Read: invalid type " + reflect.TypeOf(data).String())
+	}
+	if len(b) < n {
+		return io.ErrShortBuffer
+	}
+	switch data := data.(type) {
+	case []int8:
+		for i := range b {
+			Byte.PutScalar(b[e*i:], data[i])
+		}
+	case [][2]int8:
+		for i := range b {
+			Byte.PutVec2(b[e*i:], data[i])
+		}
+	case [][3]int8:
+		for i := range b {
+			Byte.PutVec3(b[e*i:], data[i])
+		}
+	case [][4]int8:
+		for i := range b {
+			Byte.PutVec4(b[e*i:], data[i])
+		}
+	case [][2][2]int8:
+		for i := range b {
+			Byte.PutMat2(b[e*i:], data[i])
+		}
+	case [][3][3]int8:
+		for i := range b {
+			Byte.PutMat3(b[e*i:], data[i])
+		}
+	case [][4][4]int8:
+		for i := range b {
+			Byte.PutMat4(b[e*i:], data[i])
+		}
+	case []uint8:
+		for i := range b {
+			UnsignedByte.PutScalar(b[e*i:], data[i])
+		}
+	case [][2]uint8:
+		for i := range b {
+			UnsignedByte.PutVec2(b[e*i:], data[i])
+		}
+	case [][3]uint8:
+		for i := range b {
+			UnsignedByte.PutVec3(b[e*i:], data[i])
+		}
+	case [][4]uint8:
+		for i := range b {
+			UnsignedByte.PutVec4(b[e*i:], data[i])
+		}
+	case [][2][2]uint8:
+		for i := range b {
+			UnsignedByte.PutMat2(b[e*i:], data[i])
+		}
+	case [][3][3]uint8:
+		for i := range b {
+			UnsignedByte.PutMat3(b[e*i:], data[i])
+		}
+	case [][4][4]uint8:
+		for i := range b {
+			UnsignedByte.PutMat4(b[e*i:], data[i])
+		}
+	case []int16:
+		for i := range data {
+			Short.PutScalar(b[e*i:], data[i])
+		}
+	case [][2]int16:
+		for i := range b {
+			Short.PutVec2(b[e*i:], data[i])
+		}
+	case [][3]int16:
+		for i := range b {
+			Short.PutVec3(b[e*i:], data[i])
+		}
+	case [][4]int16:
+		for i := range b {
+			Short.PutVec4(b[e*i:], data[i])
+		}
+	case [][2][2]int16:
+		for i := range b {
+			Short.PutMat2(b[e*i:], data[i])
+		}
+	case [][3][3]int16:
+		for i := range b {
+			Short.PutMat3(b[e*i:], data[i])
+		}
+	case [][4][4]int16:
+		for i := range b {
+			Short.PutMat4(b[e*i:], data[i])
+		}
+	case []uint16:
+		for i := range data {
+			UnsignedShort.PutScalar(b[e*i:], data[i])
+		}
+	case [][2]uint16:
+		for i := range b {
+			UnsignedShort.PutVec2(b[e*i:], data[i])
+		}
+	case [][3]uint16:
+		for i := range b {
+			UnsignedShort.PutVec3(b[e*i:], data[i])
+		}
+	case [][4]uint16:
+		for i := range b {
+			UnsignedShort.PutVec4(b[e*i:], data[i])
+		}
+	case [][2][2]uint16:
+		for i := range b {
+			UnsignedShort.PutMat2(b[e*i:], data[i])
+		}
+	case [][3][3]uint16:
+		for i := range b {
+			UnsignedShort.PutMat3(b[e*i:], data[i])
+		}
+	case [][4][4]uint16:
+		for i := range b {
+			UnsignedShort.PutMat4(b[e*i:], data[i])
+		}
+	case []float32:
+		for i := range data {
+			Float.PutScalar(b[e*i:], data[i])
+		}
+	case [][2]float32:
+		for i := range b {
+			Float.PutVec2(b[e*i:], data[i])
+		}
+	case [][3]float32:
+		for i := range b {
+			Float.PutVec3(b[e*i:], data[i])
+		}
+	case [][4]float32:
+		for i := range b {
+			Float.PutVec4(b[e*i:], data[i])
+		}
+	case [][2][2]float32:
+		for i := range b {
+			Float.PutMat2(b[e*i:], data[i])
+		}
+	case [][3][3]float32:
+		for i := range b {
+			Float.PutMat3(b[e*i:], data[i])
+		}
+	case [][4][4]float32:
+		for i := range b {
+			Float.PutMat4(b[e*i:], data[i])
+		}
+	case []uint32:
+		for i := range data {
+			UnsignedInt.PutScalar(b[e*i:], data[i])
+		}
+	case [][2]uint32:
+		for i := range b {
+			UnsignedInt.PutVec2(b[e*i:], data[i])
+		}
+	case [][3]uint32:
+		for i := range b {
+			UnsignedInt.PutVec3(b[e*i:], data[i])
+		}
+	case [][4]uint32:
+		for i := range b {
+			UnsignedInt.PutVec4(b[e*i:], data[i])
+		}
+	case [][2][2]uint32:
+		for i := range b {
+			UnsignedInt.PutMat2(b[e*i:], data[i])
+		}
+	case [][3][3]uint32:
+		for i := range b {
+			UnsignedInt.PutMat3(b[e*i:], data[i])
+		}
+	case [][4][4]uint32:
+		for i := range b {
+			UnsignedInt.PutMat4(b[e*i:], data[i])
+		}
+	}
+	return nil
 }
