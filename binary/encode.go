@@ -1,19 +1,20 @@
 package binary
 
 import (
-	"errors"
+	"bytes"
+	"encoding/binary"
 	"io"
-	"reflect"
 )
 
 // Read reads structured binary data from r into data.
-// Data must be a slice of fixed-size values.
+// Data should be a slice of glTF predefined fixed-size types,
+// else it fallbacks to `encoding/binary.Read`.
 //
 // If data length is greater than the length of b, Read returns io.ErrShortBuffer.
 func Read(b []byte, data interface{}) error {
 	e, n := intDataSize(data)
 	if e == 0 {
-		return errors.New("gltf.binary.Read: invalid type " + reflect.TypeOf(data).String())
+		return binary.Read(bytes.NewReader(b), binary.LittleEndian, data)
 	}
 	if len(b) < n {
 		return io.ErrShortBuffer
@@ -192,11 +193,12 @@ func Read(b []byte, data interface{}) error {
 }
 
 // Write writes the binary representation of data into b.
-// Data must be a slice of fixed-size values.
+// Data must be a slice of glTF predefined fixed-size types,
+// else it fallbacks to `encoding/binary.Write`.
 func Write(b []byte, data interface{}) error {
 	e, n := intDataSize(data)
 	if e == 0 {
-		return errors.New("gltf.binary.Read: invalid type " + reflect.TypeOf(data).String())
+		return binary.Write(bytes.NewBuffer(b), binary.LittleEndian, data)
 	}
 	if len(b) < n {
 		return io.ErrShortBuffer
