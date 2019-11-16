@@ -203,59 +203,59 @@ func Write(b []byte, data interface{}) error {
 	}
 	switch data := data.(type) {
 	case []int8:
-		for i := range b {
+		for i := range data {
 			Byte.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]int8:
-		for i := range b {
+		for i := range data {
 			Byte.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]int8:
-		for i := range b {
+		for i := range data {
 			Byte.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]int8:
-		for i := range b {
+		for i := range data {
 			Byte.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]int8:
-		for i := range b {
+		for i := range data {
 			Byte.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]int8:
-		for i := range b {
+		for i := range data {
 			Byte.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]int8:
-		for i := range b {
+		for i := range data {
 			Byte.PutMat4(b[e*i:], data[i])
 		}
 	case []uint8:
-		for i := range b {
+		for i := range data {
 			UnsignedByte.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]uint8:
-		for i := range b {
+		for i := range data {
 			UnsignedByte.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]uint8:
-		for i := range b {
+		for i := range data {
 			UnsignedByte.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]uint8:
-		for i := range b {
+		for i := range data {
 			UnsignedByte.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]uint8:
-		for i := range b {
+		for i := range data {
 			UnsignedByte.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]uint8:
-		for i := range b {
+		for i := range data {
 			UnsignedByte.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]uint8:
-		for i := range b {
+		for i := range data {
 			UnsignedByte.PutMat4(b[e*i:], data[i])
 		}
 	case []int16:
@@ -263,27 +263,27 @@ func Write(b []byte, data interface{}) error {
 			Short.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]int16:
-		for i := range b {
+		for i := range data {
 			Short.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]int16:
-		for i := range b {
+		for i := range data {
 			Short.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]int16:
-		for i := range b {
+		for i := range data {
 			Short.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]int16:
-		for i := range b {
+		for i := range data {
 			Short.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]int16:
-		for i := range b {
+		for i := range data {
 			Short.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]int16:
-		for i := range b {
+		for i := range data {
 			Short.PutMat4(b[e*i:], data[i])
 		}
 	case []uint16:
@@ -291,27 +291,27 @@ func Write(b []byte, data interface{}) error {
 			UnsignedShort.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]uint16:
-		for i := range b {
+		for i := range data {
 			UnsignedShort.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]uint16:
-		for i := range b {
+		for i := range data {
 			UnsignedShort.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]uint16:
-		for i := range b {
+		for i := range data {
 			UnsignedShort.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]uint16:
-		for i := range b {
+		for i := range data {
 			UnsignedShort.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]uint16:
-		for i := range b {
+		for i := range data {
 			UnsignedShort.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]uint16:
-		for i := range b {
+		for i := range data {
 			UnsignedShort.PutMat4(b[e*i:], data[i])
 		}
 	case []float32:
@@ -319,27 +319,27 @@ func Write(b []byte, data interface{}) error {
 			Float.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]float32:
-		for i := range b {
+		for i := range data {
 			Float.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]float32:
-		for i := range b {
+		for i := range data {
 			Float.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]float32:
-		for i := range b {
+		for i := range data {
 			Float.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]float32:
-		for i := range b {
+		for i := range data {
 			Float.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]float32:
-		for i := range b {
+		for i := range data {
 			Float.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]float32:
-		for i := range b {
+		for i := range data {
 			Float.PutMat4(b[e*i:], data[i])
 		}
 	case []uint32:
@@ -347,27 +347,27 @@ func Write(b []byte, data interface{}) error {
 			UnsignedInt.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]uint32:
-		for i := range b {
+		for i := range data {
 			UnsignedInt.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]uint32:
-		for i := range b {
+		for i := range data {
 			UnsignedInt.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]uint32:
-		for i := range b {
+		for i := range data {
 			UnsignedInt.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]uint32:
-		for i := range b {
+		for i := range data {
 			UnsignedInt.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]uint32:
-		for i := range b {
+		for i := range data {
 			UnsignedInt.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]uint32:
-		for i := range b {
+		for i := range data {
 			UnsignedInt.PutMat4(b[e*i:], data[i])
 		}
 	}
