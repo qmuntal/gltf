@@ -10,20 +10,20 @@
 // type of the value:
 //
 // type Component interface {
-// 	 Scalar([]byte) interface{}
+//   Scalar([]byte) interface{}
 //   Vec2([]byte) [2]interface{}
 //   Vec3([]byte) [2]interface{}
 //   Vec4([]byte) [2]interface{}
 //   Mat2([]byte) [2][2]interface{}
 //   Mat3([]byte) [3][3]interface{}
 //   Mat4([]byte) [4][4]interface{}
-// 	 PutScalar([]byte, interface{})
-// 	 PutVec2([]byte, [2]interface{})
-// 	 PutVec3([]byte, [3]interface{})
-// 	 PutVec4([]byte, [4]interface{})
-// 	 PutMat2([]byte, [2][2]interface{})
-// 	 PutMat3([]byte, [3][3]interface{})
-// 	 PutMat4([]byte, [4][4]interface{})
+//   PutScalar([]byte, interface{})
+//   PutVec2([]byte, [2]interface{})
+//   PutVec3([]byte, [3]interface{})
+//   PutVec4([]byte, [4]interface{})
+//   PutMat2([]byte, [2][2]interface{})
+//   PutMat3([]byte, [3][3]interface{})
+//   PutMat4([]byte, [4][4]interface{})
 // }
 //
 // This package favors simplicity and compliance over efficiency, 
