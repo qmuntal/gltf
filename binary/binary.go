@@ -26,9 +26,9 @@
 //   PutMat4([]byte, [4][4]interface{})
 // }
 //
-// This package favors simplicity and compliance over efficiency, 
-// but it is still more performant than using the built-int `binary` package,
-// as it has fast path for basic glTF types and slices.
+// This package favors simplicity and compliance over efficiency,
+// but it is still an order of magnitude more performant than using the built-int `binary` package,
+// as it implements fast paths for basic glTF types and slices.
 package binary
 
 import "encoding/binary"
