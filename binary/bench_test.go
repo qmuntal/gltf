@@ -9,7 +9,7 @@ import (
 )
 
 func BenchmarkNative(b *testing.B) {
-	s := 100
+	s := 1000
 	bs := make([]byte, s*ElementSize(gltf.Float, gltf.Vec3))
 	data := make([][3]float32, s)
 	b.ResetTimer()
@@ -21,7 +21,7 @@ func BenchmarkNative(b *testing.B) {
 }
 
 func BenchmarkWrite(b *testing.B) {
-	s := 100
+	s := 1000
 	bs := make([]byte, s*ElementSize(gltf.Float, gltf.Vec3))
 	data := make([][3]float32, s)
 	b.ResetTimer()
@@ -31,21 +31,11 @@ func BenchmarkWrite(b *testing.B) {
 }
 
 func BenchmarkWrite_builtint(b *testing.B) {
-	s := 100
+	s := 1000
 	bs := bytes.NewBuffer(make([]byte, s*ElementSize(gltf.Float, gltf.Vec3)))
 	data := make([][3]float32, s)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		binary.Write(bs, binary.LittleEndian, data)
-	}
-}
-
-func BenchmarkWrite_A(b *testing.B) {
-	s := 1000
-	bs := make([]byte, s*ElementSize(gltf.Short, gltf.Scalar))
-	data := make([]int16, s)
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		Write(bs, data)
 	}
 }
