@@ -39,3 +39,13 @@ func BenchmarkWrite_builtint(b *testing.B) {
 		binary.Write(bs, binary.LittleEndian, data)
 	}
 }
+
+func BenchmarkWrite_A(b *testing.B) {
+	s := 1000
+	bs := make([]byte, s*ElementSize(gltf.Short, gltf.Scalar))
+	data := make([]int16, s)
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		Write(bs, data)
+	}
+}

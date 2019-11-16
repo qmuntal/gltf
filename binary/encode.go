@@ -205,8 +205,8 @@ func Write(b []byte, data interface{}) error {
 	}
 	switch data := data.(type) {
 	case []int8:
-		for i := range data {
-			Byte.PutScalar(b[e*i:], data[i])
+		for i, x := range data {
+			b[i] = byte(x)
 		}
 	case [][2]int8:
 		for i := range data {
@@ -233,9 +233,7 @@ func Write(b []byte, data interface{}) error {
 			Byte.PutMat4(b[e*i:], data[i])
 		}
 	case []uint8:
-		for i := range data {
-			UnsignedByte.PutScalar(b[e*i:], data[i])
-		}
+		b = data
 	case [][2]uint8:
 		for i := range data {
 			UnsignedByte.PutVec2(b[e*i:], data[i])
