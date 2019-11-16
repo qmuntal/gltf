@@ -21,8 +21,8 @@ func Read(b []byte, data interface{}) error {
 	}
 	switch data := data.(type) {
 	case []int8:
-		for i := range data {
-			data[i] = Byte.Scalar(b[e*i:])
+		for i, x := range b {
+			data[i] = int8(x)
 		}
 	case [][2]int8:
 		for i := range data {
@@ -49,9 +49,7 @@ func Read(b []byte, data interface{}) error {
 			data[i] = Byte.Mat4(b[e*i:])
 		}
 	case []uint8:
-		for i := range data {
-			data[i] = UnsignedByte.Scalar(b[e*i:])
-		}
+		copy(data, b)
 	case [][2]uint8:
 		for i := range data {
 			data[i] = UnsignedByte.Vec2(b[e*i:])
