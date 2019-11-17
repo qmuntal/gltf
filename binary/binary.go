@@ -68,7 +68,8 @@ func (ubyteComponent) Vec2(b []byte) [2]uint8 {
 }
 
 func (ubyteComponent) PutVec2(b []byte, v [2]uint8) {
-	b = v[:]
+	b[0] = v[0]
+	b[1] = v[1]
 }
 
 func (ubyteComponent) Vec3(b []byte) [3]uint8 {
@@ -76,7 +77,9 @@ func (ubyteComponent) Vec3(b []byte) [3]uint8 {
 }
 
 func (ubyteComponent) PutVec3(b []byte, v [3]uint8) {
-	b = v[:]
+	b[0] = v[0]
+	b[1] = v[1]
+	b[2] = v[2]
 }
 
 func (ubyteComponent) Vec4(b []byte) [4]uint8 {
@@ -84,7 +87,10 @@ func (ubyteComponent) Vec4(b []byte) [4]uint8 {
 }
 
 func (ubyteComponent) PutVec4(b []byte, v [4]uint8) {
-	b = v[:]
+	b[0] = v[0]
+	b[1] = v[1]
+	b[2] = v[2]
+	b[3] = v[3]
 }
 
 func (ubyteComponent) Mat2(b []byte) [2][2]uint8 {

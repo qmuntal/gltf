@@ -231,7 +231,7 @@ func Write(b []byte, data interface{}) error {
 			Byte.PutMat4(b[e*i:], data[i])
 		}
 	case []uint8:
-		b = data
+		copy(b, data)
 	case [][2]uint8:
 		for i := range data {
 			UnsignedByte.PutVec2(b[e*i:], data[i])
