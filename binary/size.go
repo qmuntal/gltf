@@ -27,8 +27,8 @@ func ComponentsOf(t gltf.AccessorType) int {
 	}[t]
 }
 
-// ElementSize returns the size, in bytes, of an element.
-func ElementSize(c gltf.ComponentType, t gltf.AccessorType) int {
+// SizeOfElement returns the size, in bytes, of an element.
+func SizeOfElement(c gltf.ComponentType, t gltf.AccessorType) int {
 	// special cases
 	switch {
 	case t == gltf.Mat2 && (c == gltf.Byte || c == gltf.UnsignedByte):
@@ -47,130 +47,130 @@ func intDataSize(data interface{}) (element int, total int) {
 	var length int
 	switch data := data.(type) {
 	case []int8:
-		element = ElementSize(gltf.Byte, gltf.Scalar)
+		element = SizeOfElement(gltf.Byte, gltf.Scalar)
 		length = len(data)
 	case [][2]int8:
-		element = ElementSize(gltf.Byte, gltf.Vec2)
+		element = SizeOfElement(gltf.Byte, gltf.Vec2)
 		length = len(data)
 	case [][3]int8:
-		element = ElementSize(gltf.Byte, gltf.Vec3)
+		element = SizeOfElement(gltf.Byte, gltf.Vec3)
 		length = len(data)
 	case [][4]int8:
-		element = ElementSize(gltf.Byte, gltf.Vec4)
+		element = SizeOfElement(gltf.Byte, gltf.Vec4)
 		length = len(data)
 	case [][2][2]int8:
-		element = ElementSize(gltf.Byte, gltf.Mat2)
+		element = SizeOfElement(gltf.Byte, gltf.Mat2)
 		length = len(data)
 	case [][3][3]int8:
-		element = ElementSize(gltf.Byte, gltf.Mat3)
+		element = SizeOfElement(gltf.Byte, gltf.Mat3)
 		length = len(data)
 	case [][4][4]int8:
-		element = ElementSize(gltf.Byte, gltf.Mat4)
+		element = SizeOfElement(gltf.Byte, gltf.Mat4)
 		length = len(data)
 	case []uint8:
-		element = ElementSize(gltf.UnsignedByte, gltf.Scalar)
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Scalar)
 		length = len(data)
 	case [][2]uint8:
-		element = ElementSize(gltf.UnsignedByte, gltf.Vec2)
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Vec2)
 		length = len(data)
 	case [][3]uint8:
-		element = ElementSize(gltf.UnsignedByte, gltf.Vec3)
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Vec3)
 		length = len(data)
 	case [][4]uint8:
-		element = ElementSize(gltf.UnsignedByte, gltf.Vec4)
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Vec4)
 		length = len(data)
 	case [][2][2]uint8:
-		element = ElementSize(gltf.UnsignedByte, gltf.Mat2)
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Mat2)
 		length = len(data)
 	case [][3][3]uint8:
-		element = ElementSize(gltf.UnsignedByte, gltf.Mat3)
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Mat3)
 		length = len(data)
 	case [][4][4]uint8:
-		element = ElementSize(gltf.UnsignedByte, gltf.Mat4)
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Mat4)
 		length = len(data)
 	case []int16:
-		element = ElementSize(gltf.Short, gltf.Scalar)
+		element = SizeOfElement(gltf.Short, gltf.Scalar)
 		length = len(data)
 	case [][2]int16:
-		element = ElementSize(gltf.Short, gltf.Vec2)
+		element = SizeOfElement(gltf.Short, gltf.Vec2)
 		length = len(data)
 	case [][3]int16:
-		element = ElementSize(gltf.Short, gltf.Vec3)
+		element = SizeOfElement(gltf.Short, gltf.Vec3)
 		length = len(data)
 	case [][4]int16:
-		element = ElementSize(gltf.Short, gltf.Vec4)
+		element = SizeOfElement(gltf.Short, gltf.Vec4)
 		length = len(data)
 	case [][2][2]int16:
-		element = ElementSize(gltf.Short, gltf.Mat2)
+		element = SizeOfElement(gltf.Short, gltf.Mat2)
 		length = len(data)
 	case [][3][3]int16:
-		element = ElementSize(gltf.Short, gltf.Mat3)
+		element = SizeOfElement(gltf.Short, gltf.Mat3)
 		length = len(data)
 	case [][4][4]int16:
-		element = ElementSize(gltf.Short, gltf.Mat4)
+		element = SizeOfElement(gltf.Short, gltf.Mat4)
 		length = len(data)
 	case []uint16:
-		element = ElementSize(gltf.UnsignedShort, gltf.Scalar)
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Scalar)
 		length = len(data)
 	case [][2]uint16:
-		element = ElementSize(gltf.UnsignedShort, gltf.Vec2)
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Vec2)
 		length = len(data)
 	case [][3]uint16:
-		element = ElementSize(gltf.UnsignedShort, gltf.Vec3)
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Vec3)
 		length = len(data)
 	case [][4]uint16:
-		element = ElementSize(gltf.UnsignedShort, gltf.Vec4)
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Vec4)
 		length = len(data)
 	case [][2][2]uint16:
-		element = ElementSize(gltf.UnsignedShort, gltf.Mat2)
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Mat2)
 		length = len(data)
 	case [][3][3]uint16:
-		element = ElementSize(gltf.UnsignedShort, gltf.Mat3)
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Mat3)
 		length = len(data)
 	case [][4][4]uint16:
-		element = ElementSize(gltf.UnsignedShort, gltf.Mat4)
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Mat4)
 		length = len(data)
 	case []uint32:
-		element = ElementSize(gltf.UnsignedInt, gltf.Scalar)
+		element = SizeOfElement(gltf.UnsignedInt, gltf.Scalar)
 		length = len(data)
 	case [][2]uint32:
-		element = ElementSize(gltf.UnsignedInt, gltf.Vec2)
+		element = SizeOfElement(gltf.UnsignedInt, gltf.Vec2)
 		length = len(data)
 	case [][3]uint32:
-		element = ElementSize(gltf.UnsignedInt, gltf.Vec3)
+		element = SizeOfElement(gltf.UnsignedInt, gltf.Vec3)
 		length = len(data)
 	case [][4]uint32:
-		element = ElementSize(gltf.UnsignedInt, gltf.Vec4)
+		element = SizeOfElement(gltf.UnsignedInt, gltf.Vec4)
 		length = len(data)
 	case [][2][2]uint32:
-		element = ElementSize(gltf.UnsignedInt, gltf.Mat2)
+		element = SizeOfElement(gltf.UnsignedInt, gltf.Mat2)
 		length = len(data)
 	case [][3][3]uint32:
-		element = ElementSize(gltf.UnsignedInt, gltf.Mat3)
+		element = SizeOfElement(gltf.UnsignedInt, gltf.Mat3)
 		length = len(data)
 	case [][4][4]uint32:
-		element = ElementSize(gltf.UnsignedInt, gltf.Mat4)
+		element = SizeOfElement(gltf.UnsignedInt, gltf.Mat4)
 		length = len(data)
 	case []float32:
-		element = ElementSize(gltf.Float, gltf.Scalar)
+		element = SizeOfElement(gltf.Float, gltf.Scalar)
 		length = len(data)
 	case [][2]float32:
-		element = ElementSize(gltf.Float, gltf.Vec2)
+		element = SizeOfElement(gltf.Float, gltf.Vec2)
 		length = len(data)
 	case [][3]float32:
-		element = ElementSize(gltf.Float, gltf.Vec3)
+		element = SizeOfElement(gltf.Float, gltf.Vec3)
 		length = len(data)
 	case [][4]float32:
-		element = ElementSize(gltf.Float, gltf.Vec4)
+		element = SizeOfElement(gltf.Float, gltf.Vec4)
 		length = len(data)
 	case [][2][2]float32:
-		element = ElementSize(gltf.Float, gltf.Mat2)
+		element = SizeOfElement(gltf.Float, gltf.Mat2)
 		length = len(data)
 	case [][3][3]float32:
-		element = ElementSize(gltf.Float, gltf.Mat3)
+		element = SizeOfElement(gltf.Float, gltf.Mat3)
 		length = len(data)
 	case [][4][4]float32:
-		element = ElementSize(gltf.Float, gltf.Mat4)
+		element = SizeOfElement(gltf.Float, gltf.Mat4)
 		length = len(data)
 	}
 	return element, length
