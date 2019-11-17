@@ -16,7 +16,7 @@ func Read(b []byte, data interface{}) error {
 	if e == 0 {
 		return binary.Read(bytes.NewReader(b), binary.LittleEndian, data)
 	}
-	if len(b) < n {
+	if len(b) < n*e {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {
@@ -198,7 +198,7 @@ func Write(b []byte, data interface{}) error {
 	if e == 0 {
 		return binary.Write(bytes.NewBuffer(b), binary.LittleEndian, data)
 	}
-	if len(b) < n {
+	if len(b) < e*n {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {
