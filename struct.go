@@ -3,6 +3,8 @@ package gltf
 import (
 	"encoding/base64"
 	"fmt"
+	"image/color"
+	"math"
 	"strings"
 )
 
@@ -320,6 +322,12 @@ func NewRGBA() *RGBA {
 	return &RGBA{1, 1, 1, 1}
 }
 
+// NewRGBAColor transform a RGB uint8 color (from 0 to 255) to its float represtation (from 0 to 1).
+func NewRGBAColor(c color.RGBA) *RGBA {
+	linear := NewRGBColor(c)
+	return &RGBA{R: linear.R, G: linear.G, B: linear.B, A: float64(c.A) / 255}
+}
+
 // The RGB components of a color.
 // Each element must be greater than or equal to 0 and less than or equal to 1.
 type RGB struct {
@@ -329,6 +337,20 @@ type RGB struct {
 // NewRGB returns a default RGB color.
 func NewRGB() *RGB {
 	return &RGB{1, 1, 1}
+}
+
+// NewRGBColor transform a RGB uint8 color (from 0 to 255) to its float represtation (from 0 to 1).
+func NewRGBColor(c color.RGBA) *RGB {
+	sRGB := [3]float64{float64(c.R) / 255, float64(c.G) / 255, float64(c.B) / 255}
+	var linear [3]float64
+	for i := 0; i < 3; i++ {
+		if sRGB[i] <= 0.04045 {
+			linear[i] = sRGB[i] / 12.92
+		} else {
+			linear[i] = math.Pow(((sRGB[i] + 0.055) / 1.055), 2.4)
+		}
+	}
+	return &RGB{R: linear[0], G: linear[1], B: linear[2]}
 }
 
 // PBRMetallicRoughness defines a set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
