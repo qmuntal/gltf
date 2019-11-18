@@ -23,6 +23,7 @@ A Go package for simple, efficient, and robust serialization/deserialization of 
 * Buffers
   * [x] Parse BASE64 encoded embedded buffer data(DataURI)
   * [x] Load .bin file
+  * [x] Binary package
 * Read from io.Reader
   * [x] Boilerplate for disk loading
   * [x] Custom callback handlers
