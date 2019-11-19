@@ -3,7 +3,10 @@ package binary
 import (
 	"bytes"
 	"encoding/binary"
+	"image/color"
 	"io"
+
+	"github.com/qmuntal/gltf"
 )
 
 // Read reads structured binary data from r into data.
@@ -20,6 +23,26 @@ func Read(b []byte, data interface{}) error {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {
+	case []color.RGBA:
+		for i := range data {
+			c := UnsignedByte.Vec4(b[e*i:])
+			data[i] = color.RGBA{R: c[0], G: c[1], B: c[2], A: c[3]}
+		}
+	case []color.RGBA64:
+		for i := range data {
+			c := UnsignedShort.Vec4(b[e*i:])
+			data[i] = color.RGBA64{R: c[0], G: c[1], B: c[2], A: c[3]}
+		}
+	case []gltf.RGBA:
+		for i := range data {
+			c := Float.Vec4(b[e*i:])
+			data[i] = gltf.RGBA{R: float64(c[0]), G: float64(c[1]), B: float64(c[2]), A: float64(c[3])}
+		}
+	case []gltf.RGB:
+		for i := range data {
+			c := Float.Vec3(b[e*i:])
+			data[i] = gltf.RGB{R: float64(c[0]), G: float64(c[1]), B: float64(c[2])}
+		}
 	case []int8:
 		for i, x := range b {
 			data[i] = int8(x)
@@ -202,6 +225,22 @@ func Write(b []byte, data interface{}) error {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {
+	case []color.RGBA:
+		for i, x := range data {
+			UnsignedByte.PutVec4(b[e*i:], [4]uint8{x.R, x.G, x.B, x.A})
+		}
+	case []color.RGBA64:
+		for i, x := range data {
+			UnsignedShort.PutVec4(b[e*i:], [4]uint16{x.R, x.G, x.B, x.A})
+		}
+	case []gltf.RGBA:
+		for i, x := range data {
+			Float.PutVec4(b[e*i:], [4]float32{float32(x.R), float32(x.G), float32(x.B), float32(x.A)})
+		}
+	case []gltf.RGB:
+		for i, x := range data {
+			Float.PutVec3(b[e*i:], [3]float32{float32(x.R), float32(x.G), float32(x.B)})
+		}
 	case []int8:
 		for i, x := range data {
 			b[i] = byte(x)

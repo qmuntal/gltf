@@ -1,6 +1,10 @@
 package binary
 
-import "github.com/qmuntal/gltf"
+import (
+	"image/color"
+
+	"github.com/qmuntal/gltf"
+)
 
 // SizeOf returns the size, in bytes, of a component type.
 func SizeOf(c gltf.ComponentType) int {
@@ -46,6 +50,18 @@ func SizeOfElement(c gltf.ComponentType, t gltf.AccessorType) int {
 func intDataSize(data interface{}) (element int, total int) {
 	var length int
 	switch data := data.(type) {
+	case []color.RGBA:
+		element = SizeOfElement(gltf.UnsignedByte, gltf.Vec4)
+		length = len(data)
+	case []color.RGBA64:
+		element = SizeOfElement(gltf.UnsignedShort, gltf.Vec4)
+		length = len(data)
+	case []gltf.RGBA:
+		element = SizeOfElement(gltf.Float, gltf.Vec4)
+		length = len(data)
+	case []gltf.RGB:
+		element = SizeOfElement(gltf.Float, gltf.Vec3)
+		length = len(data)
 	case []int8:
 		element = SizeOfElement(gltf.Byte, gltf.Scalar)
 		length = len(data)
