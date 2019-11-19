@@ -48,7 +48,7 @@ func (m *Modeler) AddNormal(bufferIndex uint32, data interface{}) (uint32, error
 	if !ok || length <= 0 {
 		return 0, errors.New("modeler.AddNormal: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
+	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
 	}
@@ -68,7 +68,7 @@ func (m *Modeler) AddTangent(bufferIndex uint32, data interface{}) (uint32, erro
 	if !ok || length <= 0 {
 		return 0, errors.New("modeler.AddTangent: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
+	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
 	}
@@ -91,7 +91,7 @@ func (m *Modeler) AddTextureCoord(bufferIndex uint32, data interface{}) (uint32,
 	if !ok || length <= 0 {
 		return 0, errors.New("modeler.AddTextureCoord: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
+	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
 	}
@@ -115,7 +115,7 @@ func (m *Modeler) AddWeights(bufferIndex uint32, data interface{}) (uint32, erro
 	if !ok || length <= 0 {
 		return 0, errors.New("modeler.AddWeights: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
+	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
 	}
@@ -136,7 +136,7 @@ func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) (uint32, error
 	if !ok || length <= 0 {
 		return 0, errors.New("modeler.AddJoints: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
+	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
 	}
