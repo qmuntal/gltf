@@ -154,7 +154,8 @@ func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) (uint32, error
 // and fills the buffer with the vertices data.
 // If success it returns the index of the new accessor.
 func (m *Modeler) AddPosition(bufferIndex uint32, data [][3]float32) (uint32, error) {
-	var min, max []float64
+	min := [3]float64{math.MaxFloat64, math.MaxFloat64, math.MaxFloat64}
+	max := [3]float64{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
 	for _, v := range data {
 		for i, x := range v {
 			min[i] = math.Min(min[i], float64(x))
@@ -229,16 +230,4 @@ func (m *Modeler) addBufferView(buffer, size, offset uint32, isIndices bool) uin
 	}
 	m.BufferViews = append(m.BufferViews, bufferView)
 	return uint32(len(m.BufferViews)) - 1
-}
-
-func padBuffer(buff []uint8) []uint8 {
-	paddedLength := getPaddedBufferSize(len(buff))
-	if l := paddedLength - len(buff); l > 0 {
-		return append(buff, make([]uint8, l)...)
-	}
-	return buff
-}
-
-func getPaddedBufferSize(size int) int {
-	return ((size + 4 - 1) / 4) * 4
 }
