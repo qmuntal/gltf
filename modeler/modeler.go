@@ -10,9 +10,22 @@ import (
 	"github.com/qmuntal/gltf/binary"
 )
 
+// CompressionLevel defines the different levels of compression.
+type CompressionLevel uint8
+
+const (
+	// CompressionNone will not apply any compression.
+	CompressionNone CompressionLevel = iota
+	// CompressionSafe will apply compressions that don't modify the geometry.
+	CompressionSafe
+)
+
 // Modeler wraps a Document and add usefull methods to build it.
+// If Compress is true, all the data added to accessors that support different component types
+// will be evaluated to see if it fits in a smaller component type.
 type Modeler struct {
 	*gltf.Document
+	Compress CompressionLevel
 }
 
 // AddIndices adds a new INDICES accessor to the Document
@@ -21,8 +34,18 @@ type Modeler struct {
 func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) (uint32, error) {
 	var ok bool
 	switch data.(type) {
-	case []uint8, []uint16, []uint32:
+	case []uint8:
 		ok = true
+	case []uint16:
+		ok = true
+		if m.Compress >= CompressionSafe {
+			data = compressUint16(data.([]uint16))
+		}
+	case []uint32:
+		ok = true
+		if m.Compress >= CompressionSafe {
+			data = compressUint32(data.([]uint32))
+		}
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
@@ -38,16 +61,8 @@ func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) (uint32, erro
 // AddNormal adds a new NORMAL accessor to the Document
 // and fills the buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddNormal(bufferIndex uint32, data interface{}) (uint32, error) {
-	var ok bool
-	switch data.(type) {
-	case [][3]float32:
-		ok = true
-	}
+func (m *Modeler) AddNormal(bufferIndex uint32, data [][3]float32) (uint32, error) {
 	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddNormal: invalid type " + reflect.TypeOf(data).String())
-	}
 	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
@@ -58,16 +73,8 @@ func (m *Modeler) AddNormal(bufferIndex uint32, data interface{}) (uint32, error
 // AddTangent adds a new TANGENT accessor to the Document
 // and fills the buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddTangent(bufferIndex uint32, data interface{}) (uint32, error) {
-	var ok bool
-	switch data.(type) {
-	case [][4]float32:
-		ok = true
-	}
+func (m *Modeler) AddTangent(bufferIndex uint32, data [][4]float32) (uint32, error) {
 	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddTangent: invalid type " + reflect.TypeOf(data).String())
-	}
 	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
@@ -146,25 +153,15 @@ func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) (uint32, error
 // AddPosition adds a new POSITION accessor to the Document
 // and fills the buffer with the vertices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddPosition(bufferIndex uint32, data interface{}) (uint32, error) {
-	var (
-		ok       bool
-		min, max []float64
-	)
-	switch data := data.(type) {
-	case [][3]float32:
-		ok = true
-		for _, v := range data {
-			for i, x := range v {
-				min[i] = math.Min(min[i], float64(x))
-				max[i] = math.Max(max[i], float64(x))
-			}
+func (m *Modeler) AddPosition(bufferIndex uint32, data [][3]float32) (uint32, error) {
+	var min, max []float64
+	for _, v := range data {
+		for i, x := range v {
+			min[i] = math.Min(min[i], float64(x))
+			max[i] = math.Max(max[i], float64(x))
 		}
 	}
 	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddPosition: invalid type " + reflect.TypeOf(data).String())
-	}
 	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	if err != nil {
 		return 0, err
