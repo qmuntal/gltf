@@ -1,8 +1,11 @@
 package modeler
 
 import (
+	"bytes"
 	"errors"
 	"image/color"
+	"io"
+	"io/ioutil"
 	"math"
 	"reflect"
 
@@ -194,7 +197,33 @@ func (m *Modeler) AddColor(bufferIndex uint32, data interface{}) (uint32, error)
 	}
 	m.Document.Accessors[index].Normalized = normalized
 	return uint32(index), nil
+}
 
+// AddImage adds a new image to the Document
+// and fills the buffer with the image data.
+// If success it returns the index of the new image.
+func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reader) (uint32, error) {
+	buffer := &m.Buffers[bufferIndex]
+	offset := uint32(len(buffer.Data))
+	switch r := r.(type) {
+	case *bytes.Buffer:
+		buffer.Data = append(buffer.Data, r.Bytes()...)
+	default:
+		data, err := ioutil.ReadAll(r)
+		if err != nil {
+			return 0, err
+		}
+		buffer.Data = append(buffer.Data, data...)
+	}
+	index := m.addBufferView(bufferIndex, uint32(len(buffer.Data))-offset, offset, false)
+	buffer.ByteLength += uint32(len(buffer.Data))
+	m.BufferViews[index].Target = gltf.None
+	m.Images = append(m.Images, gltf.Image{
+		Name:       name,
+		MimeType:   mimeType,
+		BufferView: gltf.Index(index),
+	})
+	return uint32(len(m.Images) - 1), nil
 }
 
 func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, componentType gltf.ComponentType, accessorType gltf.AccessorType, isIndex bool) (uint32, error) {
