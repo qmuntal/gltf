@@ -2,7 +2,7 @@ package modeler
 
 import (
 	"bytes"
-	"errors"
+	"fmt"
 	"image/color"
 	"io"
 	"io/ioutil"
@@ -31,10 +31,18 @@ type Modeler struct {
 	Compress CompressionLevel
 }
 
+// NewModeler returns a new Modeler instance.
+func NewModeler() *Modeler {
+	return &Modeler{
+		Document: new(gltf.Document),
+		Compress: CompressionSafe,
+	}
+}
+
 // AddIndices adds a new INDICES accessor to the Document
 // and fills the buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) (uint32, error) {
+func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) uint32 {
 	var ok bool
 	switch data.(type) {
 	case []uint8:
@@ -52,43 +60,34 @@ func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) (uint32, erro
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddIndices: invalid type " + reflect.TypeOf(data).String())
+		panic("modeler.AddIndices: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
-	if err != nil {
-		return 0, err
-	}
-	return uint32(index), nil
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
+	return uint32(index)
 }
 
 // AddNormal adds a new NORMAL accessor to the Document
 // and fills the buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddNormal(bufferIndex uint32, data [][3]float32) (uint32, error) {
+func (m *Modeler) AddNormal(bufferIndex uint32, data [][3]float32) uint32 {
 	componentType, accessorType, length := binary.Type(data)
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	if err != nil {
-		return 0, err
-	}
-	return uint32(index), nil
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
+	return uint32(index)
 }
 
 // AddTangent adds a new TANGENT accessor to the Document
 // and fills the buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddTangent(bufferIndex uint32, data [][4]float32) (uint32, error) {
+func (m *Modeler) AddTangent(bufferIndex uint32, data [][4]float32) uint32 {
 	componentType, accessorType, length := binary.Type(data)
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	if err != nil {
-		return 0, err
-	}
-	return uint32(index), nil
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
+	return uint32(index)
 }
 
 // AddTextureCoord adds a new TEXTURECOORD accessor to the Document
 // and fills the buffer with the texturecoord data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddTextureCoord(bufferIndex uint32, data interface{}) (uint32, error) {
+func (m *Modeler) AddTextureCoord(bufferIndex uint32, data interface{}) uint32 {
 	var normalized, ok bool
 	switch data.(type) {
 	case [][2]uint8, [][2]uint16:
@@ -99,20 +98,17 @@ func (m *Modeler) AddTextureCoord(bufferIndex uint32, data interface{}) (uint32,
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddTextureCoord: invalid type " + reflect.TypeOf(data).String())
+		panic("modeler.AddTextureCoord: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	if err != nil {
-		return 0, err
-	}
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	m.Document.Accessors[index].Normalized = normalized
-	return uint32(index), nil
+	return uint32(index)
 }
 
 // AddWeights adds a new WEIGTHS accessor to the Document
 // and fills the buffer with the weights data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddWeights(bufferIndex uint32, data interface{}) (uint32, error) {
+func (m *Modeler) AddWeights(bufferIndex uint32, data interface{}) uint32 {
 	var normalized, ok bool
 	switch data.(type) {
 	case [][4]uint8, [][4]uint16:
@@ -123,20 +119,17 @@ func (m *Modeler) AddWeights(bufferIndex uint32, data interface{}) (uint32, erro
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddWeights: invalid type " + reflect.TypeOf(data).String())
+		panic("modeler.AddWeights: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	if err != nil {
-		return 0, err
-	}
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	m.Document.Accessors[index].Normalized = normalized
-	return uint32(index), nil
+	return uint32(index)
 }
 
 // AddJoints adds a new JOINTS accessor to the Document
 // and fills the buffer with the joints data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) (uint32, error) {
+func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) uint32 {
 	var ok bool
 	switch data.(type) {
 	case [][4]uint8, [][4]uint16:
@@ -144,19 +137,16 @@ func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) (uint32, error
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddJoints: invalid type " + reflect.TypeOf(data).String())
+		panic("modeler.AddJoints: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	if err != nil {
-		return 0, err
-	}
-	return uint32(index), nil
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
+	return uint32(index)
 }
 
 // AddPosition adds a new POSITION accessor to the Document
 // and fills the buffer with the vertices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddPosition(bufferIndex uint32, data [][3]float32) (uint32, error) {
+func (m *Modeler) AddPosition(bufferIndex uint32, data [][3]float32) uint32 {
 	min := [3]float64{math.MaxFloat64, math.MaxFloat64, math.MaxFloat64}
 	max := [3]float64{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
 	for _, v := range data {
@@ -166,19 +156,16 @@ func (m *Modeler) AddPosition(bufferIndex uint32, data [][3]float32) (uint32, er
 		}
 	}
 	componentType, accessorType, length := binary.Type(data)
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	if err != nil {
-		return 0, err
-	}
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	m.Accessors[index].Min = min[:]
 	m.Accessors[index].Max = max[:]
-	return uint32(index), nil
+	return uint32(index)
 }
 
 // AddColor adds a new COLOR accessor to the Document
 // and fills the buffer with the color data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddColor(bufferIndex uint32, data interface{}) (uint32, error) {
+func (m *Modeler) AddColor(bufferIndex uint32, data interface{}) uint32 {
 	var normalized, ok bool
 	switch data.(type) {
 	case []color.RGBA, []color.RGBA64, [][4]uint8, [][3]uint8, [][4]uint16, [][3]uint16:
@@ -189,14 +176,11 @@ func (m *Modeler) AddColor(bufferIndex uint32, data interface{}) (uint32, error)
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		return 0, errors.New("modeler.AddColor: invalid type " + reflect.TypeOf(data).String())
+		panic("modeler.AddColor: invalid type " + reflect.TypeOf(data).String())
 	}
-	index, err := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	if err != nil {
-		return 0, err
-	}
+	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	m.Document.Accessors[index].Normalized = normalized
-	return uint32(index), nil
+	return uint32(index)
 }
 
 // AddImage adds a new image to the Document
@@ -226,15 +210,17 @@ func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reade
 	return uint32(len(m.Images) - 1), nil
 }
 
-func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, componentType gltf.ComponentType, accessorType gltf.AccessorType, isIndex bool) (uint32, error) {
+func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, componentType gltf.ComponentType, accessorType gltf.AccessorType, isIndex bool) uint32 {
+	if int(bufferIndex) >= len(m.Buffers) {
+		panic(fmt.Sprintf("modeler: buffer index out of range [%d] with length %d", bufferIndex, len(m.Buffers)))
+	}
 	buffer := &m.Buffers[bufferIndex]
 	offset := uint32(len(buffer.Data))
 	size := uint32(count * binary.SizeOfElement(componentType, accessorType))
 	buffer.ByteLength += uint32(size)
 	buffer.Data = append(buffer.Data, make([]byte, size)...)
-	if err := binary.Write(buffer.Data[offset:], data); err != nil {
-		return 0, err
-	}
+	// Cannot return error as the buffer has enough size and the data type is controled.
+	_ = binary.Write(buffer.Data[offset:], data)
 	index := m.addBufferView(bufferIndex, size, offset, isIndex)
 	m.Accessors = append(m.Accessors, gltf.Accessor{
 		BufferView:    gltf.Index(index),
@@ -243,7 +229,7 @@ func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, c
 		Type:          accessorType,
 		Count:         uint32(count),
 	})
-	return uint32(len(m.Accessors) - 1), nil
+	return uint32(len(m.Accessors) - 1)
 }
 
 func (m *Modeler) addBufferView(buffer, size, offset uint32, isIndices bool) uint32 {
