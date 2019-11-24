@@ -28,14 +28,14 @@ const (
 // will be evaluated to see if it fits in a smaller component type.
 type Modeler struct {
 	*gltf.Document
-	Compress CompressionLevel
+	Compression CompressionLevel
 }
 
 // NewModeler returns a new Modeler instance.
 func NewModeler() *Modeler {
 	return &Modeler{
-		Document: new(gltf.Document),
-		Compress: CompressionSafe,
+		Document:    new(gltf.Document),
+		Compression: CompressionSafe,
 	}
 }
 
@@ -49,12 +49,12 @@ func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) uint32 {
 		ok = true
 	case []uint16:
 		ok = true
-		if m.Compress >= CompressionSafe {
+		if m.Compression >= CompressionSafe {
 			data = compressUint16(data.([]uint16))
 		}
 	case []uint32:
 		ok = true
-		if m.Compress >= CompressionSafe {
+		if m.Compression >= CompressionSafe {
 			data = compressUint32(data.([]uint32))
 		}
 	}

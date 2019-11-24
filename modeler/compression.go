@@ -12,9 +12,6 @@ func compressUint32(data []uint32) interface{} {
 			break
 		} else if u8 && x >= math.MaxUint8 {
 			u8 = false
-			if !u16 {
-				break
-			}
 		}
 	}
 	if u8 {
