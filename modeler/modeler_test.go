@@ -16,7 +16,10 @@ func TestNewModeler(t *testing.T) {
 		name string
 		want *Modeler
 	}{
-		{"base", &Modeler{Document: &gltf.Document{}, Compression: CompressionSafe}},
+		{"base", &Modeler{Document: &gltf.Document{
+			Scene:  gltf.Index(0),
+			Scenes: []gltf.Scene{{Name: "Root Scene"}},
+		}, Compression: CompressionSafe}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -332,16 +335,18 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 		{"float", &Modeler{Document: &gltf.Document{
 			Accessors: []gltf.Accessor{{}},
 			Buffers:   []gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][2]float32{{1, 2}, {}}}, 1, &gltf.Document{
+		}}, args{2, [][2]float32{{1, 2}, {}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec2, ComponentType: gltf.Float},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 16, Target: gltf.ArrayBuffer},
+				{ByteLength: 16, Target: gltf.ArrayBuffer, Buffer: 2},
 			},
 			Buffers: []gltf.Buffer{
-				{ByteLength: 26, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0}},
+				{ByteLength: 10},
+				{},
+				{ByteLength: 16, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0}},
 			},
 		}},
 	}
@@ -507,7 +512,6 @@ func TestModeler_AddColor(t *testing.T) {
 		}},
 		{"float", &Modeler{Document: &gltf.Document{
 			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
@@ -517,7 +521,7 @@ func TestModeler_AddColor(t *testing.T) {
 				{ByteLength: 32, Target: gltf.ArrayBuffer},
 			},
 			Buffers: []gltf.Buffer{
-				{ByteLength: 42, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+				{ByteLength: 32, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 			},
 		}},
 	}

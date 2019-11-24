@@ -2,7 +2,6 @@ package modeler
 
 import (
 	"bytes"
-	"fmt"
 	"image/color"
 	"io"
 	"io/ioutil"
@@ -34,7 +33,10 @@ type Modeler struct {
 // NewModeler returns a new Modeler instance.
 func NewModeler() *Modeler {
 	return &Modeler{
-		Document:    new(gltf.Document),
+		Document: &gltf.Document{
+			Scene:  gltf.Index(0),
+			Scenes: []gltf.Scene{{Name: "Root Scene"}},
+		},
 		Compression: CompressionSafe,
 	}
 }
@@ -187,7 +189,7 @@ func (m *Modeler) AddColor(bufferIndex uint32, data interface{}) uint32 {
 // and fills the buffer with the image data.
 // If success it returns the index of the new image.
 func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reader) (uint32, error) {
-	buffer := &m.Buffers[bufferIndex]
+	buffer := m.buffer(bufferIndex)
 	offset := uint32(len(buffer.Data))
 	switch r := r.(type) {
 	case *bytes.Buffer:
@@ -211,10 +213,7 @@ func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reade
 }
 
 func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, componentType gltf.ComponentType, accessorType gltf.AccessorType, isIndex bool) uint32 {
-	if int(bufferIndex) >= len(m.Buffers) {
-		panic(fmt.Sprintf("modeler: buffer index out of range [%d] with length %d", bufferIndex, len(m.Buffers)))
-	}
-	buffer := &m.Buffers[bufferIndex]
+	buffer := m.buffer(bufferIndex)
 	offset := uint32(len(buffer.Data))
 	size := uint32(count * binary.SizeOfElement(componentType, accessorType))
 	buffer.ByteLength += uint32(size)
@@ -245,4 +244,11 @@ func (m *Modeler) addBufferView(buffer, size, offset uint32, isIndices bool) uin
 	}
 	m.BufferViews = append(m.BufferViews, bufferView)
 	return uint32(len(m.BufferViews)) - 1
+}
+
+func (m *Modeler) buffer(bufferIndex uint32) *gltf.Buffer {
+	if int(bufferIndex) >= len(m.Buffers) {
+		m.Buffers = append(m.Buffers, make([]gltf.Buffer, int(bufferIndex)-len(m.Buffers)+1)...)
+	}
+	return &m.Buffers[bufferIndex]
 }
