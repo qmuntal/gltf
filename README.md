@@ -112,7 +112,7 @@ func main() {
   }}
   m.Nodes = []gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
   m.Scenes[0].Nodes = append(m.Scenes[0].Nodes, 0)
-  if err := gltf.SaveBinary(m.Document, "./a.gltf"); err != nil {
+  if err := gltf.SaveBinary(m.Document, "./example.glb"); err != nil {
     panic(err)
   }
 }
