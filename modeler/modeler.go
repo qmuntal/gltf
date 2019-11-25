@@ -201,7 +201,7 @@ func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reade
 		}
 		buffer.Data = append(buffer.Data, data...)
 	}
-	index := m.addBufferView(bufferIndex, uint32(len(buffer.Data))-offset, offset, false)
+	index := m.addBufferView(bufferIndex, uint32(len(buffer.Data))-offset, offset, 0, false)
 	buffer.ByteLength += uint32(len(buffer.Data))
 	m.BufferViews[index].Target = gltf.None
 	m.Images = append(m.Images, gltf.Image{
@@ -215,12 +215,14 @@ func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reade
 func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, componentType gltf.ComponentType, accessorType gltf.AccessorType, isIndex bool) uint32 {
 	buffer := m.buffer(bufferIndex)
 	offset := uint32(len(buffer.Data))
-	size := uint32(count * binary.SizeOfElement(componentType, accessorType))
-	buffer.ByteLength += uint32(size)
-	buffer.Data = append(buffer.Data, make([]byte, size)...)
+	padding := ((offset+3)/4)*4 - offset
+	elementSize := binary.SizeOfElement(componentType, accessorType)
+	size := uint32(count * elementSize)
+	buffer.ByteLength += uint32(size + padding)
+	buffer.Data = append(buffer.Data, make([]byte, size+padding)...)
 	// Cannot return error as the buffer has enough size and the data type is controled.
-	_ = binary.Write(buffer.Data[offset:], data)
-	index := m.addBufferView(bufferIndex, size, offset, isIndex)
+	_ = binary.Write(buffer.Data[offset+padding:], data)
+	index := m.addBufferView(bufferIndex, size, offset+padding, uint32(elementSize), isIndex)
 	m.Accessors = append(m.Accessors, gltf.Accessor{
 		BufferView:    gltf.Index(index),
 		ByteOffset:    0,
@@ -231,7 +233,7 @@ func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, c
 	return uint32(len(m.Accessors) - 1)
 }
 
-func (m *Modeler) addBufferView(buffer, size, offset uint32, isIndices bool) uint32 {
+func (m *Modeler) addBufferView(buffer, size, offset, stride uint32, isIndices bool) uint32 {
 	bufferView := gltf.BufferView{
 		Buffer:     buffer,
 		ByteLength: size,
@@ -241,6 +243,7 @@ func (m *Modeler) addBufferView(buffer, size, offset uint32, isIndices bool) uin
 		bufferView.Target = gltf.ElementArrayBuffer
 	} else {
 		bufferView.Target = gltf.ArrayBuffer
+		bufferView.ByteStride = stride
 	}
 	m.BufferViews = append(m.BufferViews, bufferView)
 	return uint32(len(m.BufferViews)) - 1
