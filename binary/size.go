@@ -33,9 +33,16 @@ func ComponentsOf(t gltf.AccessorType) int {
 }
 
 // SizeOfElement returns the size, in bytes, of an element.
+// The element size may not be (component size) * (number of components),
+// as some of the elements are tightly packed in order to ensure
+// that they are aligned to 4-byte boundaries.
 func SizeOfElement(c gltf.ComponentType, t gltf.AccessorType) int {
 	// special cases
 	switch {
+	case (t == gltf.Vec3 || t == gltf.Vec2) && (c == gltf.Byte || c == gltf.UnsignedByte):
+		return 4
+	case t == gltf.Vec3 && (c == gltf.Short || c == gltf.UnsignedShort):
+		return 8
 	case t == gltf.Mat2 && (c == gltf.Byte || c == gltf.UnsignedByte):
 		return 8
 	case t == gltf.Mat3 && (c == gltf.Byte || c == gltf.UnsignedByte):
