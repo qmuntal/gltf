@@ -18,8 +18,8 @@ type CompressionLevel uint8
 const (
 	// CompressionNone will not apply any compression.
 	CompressionNone CompressionLevel = iota
-	// CompressionSafe will apply compressions that don't modify the geometry.
-	CompressionSafe
+	// CompressionLossless will reduce the byte size without sacrificing quality.
+	CompressionLossless
 )
 
 // Modeler wraps a Document and add usefull methods to build it.
@@ -37,7 +37,7 @@ func NewModeler() *Modeler {
 			Scene:  gltf.Index(0),
 			Scenes: []gltf.Scene{{Name: "Root Scene"}},
 		},
-		Compression: CompressionSafe,
+		Compression: CompressionLossless,
 	}
 }
 
@@ -51,12 +51,12 @@ func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) uint32 {
 		ok = true
 	case []uint16:
 		ok = true
-		if m.Compression >= CompressionSafe {
+		if m.Compression >= CompressionLossless {
 			data = compressUint16(data.([]uint16))
 		}
 	case []uint32:
 		ok = true
-		if m.Compression >= CompressionSafe {
+		if m.Compression >= CompressionLossless {
 			data = compressUint32(data.([]uint32))
 		}
 	}
