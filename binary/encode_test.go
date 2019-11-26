@@ -2,9 +2,12 @@ package binary
 
 import (
 	"encoding/binary"
+	"image/color"
 	"math"
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/gltf"
 )
 
 func buildBuffer1(n int, empty ...int) []byte {
@@ -61,8 +64,8 @@ func TestRead(t *testing.T) {
 		{"empty", args{make([]byte, 0), []int8{}}, []int8{}, false},
 		{"int8", args{buildBuffer1(4), make([]int8, 4)}, []int8{1, 2, 3, 4}, false},
 		{"int8-FE", args{[]byte{0xFE}, make([]int8, 1)}, []int8{-2}, false},
-		{"[2]int8", args{buildBuffer1(2 * 2), make([][2]int8, 2)}, [][2]int8{{1, 2}, {3, 4}}, false},
-		{"[3]int8", args{buildBuffer1(2 * 3), make([][3]int8, 2)}, [][3]int8{{1, 2, 3}, {4, 5, 6}}, false},
+		{"[2]int8", args{[]byte{1, 2, 0, 0, 3, 4, 0, 0}, make([][2]int8, 2)}, [][2]int8{{1, 2}, {3, 4}}, false},
+		{"[3]int8", args{[]byte{1, 2, 3, 0, 4, 5, 6, 0}, make([][3]int8, 2)}, [][3]int8{{1, 2, 3}, {4, 5, 6}}, false},
 		{"[4]int8", args{buildBuffer1(2 * 4), make([][4]int8, 2)}, [][4]int8{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
 		{"[2][2]int8", args{buildBuffer1(16, 2, 3, 6, 7, 10, 11, 14, 15), make([][2][2]int8, 2)}, [][2][2]int8{
 			{{1, 5}, {2, 6}},
@@ -78,8 +81,8 @@ func TestRead(t *testing.T) {
 		}, false},
 		{"uint8", args{buildBuffer1(4), make([]uint8, 4)}, []uint8{1, 2, 3, 4}, false},
 		{"uint8-FE", args{[]byte{0xFE}, make([]uint8, 1)}, []uint8{254}, false},
-		{"[2]uint8", args{buildBuffer1(2 * 2), make([][2]uint8, 2)}, [][2]uint8{{1, 2}, {3, 4}}, false},
-		{"[3]uint8", args{buildBuffer1(2 * 3), make([][3]uint8, 2)}, [][3]uint8{{1, 2, 3}, {4, 5, 6}}, false},
+		{"[2]uint8", args{[]byte{1, 2, 0, 0, 3, 4, 0, 0}, make([][2]uint8, 2)}, [][2]uint8{{1, 2}, {3, 4}}, false},
+		{"[3]uint8", args{[]byte{1, 2, 3, 0, 4, 5, 6, 0}, make([][3]uint8, 2)}, [][3]uint8{{1, 2, 3}, {4, 5, 6}}, false},
 		{"[4]uint8", args{buildBuffer1(2 * 4), make([][4]uint8, 2)}, [][4]uint8{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
 		{"[2][2]uint8", args{buildBuffer1(16, 2, 3, 6, 7, 10, 11), make([][2][2]uint8, 2)}, [][2][2]uint8{
 			{{1, 5}, {2, 6}},
@@ -96,7 +99,7 @@ func TestRead(t *testing.T) {
 		{"int16", args{buildBuffer2(4), make([]int16, 4)}, []int16{1, 2, 3, 4}, false},
 		{"int16-FE", args{[]byte{0xFE, 0xFF}, make([]int16, 1)}, []int16{-2}, false},
 		{"[2]int16", args{buildBuffer2(2 * 2), make([][2]int16, 2)}, [][2]int16{{1, 2}, {3, 4}}, false},
-		{"[3]int16", args{buildBuffer2(2 * 3), make([][3]int16, 2)}, [][3]int16{{1, 2, 3}, {4, 5, 6}}, false},
+		{"[3]int16", args{[]byte{1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 5, 0, 6, 0, 0, 0}, make([][3]int16, 2)}, [][3]int16{{1, 2, 3}, {4, 5, 6}}, false},
 		{"[4]int16", args{buildBuffer2(2 * 4), make([][4]int16, 2)}, [][4]int16{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
 		{"[2][2]int16", args{buildBuffer2(2 * 2 * 2), make([][2][2]int16, 2)}, [][2][2]int16{
 			{{1, 3}, {2, 4}},
@@ -113,7 +116,7 @@ func TestRead(t *testing.T) {
 		{"uint16", args{buildBuffer2(4), make([]uint16, 4)}, []uint16{1, 2, 3, 4}, false},
 		{"uint16-FE", args{[]byte{0xFE, 0xFF}, make([]uint16, 1)}, []uint16{65534}, false},
 		{"[2]uint16", args{buildBuffer2(2 * 2), make([][2]uint16, 2)}, [][2]uint16{{1, 2}, {3, 4}}, false},
-		{"[3]uint16", args{buildBuffer2(2 * 3), make([][3]uint16, 2)}, [][3]uint16{{1, 2, 3}, {4, 5, 6}}, false},
+		{"[3]uint16", args{[]byte{1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 5, 0, 6, 0, 0, 0}, make([][3]uint16, 2)}, [][3]uint16{{1, 2, 3}, {4, 5, 6}}, false},
 		{"[4]uint16", args{buildBuffer2(2 * 4), make([][4]uint16, 2)}, [][4]uint16{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
 		{"[2][2]uint16", args{buildBuffer2(2 * 2 * 2), make([][2][2]uint16, 2)}, [][2][2]uint16{
 			{{1, 3}, {2, 4}},
@@ -161,6 +164,10 @@ func TestRead(t *testing.T) {
 			{{1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}, {4, 8, 12, 16}},
 			{{17, 21, 25, 29}, {18, 22, 26, 30}, {19, 23, 27, 31}, {20, 24, 28, 32}},
 		}, false},
+		{"color.RGBA", args{buildBuffer1(2 * 4), make([]color.RGBA, 2)}, []color.RGBA{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
+		{"color.RGBA64", args{buildBuffer2(2 * 4), make([]color.RGBA64, 2)}, []color.RGBA64{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
+		{"gltf.RGBA", args{buildBufferF(2 * 4), make([]gltf.RGBA, 2)}, []gltf.RGBA{{R: 1, G: 2, B: 3, A: 4}, {R: 5, G: 6, B: 7, A: 8}}, false},
+		{"gltf.RGB", args{buildBufferF(2 * 3), make([]gltf.RGB, 2)}, []gltf.RGB{{R: 1, G: 2, B: 3}, {R: 4, G: 5, B: 6}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -190,8 +197,8 @@ func TestWrite(t *testing.T) {
 		{"empty", args{0, []int8{}}, []byte{}, false},
 		{"int8", args{4, []int8{1, 2, 3, 4}}, buildBuffer1(4), false},
 		{"int8-FE", args{1, []int8{-2}}, []byte{0xFE}, false},
-		{"[2]int8", args{4, [][2]int8{{1, 2}, {3, 4}}}, buildBuffer1(2 * 2), false},
-		{"[3]int8", args{6, [][3]int8{{1, 2, 3}, {4, 5, 6}}}, buildBuffer1(2 * 3), false},
+		{"[2]int8", args{8, [][2]int8{{1, 2}, {3, 4}}}, []byte{1, 2, 0, 0, 3, 4, 0, 0}, false},
+		{"[3]int8", args{8, [][3]int8{{1, 2, 3}, {4, 5, 6}}}, []byte{1, 2, 3, 0, 4, 5, 6, 0}, false},
 		{"[4]int8", args{8, [][4]int8{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer1(2 * 4), false},
 		{"[2][2]int8", args{16, [][2][2]int8{
 			{{1, 5}, {2, 6}},
@@ -207,8 +214,8 @@ func TestWrite(t *testing.T) {
 		}}, buildBuffer1(2 * 4 * 4), false},
 		{"uint8", args{4, []uint8{1, 2, 3, 4}}, buildBuffer1(4), false},
 		{"uint8-FE", args{1, []uint8{254}}, []byte{0xFE}, false},
-		{"[2]uint8", args{4, [][2]uint8{{1, 2}, {3, 4}}}, buildBuffer1(2 * 2), false},
-		{"[3]uint8", args{6, [][3]uint8{{1, 2, 3}, {4, 5, 6}}}, buildBuffer1(2 * 3), false},
+		{"[2]uint8", args{8, [][2]uint8{{1, 2}, {3, 4}}}, []byte{1, 2, 0, 0, 3, 4, 0, 0}, false},
+		{"[3]uint8", args{8, [][3]uint8{{1, 2, 3}, {4, 5, 6}}}, []byte{1, 2, 3, 0, 4, 5, 6, 0}, false},
 		{"[4]uint8", args{8, [][4]uint8{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer1(2 * 4), false},
 		{"[2][2]uint8", args{16, [][2][2]uint8{
 			{{1, 5}, {2, 6}},
@@ -225,7 +232,7 @@ func TestWrite(t *testing.T) {
 		{"int16", args{8, []int16{1, 2, 3, 4}}, buildBuffer2(4), false},
 		{"int16-FE", args{2, []int16{-2}}, []byte{0xFE, 0xFF}, false},
 		{"[2]int16", args{8, [][2]int16{{1, 2}, {3, 4}}}, buildBuffer2(2 * 2), false},
-		{"[3]int16", args{12, [][3]int16{{1, 2, 3}, {4, 5, 6}}}, buildBuffer2(2 * 3), false},
+		{"[3]int16", args{16, [][3]int16{{1, 2, 3}, {4, 5, 6}}}, []byte{1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 5, 0, 6, 0, 0, 0}, false},
 		{"[4]int16", args{16, [][4]int16{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer2(2 * 4), false},
 		{"[2][2]int16", args{16, [][2][2]int16{
 			{{1, 3}, {2, 4}},
@@ -242,7 +249,7 @@ func TestWrite(t *testing.T) {
 		{"uint16", args{8, []uint16{1, 2, 3, 4}}, buildBuffer2(4), false},
 		{"uint16-FE", args{2, []uint16{65534}}, []byte{0xFE, 0xFF}, false},
 		{"[2]uint16", args{8, [][2]uint16{{1, 2}, {3, 4}}}, buildBuffer2(2 * 2), false},
-		{"[3]uint16", args{12, [][3]uint16{{1, 2, 3}, {4, 5, 6}}}, buildBuffer2(2 * 3), false},
+		{"[3]uint16", args{16, [][3]uint16{{1, 2, 3}, {4, 5, 6}}}, []byte{1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 5, 0, 6, 0, 0, 0}, false},
 		{"[4]uint16", args{16, [][4]uint16{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer2(2 * 4), false},
 		{"[2][2]uint16", args{16, [][2][2]uint16{
 			{{1, 3}, {2, 4}},
@@ -290,6 +297,10 @@ func TestWrite(t *testing.T) {
 			{{1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}, {4, 8, 12, 16}},
 			{{17, 21, 25, 29}, {18, 22, 26, 30}, {19, 23, 27, 31}, {20, 24, 28, 32}},
 		}}, buildBufferF(32), false},
+		{"color.RGBA", args{8, []color.RGBA{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer1(2 * 4), false},
+		{"color.RGBA64", args{16, []color.RGBA64{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer2(2 * 4), false},
+		{"gltf.RGBA", args{32, []gltf.RGBA{{R: 1, G: 2, B: 3, A: 4}, {R: 5, G: 6, B: 7, A: 8}}}, buildBufferF(2 * 4), false},
+		{"gltf.RGB", args{24, []gltf.RGB{{R: 1, G: 2, B: 3}, {R: 4, G: 5, B: 6}}}, buildBufferF(2 * 3), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
