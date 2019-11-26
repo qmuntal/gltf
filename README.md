@@ -83,7 +83,7 @@ if err != nil {
 fmt.Print(doc.Asset)
 ```
 
-### Create glb using gltf/modeler
+### Create a glb using gltf/modeler
 
 ```go
 package main
