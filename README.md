@@ -83,7 +83,7 @@ if err != nil {
 fmt.Print(doc.Asset)
 ```
 
-### Create using gltf/modeler
+### Create glb using gltf/modeler
 
 ```go
 package main
@@ -118,7 +118,7 @@ func main() {
 }
 ```
 
-### Save
+### Create a glb using raw data
 
 The following example generates a 3D box with colors per vertex.
 
