@@ -19,7 +19,7 @@ func TestNewModeler(t *testing.T) {
 		{"base", &Modeler{Document: &gltf.Document{
 			Scene:  gltf.Index(0),
 			Scenes: []gltf.Scene{{Name: "Root Scene"}},
-		}, Compression: CompressionSafe}},
+		}, Compression: CompressionLossless}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -410,7 +410,7 @@ func TestModeler_AddIndices(t *testing.T) {
 		{"uint16-compress", &Modeler{Document: &gltf.Document{
 			Accessors: []gltf.Accessor{{}},
 			Buffers:   []gltf.Buffer{{ByteLength: 10}},
-		}, Compression: CompressionSafe}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
+		}, Compression: CompressionLossless}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
@@ -440,7 +440,7 @@ func TestModeler_AddIndices(t *testing.T) {
 		{"uint32-compress", &Modeler{Document: &gltf.Document{
 			Accessors: []gltf.Accessor{{}},
 			Buffers:   []gltf.Buffer{{ByteLength: 10}},
-		}, Compression: CompressionSafe}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
+		}, Compression: CompressionLossless}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
