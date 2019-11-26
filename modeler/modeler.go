@@ -22,7 +22,7 @@ const (
 	CompressionLossless
 )
 
-// Modeler wraps a Document and add usefull methods to build it.
+// Modeler wraps a Document and add useful methods to build it.
 // If Compress is true, all the data added to accessors that support different component types
 // will be evaluated to see if it fits in a smaller component type.
 type Modeler struct {
@@ -107,7 +107,7 @@ func (m *Modeler) AddTextureCoord(bufferIndex uint32, data interface{}) uint32 {
 	return uint32(index)
 }
 
-// AddWeights adds a new WEIGTHS accessor to the Document
+// AddWeights adds a new WEIGHTS accessor to the Document
 // and fills the buffer with the weights data.
 // If success it returns the index of the new accessor.
 func (m *Modeler) AddWeights(bufferIndex uint32, data interface{}) uint32 {
@@ -220,7 +220,7 @@ func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, c
 	size := uint32(count * elementSize)
 	buffer.ByteLength += uint32(size + padding)
 	buffer.Data = append(buffer.Data, make([]byte, size+padding)...)
-	// Cannot return error as the buffer has enough size and the data type is controled.
+	// Cannot return error as the buffer has enough size and the data type is controlled.
 	_ = binary.Write(buffer.Data[offset+padding:], data)
 	index := m.addBufferView(bufferIndex, size, offset+padding, uint32(elementSize), isIndex)
 	m.Accessors = append(m.Accessors, gltf.Accessor{
