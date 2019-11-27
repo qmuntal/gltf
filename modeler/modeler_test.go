@@ -48,7 +48,7 @@ func TestModeler_AddNormal(t *testing.T) {
 		}}, args{0, [][3]float32{{1, 2, 3}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec3, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec3, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 12, Target: gltf.ArrayBuffer, ByteStride: 12},
@@ -91,7 +91,7 @@ func TestModeler_AddTangent(t *testing.T) {
 		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
@@ -134,7 +134,7 @@ func TestModeler_AddPosition(t *testing.T) {
 		}}, args{0, [][3]float32{{1, 2, 3}, {0, 0, -1}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec3, ComponentType: gltf.Float, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec3, ComponentType: gltf.ComponentFloat, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 24, Target: gltf.ArrayBuffer, ByteStride: 12},
@@ -177,7 +177,7 @@ func TestModeler_AddJoints(t *testing.T) {
 		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
@@ -192,7 +192,7 @@ func TestModeler_AddJoints(t *testing.T) {
 		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedShort},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.ComponentUshort},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
@@ -235,7 +235,7 @@ func TestModeler_AddWeights(t *testing.T) {
 		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedByte, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
@@ -250,7 +250,7 @@ func TestModeler_AddWeights(t *testing.T) {
 		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedShort, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
@@ -265,7 +265,7 @@ func TestModeler_AddWeights(t *testing.T) {
 		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
@@ -308,7 +308,7 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 		}}, args{0, [][2]uint8{{1, 2}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec2, ComponentType: gltf.UnsignedByte, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec2, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
@@ -323,7 +323,7 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 		}}, args{0, [][2]uint16{{1, 2}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec2, ComponentType: gltf.UnsignedShort, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec2, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
@@ -338,7 +338,7 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 		}}, args{2, [][2]float32{{1, 2}, {}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec2, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec2, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 16, Target: gltf.ArrayBuffer, Buffer: 2, ByteStride: 8},
@@ -383,7 +383,7 @@ func TestModeler_AddIndices(t *testing.T) {
 		}}, args{0, []uint8{1, 2}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
@@ -398,7 +398,7 @@ func TestModeler_AddIndices(t *testing.T) {
 		}}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedShort},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.ComponentUshort},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 4, Target: gltf.ElementArrayBuffer},
@@ -413,7 +413,7 @@ func TestModeler_AddIndices(t *testing.T) {
 		}, Compression: CompressionLossless}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
@@ -428,7 +428,7 @@ func TestModeler_AddIndices(t *testing.T) {
 		}}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedInt},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.ComponentUint},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 8, Target: gltf.ElementArrayBuffer},
@@ -443,7 +443,7 @@ func TestModeler_AddIndices(t *testing.T) {
 		}, Compression: CompressionLossless}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
@@ -486,7 +486,7 @@ func TestModeler_AddColor(t *testing.T) {
 		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedByte, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
@@ -501,7 +501,7 @@ func TestModeler_AddColor(t *testing.T) {
 		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedShort, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
@@ -515,7 +515,7 @@ func TestModeler_AddColor(t *testing.T) {
 		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
 			Accessors: []gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
 				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},

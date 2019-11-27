@@ -12,8 +12,8 @@ func ExampleWrite() {
 	vertices := [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}}
 
 	// Allocate buffer
-	sizeIndices := len(indices) * binary.SizeOfElement(gltf.UnsignedByte, gltf.Scalar)
-	sizeVertices := len(vertices) * binary.SizeOfElement(gltf.Float, gltf.Vec3)
+	sizeIndices := len(indices) * binary.SizeOfElement(gltf.ComponentUbyte, gltf.Scalar)
+	sizeVertices := len(vertices) * binary.SizeOfElement(gltf.ComponentFloat, gltf.Vec3)
 	b := make([]byte, sizeIndices+sizeVertices)
 
 	// Write
@@ -32,7 +32,7 @@ func ExampleRead() {
 
 	// Define buffer
 	b := []byte{0, 1, 2, 3, 1, 0, 0, 2, 3, 1, 4, 2, 4, 3, 2, 4, 1, 3, 0, 0, 44, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 124, 66, 0, 0, 124, 66, 0, 0, 32, 66, 0, 0, 44, 66, 0, 0, 166, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 166, 66, 0, 0, 0, 0}
-	sizeIndices := len(indices) * binary.SizeOfElement(gltf.UnsignedByte, gltf.Scalar)
+	sizeIndices := len(indices) * binary.SizeOfElement(gltf.ComponentUbyte, gltf.Scalar)
 
 	// Write
 	binary.Read(b, indices)

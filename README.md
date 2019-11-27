@@ -135,11 +135,11 @@ import (
 func main() {
     doc := &gltf.Document{
         Accessors: []gltf.Accessor{
-            {BufferView: gltf.Index(0), ComponentType: gltf.UnsignedShort, Count: 36, Type: gltf.Scalar},
+            {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUShort, Count: 36, Type: gltf.Scalar},
             {BufferView: gltf.Index(1), ComponentType: gltf.Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.            -0.5}, Type: gltf.Vec3},
-            {BufferView: gltf.Index(2), ComponentType: gltf.Float, Count: 24, Type: gltf.Vec3},
-            {BufferView: gltf.Index(3), ComponentType: gltf.Float, Count: 24, Type: gltf.Vec4},
-            {BufferView: gltf.Index(4), ComponentType: gltf.Float, Count: 24, Type: gltf.Vec2},
+            {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.Vec3},
+            {BufferView: gltf.Index(3), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.Vec4},
+            {BufferView: gltf.Index(4), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.Vec2},
         },
         Asset: gltf.Asset{Version: "2.0", Generator: "FBX2glTF"},
         BufferViews: []gltf.BufferView{

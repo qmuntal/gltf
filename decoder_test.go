@@ -29,11 +29,11 @@ func TestOpen(t *testing.T) {
 		{args{"openError", ""}, nil, true},
 		{args{"testdata/Cube/glTF/Cube.gltf", ""}, &Document{
 			Accessors: []Accessor{
-				{BufferView: Index(0), ByteOffset: 0, ComponentType: UnsignedShort, Count: 36, Max: []float64{35}, Min: []float64{0}, Type: Scalar},
-				{BufferView: Index(1), ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: Vec3},
-				{BufferView: Index(2), ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: Vec3},
-				{BufferView: Index(3), ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 0, 0, 1}, Min: []float64{0, 0, -1, -1}, Type: Vec4},
-				{BufferView: Index(4), ByteOffset: 0, ComponentType: Float, Count: 36, Max: []float64{1, 1}, Min: []float64{-1, -1}, Type: Vec2}},
+				{BufferView: Index(0), ByteOffset: 0, ComponentType: ComponentUshort, Count: 36, Max: []float64{35}, Min: []float64{0}, Type: Scalar},
+				{BufferView: Index(1), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: Vec3},
+				{BufferView: Index(2), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: Vec3},
+				{BufferView: Index(3), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 0, 0, 1}, Min: []float64{0, 0, -1, -1}, Type: Vec4},
+				{BufferView: Index(4), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 1}, Min: []float64{-1, -1}, Type: Vec2}},
 			Asset: Asset{Generator: "VKTS glTF 2.0 exporter", Version: "2.0"},
 			BufferViews: []BufferView{
 				{Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: ElementArrayBuffer},
@@ -56,8 +56,8 @@ func TestOpen(t *testing.T) {
 		}, false},
 		{args{"testdata/Cameras/glTF/Cameras.gltf", "testdata/Cameras/glTF-Embedded/Cameras.gltf"}, &Document{
 			Accessors: []Accessor{
-				{BufferView: Index(0), ByteOffset: 0, ComponentType: UnsignedShort, Count: 6, Max: []float64{3}, Min: []float64{0}, Type: Scalar},
-				{BufferView: Index(1), ByteOffset: 0, ComponentType: Float, Count: 4, Max: []float64{1, 1, 0}, Min: []float64{0, 0, 0}, Type: Vec3},
+				{BufferView: Index(0), ByteOffset: 0, ComponentType: ComponentUshort, Count: 6, Max: []float64{3}, Min: []float64{0}, Type: Scalar},
+				{BufferView: Index(1), ByteOffset: 0, ComponentType: ComponentFloat, Count: 4, Max: []float64{1, 1, 0}, Min: []float64{0, 0, 0}, Type: Vec3},
 			},
 			Asset: Asset{Version: "2.0"},
 			BufferViews: []BufferView{
@@ -80,11 +80,11 @@ func TestOpen(t *testing.T) {
 		}, false},
 		{args{"testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb", ""}, &Document{
 			Accessors: []Accessor{
-				{BufferView: Index(0), ByteOffset: 0, ComponentType: UnsignedShort, Count: 36, Type: Scalar},
-				{BufferView: Index(1), ByteOffset: 0, ComponentType: Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: Vec3},
-				{BufferView: Index(2), ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec3},
-				{BufferView: Index(3), ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec4},
-				{BufferView: Index(4), ByteOffset: 0, ComponentType: Float, Count: 24, Type: Vec2},
+				{BufferView: Index(0), ByteOffset: 0, ComponentType: ComponentUshort, Count: 36, Type: Scalar},
+				{BufferView: Index(1), ByteOffset: 0, ComponentType: ComponentFloat, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: Vec3},
+				{BufferView: Index(2), ByteOffset: 0, ComponentType: ComponentFloat, Count: 24, Type: Vec3},
+				{BufferView: Index(3), ByteOffset: 0, ComponentType: ComponentFloat, Count: 24, Type: Vec4},
+				{BufferView: Index(4), ByteOffset: 0, ComponentType: ComponentFloat, Count: 24, Type: Vec2},
 			},
 			Asset: Asset{Version: "2.0", Generator: "FBX2glTF"},
 			BufferViews: []BufferView{

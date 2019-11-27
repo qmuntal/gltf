@@ -51,10 +51,10 @@ func TestEncoder_Encode(t *testing.T) {
 		{"withExtensions", args{&Document{Extras: 8.0, ExtensionsUsed: []string{"c"}, ExtensionsRequired: []string{"d", "e"}}}, false},
 		{"withAsset", args{&Document{Asset: Asset{Extras: 8.0, Copyright: "@2019", Generator: "qmuntal/gltf", Version: "2.0", MinVersion: "1.0"}}}, false},
 		{"withAccessors", args{&Document{Accessors: []Accessor{
-			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: Byte, Normalized: true, Count: 5, Type: Vec3, Max: []float64{1, 2}, Min: []float64{2.4}},
+			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: ComponentByte, Normalized: true, Count: 5, Type: Vec3, Max: []float64{1, 2}, Min: []float64{2.4}},
 			{BufferView: Index(0), Normalized: false, Count: 50, Type: Vec4, Sparse: &Sparse{Extras: 8.0, Count: 2,
 				Values:  SparseValues{Extras: 8.0, BufferView: 1, ByteOffset: 2},
-				Indices: SparseIndices{Extras: 8.0, BufferView: 1, ByteOffset: 2, ComponentType: Float}},
+				Indices: SparseIndices{Extras: 8.0, BufferView: 1, ByteOffset: 2, ComponentType: ComponentFloat}},
 			},
 		}}}, false},
 		{"withAnimations", args{&Document{Animations: []Animation{

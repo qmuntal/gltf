@@ -24,18 +24,18 @@ var (
 type ComponentType uint16
 
 const (
-	// Float corresponds to a Float32Array.
-	Float ComponentType = iota
-	// Byte corresponds to a Int8Array.
-	Byte
-	// UnsignedByte corresponds to a Uint8Array.
-	UnsignedByte
-	// Short corresponds to a Int16Array.
-	Short
-	// UnsignedShort corresponds to a Uint16Array.
-	UnsignedShort
-	// UnsignedInt corresponds to a Uint32Array.
-	UnsignedInt
+	// ComponentFloat corresponds to a Float32Array.
+	ComponentFloat ComponentType = iota
+	// ComponentByte corresponds to a Int8Array.
+	ComponentByte
+	// ComponentUbyte corresponds to a Uint8Array.
+	ComponentUbyte
+	// ComponentShort corresponds to a Int16Array.
+	ComponentShort
+	// ComponentUshort corresponds to a Uint16Array.
+	ComponentUshort
+	// ComponentUint corresponds to a Uint32Array.
+	ComponentUint
 )
 
 // UnmarshalJSON unmarshal the component type with the correct default values.
@@ -44,12 +44,12 @@ func (c *ComponentType) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*c = map[uint16]ComponentType{
-			5120: Byte,
-			5121: UnsignedByte,
-			5122: Short,
-			5123: UnsignedShort,
-			5125: UnsignedInt,
-			5126: Float,
+			5120: ComponentByte,
+			5121: ComponentUbyte,
+			5122: ComponentShort,
+			5123: ComponentUshort,
+			5125: ComponentUint,
+			5126: ComponentFloat,
 		}[tmp]
 	}
 	return err
@@ -58,12 +58,12 @@ func (c *ComponentType) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the component type with the correct default values.
 func (c *ComponentType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[ComponentType]uint16{
-		Byte:          5120,
-		UnsignedByte:  5121,
-		Short:         5122,
-		UnsignedShort: 5123,
-		UnsignedInt:   5125,
-		Float:         5126,
+		ComponentByte:          5120,
+		ComponentUbyte:  5121,
+		ComponentShort:         5122,
+		ComponentUshort: 5123,
+		ComponentUint:   5125,
+		ComponentFloat:         5126,
 	}[*c])
 }
 
