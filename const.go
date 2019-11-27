@@ -58,12 +58,12 @@ func (c *ComponentType) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the component type with the correct default values.
 func (c *ComponentType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[ComponentType]uint16{
-		ComponentByte:          5120,
+		ComponentByte:   5120,
 		ComponentUbyte:  5121,
-		ComponentShort:         5122,
+		ComponentShort:  5122,
 		ComponentUshort: 5123,
 		ComponentUint:   5125,
-		ComponentFloat:         5126,
+		ComponentFloat:  5126,
 	}[*c])
 }
 
