@@ -18,7 +18,7 @@ func TestNewModeler(t *testing.T) {
 	}{
 		{"base", &Modeler{Document: &gltf.Document{
 			Scene:  gltf.Index(0),
-			Scenes: []gltf.Scene{{Name: "Root Scene"}},
+			Scenes: []*gltf.Scene{{Name: "Root Scene"}},
 		}, Compression: CompressionLossless}},
 	}
 	for _, tt := range tests {
@@ -43,17 +43,17 @@ func TestModeler_AddNormal(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"base", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][3]float32{{1, 2, 3}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec3, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 12, Target: gltf.ArrayBuffer, ByteStride: 12},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 12, Target: gltf.TargetArrayBuffer, ByteStride: 12},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 22, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64}},
 			},
 		}},
@@ -86,17 +86,17 @@ func TestModeler_AddTangent(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"base", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 42, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 			},
 		}},
@@ -129,17 +129,17 @@ func TestModeler_AddPosition(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"base", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][3]float32{{1, 2, 3}, {0, 0, -1}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec3, ComponentType: gltf.Float, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 24, Target: gltf.ArrayBuffer, ByteStride: 12},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 24, Target: gltf.TargetArrayBuffer, ByteStride: 12},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 34, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 191}},
 			},
 		}},
@@ -172,32 +172,32 @@ func TestModeler_AddJoints(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
 			},
 		}},
 		{"uint16", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedShort},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
 			},
 		}},
@@ -230,47 +230,47 @@ func TestModeler_AddWeights(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedByte, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
 			},
 		}},
 		{"uint16", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedShort, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
 			},
 		}},
 		{"float", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 42, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 			},
 		}},
@@ -303,47 +303,47 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][2]uint8{{1, 2}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec2, ComponentType: gltf.UnsignedByte, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 0, 0}},
 			},
 		}},
 		{"uint16", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][2]uint16{{1, 2}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec2, ComponentType: gltf.UnsignedShort, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 0, 2, 0}},
 			},
 		}},
 		{"float", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{2, [][2]float32{{1, 2}, {}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec2, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentFloat},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 16, Target: gltf.ArrayBuffer, Buffer: 2, ByteStride: 8},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 16, Target: gltf.TargetArrayBuffer, Buffer: 2, ByteStride: 8},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 10},
 				{},
 				{ByteLength: 16, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0}},
@@ -378,77 +378,77 @@ func TestModeler_AddIndices(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, []uint8{1, 2}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
 			},
 		}},
 		{"uint16", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedShort},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUshort},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ElementArrayBuffer},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 4, Target: gltf.TargetElementArrayBuffer},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 0, 2, 0}},
 			},
 		}},
 		{"uint16-compress", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}, Compression: CompressionLossless}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
 			},
 		}},
 		{"uint32", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedInt},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUint},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ElementArrayBuffer},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 8, Target: gltf.TargetElementArrayBuffer},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 0, 0, 2, 0, 0, 0}},
 			},
 		}},
 		{"uint32-compress", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}, Compression: CompressionLossless}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Scalar, ComponentType: gltf.UnsignedByte},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
 			},
 		}},
@@ -481,46 +481,46 @@ func TestModeler_AddColor(t *testing.T) {
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedByte, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
 			},
 		}},
 		{"uint16", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
-			Buffers:   []gltf.Buffer{{ByteLength: 10}},
+			Accessors: []*gltf.Accessor{{}},
+			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 1, Type: gltf.Vec4, ComponentType: gltf.UnsignedShort, Normalized: true},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
 			},
 		}},
 		{"float", &Modeler{Document: &gltf.Document{
-			Accessors: []gltf.Accessor{{}},
+			Accessors: []*gltf.Accessor{{}},
 		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
-			Accessors: []gltf.Accessor{
+			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.Vec4, ComponentType: gltf.Float},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 32, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 			},
 		}},
@@ -556,43 +556,43 @@ func TestModeler_AddImage(t *testing.T) {
 		wantErr bool
 	}{
 		{"base", &Modeler{Document: &gltf.Document{
-			Images:  []gltf.Image{{}},
-			Buffers: []gltf.Buffer{{ByteLength: 10}},
+			Images:  []*gltf.Image{{}},
+			Buffers: []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, "fake", "fake/type", bytes.NewReader([]byte{1, 2})}, 1, &gltf.Document{
-			Images: []gltf.Image{
+			Images: []*gltf.Image{
 				{},
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.None},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 2, Target: gltf.TargetNone},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
 			},
 		}, false},
 		{"buffer", &Modeler{Document: &gltf.Document{
-			Images:  []gltf.Image{{}},
-			Buffers: []gltf.Buffer{{ByteLength: 10}},
+			Images:  []*gltf.Image{{}},
+			Buffers: []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, "fake", "fake/type", bytes.NewBuffer([]byte{1, 2})}, 1, &gltf.Document{
-			Images: []gltf.Image{
+			Images: []*gltf.Image{
 				{},
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
 			},
-			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.None},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 2, Target: gltf.TargetNone},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
 			},
 		}, false},
 		{"err", &Modeler{Document: &gltf.Document{
-			Images:  []gltf.Image{{}},
-			Buffers: []gltf.Buffer{{ByteLength: 10}},
+			Images:  []*gltf.Image{{}},
+			Buffers: []*gltf.Buffer{{ByteLength: 10}},
 		}}, args{0, "fake", "fake/type", &errReader{}}, 0, &gltf.Document{
-			Images: []gltf.Image{
+			Images: []*gltf.Image{
 				{},
 			},
-			Buffers: []gltf.Buffer{
+			Buffers: []*gltf.Buffer{
 				{ByteLength: 10},
 			},
 		}, true},

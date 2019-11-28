@@ -325,8 +325,8 @@ func Test_ubyteComponent_Scalar(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := make([]byte, 1)
-			UnsignedByte.PutScalar(b, tt.want)
-			if got := UnsignedByte.Scalar(b); got != tt.want {
+			Ubyte.PutScalar(b, tt.want)
+			if got := Ubyte.Scalar(b); got != tt.want {
 				t.Errorf("ubyteComponent.Scalar() = %v, want %v", got, tt.want)
 			}
 		})

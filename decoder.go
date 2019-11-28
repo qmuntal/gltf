@@ -79,12 +79,12 @@ func (d *Decoder) Decode(doc *Document) error {
 	var externalBufferIndex = 0
 	if isBinary && len(doc.Buffers) > 0 {
 		externalBufferIndex = 1
-		if err := d.decodeBinaryBuffer(&doc.Buffers[0]); err != nil {
+		if err := d.decodeBinaryBuffer(doc.Buffers[0]); err != nil {
 			return err
 		}
 	}
 	for i := externalBufferIndex; i < len(doc.Buffers); i++ {
-		if err := d.decodeBuffer(&doc.Buffers[i]); err != nil {
+		if err := d.decodeBuffer(doc.Buffers[i]); err != nil {
 			return err
 		}
 	}
@@ -177,7 +177,7 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
 	} else if err = validateBufferURI(buffer.URI); err == nil {
-		buffer.Data = make([]uint8, buffer.ByteLength)
+		buffer.Data = make([]byte, buffer.ByteLength)
 		err = d.ReadHandler.ReadFullResource(buffer.URI, buffer.Data)
 	}
 	if err != nil {
@@ -197,7 +197,7 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 	if header.Type != glbChunkBIN || header.Length < buffer.ByteLength {
 		return errors.New("gltf: Invalid GLB BIN header")
 	}
-	buffer.Data = make([]uint8, buffer.ByteLength)
+	buffer.Data = make([]byte, buffer.ByteLength)
 	_, err = io.ReadFull(d.r, buffer.Data)
 	return err
 }

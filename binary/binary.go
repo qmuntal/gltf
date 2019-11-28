@@ -36,17 +36,17 @@ import "encoding/binary"
 // Byte is the byte implementation of Component.
 var Byte byteComponent
 
-// UnsignedByte is the usnigned byte implementation of Component.
-var UnsignedByte ubyteComponent
+// Ubyte is the usnigned byte implementation of Component.
+var Ubyte ubyteComponent
 
 // Short is the byte short of Component.
 var Short shortComponent
 
-// UnsignedShort is the usnigned short implementation of Component.
-var UnsignedShort ushortComponent
+// Ushort is the usnigned short implementation of Component.
+var Ushort ushortComponent
 
-// UnsignedInt is the unsigned int implementation of Component.
-var UnsignedInt uintComponent
+// UInt is the unsigned int implementation of Component.
+var UInt uintComponent
 
 // Float is the float implementation of Component.
 var Float floatComponent

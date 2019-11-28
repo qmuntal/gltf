@@ -10,15 +10,15 @@ func TestImage_MarshalData(t *testing.T) {
 	tests := []struct {
 		name    string
 		im      *Image
-		want    []uint8
+		want    []byte
 		wantErr bool
 	}{
-		{"error", &Image{URI: "data:image/png;base64,_"}, []uint8{}, true},
-		{"external", &Image{URI: "http://web.com"}, []uint8{}, false},
-		{"empty", &Image{URI: "data:image/png;base64,"}, []uint8{}, false},
-		{"empty", &Image{URI: "data:image/jpeg;base64,"}, []uint8{}, false},
-		{"test", &Image{URI: "data:image/png;base64,TEST"}, []uint8{76, 68, 147}, false},
-		{"complex", &Image{URI: "data:image/png;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []uint8{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
+		{"error", &Image{URI: "data:image/png;base64,_"}, []byte{}, true},
+		{"external", &Image{URI: "http://web.com"}, []byte{}, false},
+		{"empty", &Image{URI: "data:image/png;base64,"}, []byte{}, false},
+		{"empty", &Image{URI: "data:image/jpeg;base64,"}, []byte{}, false},
+		{"test", &Image{URI: "data:image/png;base64,TEST"}, []byte{76, 68, 147}, false},
+		{"complex", &Image{URI: "data:image/png;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []byte{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -91,8 +91,8 @@ func TestMaterial_UnmarshalJSON(t *testing.T) {
 		want    *Material
 		wantErr bool
 	}{
-		{"default", new(Material), args{[]byte("{}")}, &Material{AlphaCutoff: Float64(0.5), AlphaMode: Opaque}, false},
-		{"nodefault", new(Material), args{[]byte(`{"alphaCutoff": 0.2, "alphaMode": "MASK"}`)}, &Material{AlphaCutoff: Float64(0.2), AlphaMode: Mask}, false},
+		{"default", new(Material), args{[]byte("{}")}, &Material{AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque}, false},
+		{"nodefault", new(Material), args{[]byte(`{"alphaCutoff": 0.2, "alphaMode": "MASK"}`)}, &Material{AlphaCutoff: Float64(0.2), AlphaMode: AlphaMask}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -248,9 +248,9 @@ func TestMaterial_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &Material{AlphaCutoff: Float64(0.5), AlphaMode: Opaque}, []byte(`{}`), false},
-		{"empty", &Material{AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND"}`), false},
-		{"nodefault", &Material{AlphaCutoff: Float64(1), AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
+		{"default", &Material{AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque}, []byte(`{}`), false},
+		{"empty", &Material{AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND"}`), false},
+		{"nodefault", &Material{AlphaCutoff: Float64(1), AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -24,18 +24,18 @@ var (
 type ComponentType uint16
 
 const (
-	// Float corresponds to a Float32Array.
-	Float ComponentType = iota
-	// Byte corresponds to a Int8Array.
-	Byte
-	// UnsignedByte corresponds to a Uint8Array.
-	UnsignedByte
-	// Short corresponds to a Int16Array.
-	Short
-	// UnsignedShort corresponds to a Uint16Array.
-	UnsignedShort
-	// UnsignedInt corresponds to a Uint32Array.
-	UnsignedInt
+	// ComponentFloat corresponds to a Float32Array.
+	ComponentFloat ComponentType = iota
+	// ComponentByte corresponds to a Int8Array.
+	ComponentByte
+	// ComponentUbyte corresponds to a Uint8Array.
+	ComponentUbyte
+	// ComponentShort corresponds to a Int16Array.
+	ComponentShort
+	// ComponentUshort corresponds to a Uint16Array.
+	ComponentUshort
+	// ComponentUint corresponds to a Uint32Array.
+	ComponentUint
 )
 
 // UnmarshalJSON unmarshal the component type with the correct default values.
@@ -44,12 +44,12 @@ func (c *ComponentType) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*c = map[uint16]ComponentType{
-			5120: Byte,
-			5121: UnsignedByte,
-			5122: Short,
-			5123: UnsignedShort,
-			5125: UnsignedInt,
-			5126: Float,
+			5120: ComponentByte,
+			5121: ComponentUbyte,
+			5122: ComponentShort,
+			5123: ComponentUshort,
+			5125: ComponentUint,
+			5126: ComponentFloat,
 		}[tmp]
 	}
 	return err
@@ -58,12 +58,12 @@ func (c *ComponentType) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the component type with the correct default values.
 func (c *ComponentType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[ComponentType]uint16{
-		Byte:          5120,
-		UnsignedByte:  5121,
-		Short:         5122,
-		UnsignedShort: 5123,
-		UnsignedInt:   5125,
-		Float:         5126,
+		ComponentByte:   5120,
+		ComponentUbyte:  5121,
+		ComponentShort:  5122,
+		ComponentUshort: 5123,
+		ComponentUint:   5125,
+		ComponentFloat:  5126,
 	}[*c])
 }
 
@@ -71,20 +71,20 @@ func (c *ComponentType) MarshalJSON() ([]byte, error) {
 type AccessorType uint8
 
 const (
-	// Scalar corresponds to a single dimension value.
-	Scalar AccessorType = iota
-	// Vec2 corresponds to a two dimensions array.
-	Vec2
-	// Vec3 corresponds to a three dimensions array.
-	Vec3
-	// Vec4 corresponds to a four dimensions array.
-	Vec4
-	// Mat2 corresponds to a 2x2 matrix.
-	Mat2
-	// Mat3 corresponds to a 3x3 matrix.
-	Mat3
-	// Mat4 corresponds to a 4x4 matrix.
-	Mat4
+	// AccessorScalar corresponds to a single dimension value.
+	AccessorScalar AccessorType = iota
+	// AccessorVec2 corresponds to a two dimensions array.
+	AccessorVec2
+	// AccessorVec3 corresponds to a three dimensions array.
+	AccessorVec3
+	// AccessorVec4 corresponds to a four dimensions array.
+	AccessorVec4
+	// AccessorMat2 corresponds to a 2x2 matrix.
+	AccessorMat2
+	// AccessorMat3 corresponds to a 3x3 matrix.
+	AccessorMat3
+	// AccessorMat4 corresponds to a 4x4 matrix.
+	AccessorMat4
 )
 
 // UnmarshalJSON unmarshal the accessor type with the correct default values.
@@ -93,13 +93,13 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*a = map[string]AccessorType{
-			"SCALAR": Scalar,
-			"VEC2":   Vec2,
-			"VEC3":   Vec3,
-			"VEC4":   Vec4,
-			"MAT2":   Mat2,
-			"MAT3":   Mat3,
-			"MAT4":   Mat4,
+			"SCALAR": AccessorScalar,
+			"VEC2":   AccessorVec2,
+			"VEC3":   AccessorVec3,
+			"VEC4":   AccessorVec4,
+			"MAT2":   AccessorMat2,
+			"MAT3":   AccessorMat3,
+			"MAT4":   AccessorMat4,
 		}[tmp]
 	}
 	return err
@@ -108,13 +108,13 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the accessor type with the correct default values.
 func (a *AccessorType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[AccessorType]string{
-		Scalar: "SCALAR",
-		Vec2:   "VEC2",
-		Vec3:   "VEC3",
-		Vec4:   "VEC4",
-		Mat2:   "MAT2",
-		Mat3:   "MAT3",
-		Mat4:   "MAT4",
+		AccessorScalar: "SCALAR",
+		AccessorVec2:   "VEC2",
+		AccessorVec3:   "VEC3",
+		AccessorVec4:   "VEC4",
+		AccessorMat2:   "MAT2",
+		AccessorMat3:   "MAT3",
+		AccessorMat4:   "MAT4",
 	}[*a])
 }
 
@@ -122,12 +122,12 @@ func (a *AccessorType) MarshalJSON() ([]byte, error) {
 type Target uint16
 
 const (
-	// None is used when the buffer should not bound to a target, for example when referenced by an sparce indices.
-	None = 0
-	// ArrayBuffer corresponds to an array buffer.
-	ArrayBuffer Target = 34962
-	// ElementArrayBuffer corresponds to an element array buffer.
-	ElementArrayBuffer = 34963
+	// TargetNone is used when the buffer should not bound to a target, for example when referenced by an sparce indices.
+	TargetNone = 0
+	// TargetArrayBuffer corresponds to an array buffer.
+	TargetArrayBuffer Target = 34962
+	// TargetElementArrayBuffer corresponds to an element array buffer.
+	TargetElementArrayBuffer = 34963
 )
 
 // Attribute is a map that each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
@@ -137,20 +137,20 @@ type Attribute = map[string]uint32
 type PrimitiveMode uint8
 
 const (
-	// Triangles corresponds to a Triangle primitive.
-	Triangles PrimitiveMode = iota
-	// Points corresponds to a Point primitive.
-	Points
-	// Lines corresponds to a Line primitive.
-	Lines
-	// LineLoop corresponds to a Line Loop primitive.
-	LineLoop
-	// LineStrip corresponds to a Line Strip primitive.
-	LineStrip
-	// TriangleStrip corresponds to a Triangle Strip primitive.
-	TriangleStrip
-	// TriangleFan corresponds to a Triangle Fan primitive.
-	TriangleFan
+	// PrimitiveTriangles corresponds to a Triangle primitive.
+	PrimitiveTriangles PrimitiveMode = iota
+	// PrimitivePoints corresponds to a Point primitive.
+	PrimitivePoints
+	// PrimitiveLines corresponds to a Line primitive.
+	PrimitiveLines
+	// PrimitiveLineLoop corresponds to a Line Loop primitive.
+	PrimitiveLineLoop
+	// PrimitiveLineStrip corresponds to a Line Strip primitive.
+	PrimitiveLineStrip
+	// PrimitiveTriangleStrip corresponds to a Triangle Strip primitive.
+	PrimitiveTriangleStrip
+	// PrimitiveTriangleFan corresponds to a Triangle Fan primitive.
+	PrimitiveTriangleFan
 )
 
 // UnmarshalJSON unmarshal the primitive mode with the correct default values.
@@ -159,13 +159,13 @@ func (p *PrimitiveMode) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*p = map[uint8]PrimitiveMode{
-			0: Points,
-			1: Lines,
-			2: LineLoop,
-			3: LineStrip,
-			4: Triangles,
-			5: TriangleStrip,
-			6: TriangleFan,
+			0: PrimitivePoints,
+			1: PrimitiveLines,
+			2: PrimitiveLineLoop,
+			3: PrimitiveLineStrip,
+			4: PrimitiveTriangles,
+			5: PrimitiveTriangleStrip,
+			6: PrimitiveTriangleFan,
 		}[tmp]
 	}
 	return err
@@ -174,13 +174,13 @@ func (p *PrimitiveMode) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the primitive mode with the correct default values.
 func (p *PrimitiveMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[PrimitiveMode]uint8{
-		Points:        0,
-		Lines:         1,
-		LineLoop:      2,
-		LineStrip:     3,
-		Triangles:     4,
-		TriangleStrip: 5,
-		TriangleFan:   6,
+		PrimitivePoints:        0,
+		PrimitiveLines:         1,
+		PrimitiveLineLoop:      2,
+		PrimitiveLineStrip:     3,
+		PrimitiveTriangles:     4,
+		PrimitiveTriangleStrip: 5,
+		PrimitiveTriangleFan:   6,
 	}[*p])
 }
 
@@ -188,12 +188,12 @@ func (p *PrimitiveMode) MarshalJSON() ([]byte, error) {
 type AlphaMode uint8
 
 const (
-	// Opaque corresponds to an Opaque material.
-	Opaque AlphaMode = iota
-	// Mask corresponds to a masked material.
-	Mask
-	// Blend corresponds to a Blend material.
-	Blend
+	// AlphaOpaque corresponds to an AlphaOpaque material.
+	AlphaOpaque AlphaMode = iota
+	// AlphaMask corresponds to a masked material.
+	AlphaMask
+	// AlphaBlend corresponds to a AlphaBlend material.
+	AlphaBlend
 )
 
 // UnmarshalJSON unmarshal the alpha mode with the correct default values.
@@ -202,9 +202,9 @@ func (a *AlphaMode) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*a = map[string]AlphaMode{
-			"OPAQUE": Opaque,
-			"MASK":   Mask,
-			"BLEND":  Blend,
+			"OPAQUE": AlphaOpaque,
+			"MASK":   AlphaMask,
+			"BLEND":  AlphaBlend,
 		}[tmp]
 	}
 	return err
@@ -213,9 +213,9 @@ func (a *AlphaMode) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the alpha mode with the correct default values.
 func (a *AlphaMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[AlphaMode]string{
-		Opaque: "OPAQUE",
-		Mask:   "MASK",
-		Blend:  "BLEND",
+		AlphaOpaque: "OPAQUE",
+		AlphaMask:   "MASK",
+		AlphaBlend:  "BLEND",
 	}[*a])
 }
 
@@ -301,12 +301,12 @@ func (m *MinFilter) MarshalJSON() ([]byte, error) {
 type WrappingMode uint16
 
 const (
-	// Repeat corresponds to a repeat wrapping.
-	Repeat WrappingMode = iota
-	// ClampToEdge corresponds to a clamp to edge wrapping.
-	ClampToEdge
-	// MirroredRepeat corresponds to a mirrored repeat wrapping.
-	MirroredRepeat
+	// WrapRepeat corresponds to a repeat wrapping.
+	WrapRepeat WrappingMode = iota
+	// WrapClampToEdge corresponds to a clamp to edge wrapping.
+	WrapClampToEdge
+	// WrapMirroredRepeat corresponds to a mirrored repeat wrapping.
+	WrapMirroredRepeat
 )
 
 // UnmarshalJSON unmarshal the wrapping mode with the correct default values.
@@ -315,9 +315,9 @@ func (w *WrappingMode) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*w = map[uint16]WrappingMode{
-			33071: ClampToEdge,
-			33648: MirroredRepeat,
-			10497: Repeat,
+			33071: WrapClampToEdge,
+			33648: WrapMirroredRepeat,
+			10497: WrapRepeat,
 		}[tmp]
 	}
 	return err
@@ -326,9 +326,9 @@ func (w *WrappingMode) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the wrapping mode with the correct default values.
 func (w *WrappingMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[WrappingMode]uint16{
-		ClampToEdge:    33071,
-		MirroredRepeat: 33648,
-		Repeat:         10497,
+		WrapClampToEdge:    33071,
+		WrapMirroredRepeat: 33648,
+		WrapRepeat:         10497,
 	}[*w])
 }
 
@@ -336,12 +336,12 @@ func (w *WrappingMode) MarshalJSON() ([]byte, error) {
 type Interpolation uint8
 
 const (
-	// Linear corresponds to a linear interpolation.
-	Linear Interpolation = iota
-	// Step corresponds to a step interpolation.
-	Step
-	// CubicSpline corresponds to a cubic spline interpolation.
-	CubicSpline
+	// InterpolationLinear corresponds to a linear interpolation.
+	InterpolationLinear Interpolation = iota
+	// InterpolationStep corresponds to a step interpolation.
+	InterpolationStep
+	// InterpolationCubicSpline corresponds to a cubic spline interpolation.
+	InterpolationCubicSpline
 )
 
 // UnmarshalJSON unmarshal the interpolation with the correct default values.
@@ -350,9 +350,9 @@ func (i *Interpolation) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*i = map[string]Interpolation{
-			"LINEAR":      Linear,
-			"STEP":        Step,
-			"CUBICSPLINE": CubicSpline,
+			"LINEAR":      InterpolationLinear,
+			"STEP":        InterpolationStep,
+			"CUBICSPLINE": InterpolationCubicSpline,
 		}[tmp]
 	}
 	return err
@@ -361,9 +361,9 @@ func (i *Interpolation) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the interpolation with the correct default values.
 func (i *Interpolation) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[Interpolation]string{
-		Linear:      "LINEAR",
-		Step:        "STEP",
-		CubicSpline: "CUBICSPLINE",
+		InterpolationLinear:      "LINEAR",
+		InterpolationStep:        "STEP",
+		InterpolationCubicSpline: "CUBICSPLINE",
 	}[*i])
 }
 
@@ -372,14 +372,14 @@ func (i *Interpolation) MarshalJSON() ([]byte, error) {
 type TRSProperty uint8
 
 const (
-	// Translation corresponds to a translation transform.
-	Translation TRSProperty = iota
-	// Rotation corresponds to a rotation transform.
-	Rotation
-	// Scale corresponds to a scale transform.
-	Scale
-	// Weights corresponds to a weights transform.
-	Weights
+	// TRSTranslation corresponds to a translation transform.
+	TRSTranslation TRSProperty = iota
+	// TRSRotation corresponds to a rotation transform.
+	TRSRotation
+	// TRSScale corresponds to a scale transform.
+	TRSScale
+	// TRSWeights corresponds to a weights transform.
+	TRSWeights
 )
 
 // UnmarshalJSON unmarshal the TRSProperty with the correct default values.
@@ -388,10 +388,10 @@ func (t *TRSProperty) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*t = map[string]TRSProperty{
-			"translation": Translation,
-			"rotation":    Rotation,
-			"scale":       Scale,
-			"weights":     Weights,
+			"translation": TRSTranslation,
+			"rotation":    TRSRotation,
+			"scale":       TRSScale,
+			"weights":     TRSWeights,
 		}[tmp]
 	}
 	return err
@@ -400,10 +400,10 @@ func (t *TRSProperty) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the TRSProperty with the correct default values.
 func (t *TRSProperty) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[TRSProperty]string{
-		Translation: "translation",
-		Rotation:    "rotation",
-		Scale:       "scale",
-		Weights:     "weights",
+		TRSTranslation: "translation",
+		TRSRotation:    "rotation",
+		TRSScale:       "scale",
+		TRSWeights:     "weights",
 	}[*t])
 }
 

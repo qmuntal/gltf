@@ -26,12 +26,12 @@ func Read(b []byte, data interface{}) error {
 	switch data := data.(type) {
 	case []color.RGBA:
 		for i := range data {
-			c := UnsignedByte.Vec4(b[e*i:])
+			c := Ubyte.Vec4(b[e*i:])
 			data[i] = color.RGBA{R: c[0], G: c[1], B: c[2], A: c[3]}
 		}
 	case []color.RGBA64:
 		for i := range data {
-			c := UnsignedShort.Vec4(b[e*i:])
+			c := Ushort.Vec4(b[e*i:])
 			data[i] = color.RGBA64{R: c[0], G: c[1], B: c[2], A: c[3]}
 		}
 	case []gltf.RGBA:
@@ -76,27 +76,27 @@ func Read(b []byte, data interface{}) error {
 		copy(data, b)
 	case [][2]uint8:
 		for i := range data {
-			data[i] = UnsignedByte.Vec2(b[e*i:])
+			data[i] = Ubyte.Vec2(b[e*i:])
 		}
 	case [][3]uint8:
 		for i := range data {
-			data[i] = UnsignedByte.Vec3(b[e*i:])
+			data[i] = Ubyte.Vec3(b[e*i:])
 		}
 	case [][4]uint8:
 		for i := range data {
-			data[i] = UnsignedByte.Vec4(b[e*i:])
+			data[i] = Ubyte.Vec4(b[e*i:])
 		}
 	case [][2][2]uint8:
 		for i := range data {
-			data[i] = UnsignedByte.Mat2(b[e*i:])
+			data[i] = Ubyte.Mat2(b[e*i:])
 		}
 	case [][3][3]uint8:
 		for i := range data {
-			data[i] = UnsignedByte.Mat3(b[e*i:])
+			data[i] = Ubyte.Mat3(b[e*i:])
 		}
 	case [][4][4]uint8:
 		for i := range data {
-			data[i] = UnsignedByte.Mat4(b[e*i:])
+			data[i] = Ubyte.Mat4(b[e*i:])
 		}
 	case []int16:
 		for i := range data {
@@ -128,31 +128,31 @@ func Read(b []byte, data interface{}) error {
 		}
 	case []uint16:
 		for i := range data {
-			data[i] = UnsignedShort.Scalar(b[e*i:])
+			data[i] = Ushort.Scalar(b[e*i:])
 		}
 	case [][2]uint16:
 		for i := range data {
-			data[i] = UnsignedShort.Vec2(b[e*i:])
+			data[i] = Ushort.Vec2(b[e*i:])
 		}
 	case [][3]uint16:
 		for i := range data {
-			data[i] = UnsignedShort.Vec3(b[e*i:])
+			data[i] = Ushort.Vec3(b[e*i:])
 		}
 	case [][4]uint16:
 		for i := range data {
-			data[i] = UnsignedShort.Vec4(b[e*i:])
+			data[i] = Ushort.Vec4(b[e*i:])
 		}
 	case [][2][2]uint16:
 		for i := range data {
-			data[i] = UnsignedShort.Mat2(b[e*i:])
+			data[i] = Ushort.Mat2(b[e*i:])
 		}
 	case [][3][3]uint16:
 		for i := range data {
-			data[i] = UnsignedShort.Mat3(b[e*i:])
+			data[i] = Ushort.Mat3(b[e*i:])
 		}
 	case [][4][4]uint16:
 		for i := range data {
-			data[i] = UnsignedShort.Mat4(b[e*i:])
+			data[i] = Ushort.Mat4(b[e*i:])
 		}
 	case []float32:
 		for i := range data {
@@ -184,31 +184,31 @@ func Read(b []byte, data interface{}) error {
 		}
 	case []uint32:
 		for i := range data {
-			data[i] = UnsignedInt.Scalar(b[e*i:])
+			data[i] = UInt.Scalar(b[e*i:])
 		}
 	case [][2]uint32:
 		for i := range data {
-			data[i] = UnsignedInt.Vec2(b[e*i:])
+			data[i] = UInt.Vec2(b[e*i:])
 		}
 	case [][3]uint32:
 		for i := range data {
-			data[i] = UnsignedInt.Vec3(b[e*i:])
+			data[i] = UInt.Vec3(b[e*i:])
 		}
 	case [][4]uint32:
 		for i := range data {
-			data[i] = UnsignedInt.Vec4(b[e*i:])
+			data[i] = UInt.Vec4(b[e*i:])
 		}
 	case [][2][2]uint32:
 		for i := range data {
-			data[i] = UnsignedInt.Mat2(b[e*i:])
+			data[i] = UInt.Mat2(b[e*i:])
 		}
 	case [][3][3]uint32:
 		for i := range data {
-			data[i] = UnsignedInt.Mat3(b[e*i:])
+			data[i] = UInt.Mat3(b[e*i:])
 		}
 	case [][4][4]uint32:
 		for i := range data {
-			data[i] = UnsignedInt.Mat4(b[e*i:])
+			data[i] = UInt.Mat4(b[e*i:])
 		}
 	}
 	return nil
@@ -229,11 +229,11 @@ func Write(b []byte, data interface{}) error {
 	switch data := data.(type) {
 	case []color.RGBA:
 		for i, x := range data {
-			UnsignedByte.PutVec4(b[e*i:], [4]uint8{x.R, x.G, x.B, x.A})
+			Ubyte.PutVec4(b[e*i:], [4]uint8{x.R, x.G, x.B, x.A})
 		}
 	case []color.RGBA64:
 		for i, x := range data {
-			UnsignedShort.PutVec4(b[e*i:], [4]uint16{x.R, x.G, x.B, x.A})
+			Ushort.PutVec4(b[e*i:], [4]uint16{x.R, x.G, x.B, x.A})
 		}
 	case []gltf.RGBA:
 		for i, x := range data {
@@ -275,27 +275,27 @@ func Write(b []byte, data interface{}) error {
 		copy(b, data)
 	case [][2]uint8:
 		for i := range data {
-			UnsignedByte.PutVec2(b[e*i:], data[i])
+			Ubyte.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]uint8:
 		for i := range data {
-			UnsignedByte.PutVec3(b[e*i:], data[i])
+			Ubyte.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]uint8:
 		for i := range data {
-			UnsignedByte.PutVec4(b[e*i:], data[i])
+			Ubyte.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]uint8:
 		for i := range data {
-			UnsignedByte.PutMat2(b[e*i:], data[i])
+			Ubyte.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]uint8:
 		for i := range data {
-			UnsignedByte.PutMat3(b[e*i:], data[i])
+			Ubyte.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]uint8:
 		for i := range data {
-			UnsignedByte.PutMat4(b[e*i:], data[i])
+			Ubyte.PutMat4(b[e*i:], data[i])
 		}
 	case []int16:
 		for i := range data {
@@ -327,31 +327,31 @@ func Write(b []byte, data interface{}) error {
 		}
 	case []uint16:
 		for i := range data {
-			UnsignedShort.PutScalar(b[e*i:], data[i])
+			Ushort.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]uint16:
 		for i := range data {
-			UnsignedShort.PutVec2(b[e*i:], data[i])
+			Ushort.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]uint16:
 		for i := range data {
-			UnsignedShort.PutVec3(b[e*i:], data[i])
+			Ushort.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]uint16:
 		for i := range data {
-			UnsignedShort.PutVec4(b[e*i:], data[i])
+			Ushort.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]uint16:
 		for i := range data {
-			UnsignedShort.PutMat2(b[e*i:], data[i])
+			Ushort.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]uint16:
 		for i := range data {
-			UnsignedShort.PutMat3(b[e*i:], data[i])
+			Ushort.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]uint16:
 		for i := range data {
-			UnsignedShort.PutMat4(b[e*i:], data[i])
+			Ushort.PutMat4(b[e*i:], data[i])
 		}
 	case []float32:
 		for i := range data {
@@ -383,31 +383,31 @@ func Write(b []byte, data interface{}) error {
 		}
 	case []uint32:
 		for i := range data {
-			UnsignedInt.PutScalar(b[e*i:], data[i])
+			UInt.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]uint32:
 		for i := range data {
-			UnsignedInt.PutVec2(b[e*i:], data[i])
+			UInt.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]uint32:
 		for i := range data {
-			UnsignedInt.PutVec3(b[e*i:], data[i])
+			UInt.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]uint32:
 		for i := range data {
-			UnsignedInt.PutVec4(b[e*i:], data[i])
+			UInt.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]uint32:
 		for i := range data {
-			UnsignedInt.PutMat2(b[e*i:], data[i])
+			UInt.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]uint32:
 		for i := range data {
-			UnsignedInt.PutMat3(b[e*i:], data[i])
+			UInt.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]uint32:
 		for i := range data {
-			UnsignedInt.PutMat4(b[e*i:], data[i])
+			UInt.PutMat4(b[e*i:], data[i])
 		}
 	}
 	return nil

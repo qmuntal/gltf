@@ -30,25 +30,25 @@ type Asset struct {
 
 // Document defines the root object for a glTF asset.
 type Document struct {
-	Extensions         Extensions   `json:"extensions,omitempty"`
-	Extras             interface{}  `json:"extras,omitempty"`
-	ExtensionsUsed     []string     `json:"extensionsUsed,omitempty"`
-	ExtensionsRequired []string     `json:"extensionsRequired,omitempty"`
-	Accessors          []Accessor   `json:"accessors,omitempty" validate:"dive"`
-	Animations         []Animation  `json:"animations,omitempty" validate:"dive"`
-	Asset              Asset        `json:"asset"`
-	Buffers            []Buffer     `json:"buffers,omitempty" validate:"dive"`
-	BufferViews        []BufferView `json:"bufferViews,omitempty" validate:"dive"`
-	Cameras            []Camera     `json:"cameras,omitempty" validate:"dive"`
-	Images             []Image      `json:"images,omitempty" validate:"dive"`
-	Materials          []Material   `json:"materials,omitempty" validate:"dive"`
-	Meshes             []Mesh       `json:"meshes,omitempty" validate:"dive"`
-	Nodes              []Node       `json:"nodes,omitempty" validate:"dive"`
-	Samplers           []Sampler    `json:"samplers,omitempty" validate:"dive"`
-	Scene              *uint32      `json:"scene,omitempty"`
-	Scenes             []Scene      `json:"scenes,omitempty" validate:"dive"`
-	Skins              []Skin       `json:"skins,omitempty" validate:"dive"`
-	Textures           []Texture    `json:"textures,omitempty" validate:"dive"`
+	Extensions         Extensions    `json:"extensions,omitempty"`
+	Extras             interface{}   `json:"extras,omitempty"`
+	ExtensionsUsed     []string      `json:"extensionsUsed,omitempty"`
+	ExtensionsRequired []string      `json:"extensionsRequired,omitempty"`
+	Accessors          []*Accessor   `json:"accessors,omitempty" validate:"dive"`
+	Animations         []*Animation  `json:"animations,omitempty" validate:"dive"`
+	Asset              Asset         `json:"asset"`
+	Buffers            []*Buffer     `json:"buffers,omitempty" validate:"dive"`
+	BufferViews        []*BufferView `json:"bufferViews,omitempty" validate:"dive"`
+	Cameras            []*Camera     `json:"cameras,omitempty" validate:"dive"`
+	Images             []*Image      `json:"images,omitempty" validate:"dive"`
+	Materials          []*Material   `json:"materials,omitempty" validate:"dive"`
+	Meshes             []*Mesh       `json:"meshes,omitempty" validate:"dive"`
+	Nodes              []*Node       `json:"nodes,omitempty" validate:"dive"`
+	Samplers           []*Sampler    `json:"samplers,omitempty" validate:"dive"`
+	Scene              *uint32       `json:"scene,omitempty"`
+	Scenes             []*Scene      `json:"scenes,omitempty" validate:"dive"`
+	Skins              []*Skin       `json:"skins,omitempty" validate:"dive"`
+	Textures           []*Texture    `json:"textures,omitempty" validate:"dive"`
 }
 
 // An Accessor is a typed view into a bufferView.
@@ -104,7 +104,7 @@ type Buffer struct {
 	Name       string      `json:"name,omitempty"`
 	URI        string      `json:"uri,omitempty" validate:"omitempty"`
 	ByteLength uint32      `json:"byteLength" validate:"required"`
-	Data       []uint8     `json:"-"`
+	Data       []byte      `json:"-"`
 }
 
 // IsEmbeddedResource returns true if the buffer points to an embedded resource.
@@ -118,7 +118,7 @@ func (b *Buffer) EmbeddedResource() {
 }
 
 // marshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
-func (b *Buffer) marshalData() ([]uint8, error) {
+func (b *Buffer) marshalData() ([]byte, error) {
 	if !b.IsEmbeddedResource() {
 		return nil, nil
 	}
@@ -236,11 +236,11 @@ type Perspective struct {
 
 // A Mesh is a set of primitives to be rendered. A node can contain one mesh. A node's transform places the mesh in the scene.
 type Mesh struct {
-	Extensions Extensions  `json:"extensions,omitempty"`
-	Extras     interface{} `json:"extras,omitempty"`
-	Name       string      `json:"name,omitempty"`
-	Primitives []Primitive `json:"primitives" validate:"required,gt=0,dive"`
-	Weights    []float64   `json:"weights,omitempty"`
+	Extensions Extensions   `json:"extensions,omitempty"`
+	Extras     interface{}  `json:"extras,omitempty"`
+	Name       string       `json:"name,omitempty"`
+	Primitives []*Primitive `json:"primitives" validate:"required,gt=0,dive"`
+	Weights    []float64    `json:"weights,omitempty"`
 }
 
 // Primitive defines the geometry to be rendered with the given material.
@@ -433,9 +433,9 @@ func (im *Image) IsEmbeddedResource() bool {
 }
 
 // MarshalData decode the image from the URI. If the image is not en embedded resource the returned array will be empty.
-func (im *Image) MarshalData() ([]uint8, error) {
+func (im *Image) MarshalData() ([]byte, error) {
 	if !im.IsEmbeddedResource() {
-		return []uint8{}, nil
+		return []byte{}, nil
 	}
 	mimetype := mimetypeImagePNG
 	if strings.HasPrefix(im.URI, mimetypeImageJPG) {
@@ -447,11 +447,11 @@ func (im *Image) MarshalData() ([]uint8, error) {
 
 // An Animation keyframe.
 type Animation struct {
-	Extensions Extensions         `json:"extensions,omitempty"`
-	Extras     interface{}        `json:"extras,omitempty"`
-	Name       string             `json:"name,omitempty"`
-	Channels   []Channel          `json:"channels" validate:"required,gt=0,dive"`
-	Samplers   []AnimationSampler `json:"samplers" validate:"required,gt=0,dive"`
+	Extensions Extensions          `json:"extensions,omitempty"`
+	Extras     interface{}         `json:"extras,omitempty"`
+	Name       string              `json:"name,omitempty"`
+	Channels   []*Channel          `json:"channels" validate:"required,gt=0,dive"`
+	Samplers   []*AnimationSampler `json:"samplers" validate:"required,gt=0,dive"`
 }
 
 // AnimationSampler combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
