@@ -104,7 +104,7 @@ type Buffer struct {
 	Name       string      `json:"name,omitempty"`
 	URI        string      `json:"uri,omitempty" validate:"omitempty"`
 	ByteLength uint32      `json:"byteLength" validate:"required"`
-	Data       []uint8     `json:"-"`
+	Data       []byte      `json:"-"`
 }
 
 // IsEmbeddedResource returns true if the buffer points to an embedded resource.
@@ -118,7 +118,7 @@ func (b *Buffer) EmbeddedResource() {
 }
 
 // marshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
-func (b *Buffer) marshalData() ([]uint8, error) {
+func (b *Buffer) marshalData() ([]byte, error) {
 	if !b.IsEmbeddedResource() {
 		return nil, nil
 	}
@@ -433,9 +433,9 @@ func (im *Image) IsEmbeddedResource() bool {
 }
 
 // MarshalData decode the image from the URI. If the image is not en embedded resource the returned array will be empty.
-func (im *Image) MarshalData() ([]uint8, error) {
+func (im *Image) MarshalData() ([]byte, error) {
 	if !im.IsEmbeddedResource() {
-		return []uint8{}, nil
+		return []byte{}, nil
 	}
 	mimetype := mimetypeImagePNG
 	if strings.HasPrefix(im.URI, mimetypeImageJPG) {

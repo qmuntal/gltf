@@ -44,8 +44,8 @@ func TestEncoder_Encode(t *testing.T) {
 		wantErr bool
 	}{
 		{"withInvalidBuffer", args{&Document{Buffers: []*Buffer{
-			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1, 2, 3}},
-			{Extras: 8.0, Name: "binary2", ByteLength: 3, URI: "/../a.bin", Data: []uint8{1, 2, 3}},
+			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []byte{1, 2, 3}},
+			{Extras: 8.0, Name: "binary2", ByteLength: 3, URI: "/../a.bin", Data: []byte{1, 2, 3}},
 		}}}, true},
 		{"empty", args{&Document{}}, false},
 		{"withExtensions", args{&Document{Extras: 8.0, ExtensionsUsed: []string{"c"}, ExtensionsRequired: []string{"d", "e"}}}, false},
@@ -71,10 +71,10 @@ func TestEncoder_Encode(t *testing.T) {
 			}},
 		}}}, false},
 		{"withBuffer", args{&Document{Buffers: []*Buffer{
-			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1, 2, 3}},
+			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []byte{1, 2, 3}},
 			{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
-			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []uint8{4, 5, 6, 7}},
-			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []uint8{0, 0, 0, 0}},
+			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []byte{4, 5, 6, 7}},
+			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
 		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []*BufferView{
 			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: TargetArrayBuffer},

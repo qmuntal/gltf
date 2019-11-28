@@ -10,7 +10,7 @@ import (
 	"github.com/go-test/deep"
 )
 
-func readFile(path string) []uint8 {
+func readFile(path string) []byte {
 	r, _ := ioutil.ReadFile(path)
 	return r
 }
