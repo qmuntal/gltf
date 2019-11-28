@@ -71,20 +71,20 @@ func (c *ComponentType) MarshalJSON() ([]byte, error) {
 type AccessorType uint8
 
 const (
-	// Scalar corresponds to a single dimension value.
-	Scalar AccessorType = iota
-	// Vec2 corresponds to a two dimensions array.
-	Vec2
-	// Vec3 corresponds to a three dimensions array.
-	Vec3
-	// Vec4 corresponds to a four dimensions array.
-	Vec4
-	// Mat2 corresponds to a 2x2 matrix.
-	Mat2
-	// Mat3 corresponds to a 3x3 matrix.
-	Mat3
-	// Mat4 corresponds to a 4x4 matrix.
-	Mat4
+	// AccessorScalar corresponds to a single dimension value.
+	AccessorScalar AccessorType = iota
+	// AccessorVec2 corresponds to a two dimensions array.
+	AccessorVec2
+	// AccessorVec3 corresponds to a three dimensions array.
+	AccessorVec3
+	// AccessorVec4 corresponds to a four dimensions array.
+	AccessorVec4
+	// AccessorMat2 corresponds to a 2x2 matrix.
+	AccessorMat2
+	// AccessorMat3 corresponds to a 3x3 matrix.
+	AccessorMat3
+	// AccessorMat4 corresponds to a 4x4 matrix.
+	AccessorMat4
 )
 
 // UnmarshalJSON unmarshal the accessor type with the correct default values.
@@ -93,13 +93,13 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*a = map[string]AccessorType{
-			"SCALAR": Scalar,
-			"VEC2":   Vec2,
-			"VEC3":   Vec3,
-			"VEC4":   Vec4,
-			"MAT2":   Mat2,
-			"MAT3":   Mat3,
-			"MAT4":   Mat4,
+			"SCALAR": AccessorScalar,
+			"VEC2":   AccessorVec2,
+			"VEC3":   AccessorVec3,
+			"VEC4":   AccessorVec4,
+			"MAT2":   AccessorMat2,
+			"MAT3":   AccessorMat3,
+			"MAT4":   AccessorMat4,
 		}[tmp]
 	}
 	return err
@@ -108,13 +108,13 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the accessor type with the correct default values.
 func (a *AccessorType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[AccessorType]string{
-		Scalar: "SCALAR",
-		Vec2:   "VEC2",
-		Vec3:   "VEC3",
-		Vec4:   "VEC4",
-		Mat2:   "MAT2",
-		Mat3:   "MAT3",
-		Mat4:   "MAT4",
+		AccessorScalar: "SCALAR",
+		AccessorVec2:   "VEC2",
+		AccessorVec3:   "VEC3",
+		AccessorVec4:   "VEC4",
+		AccessorMat2:   "MAT2",
+		AccessorMat3:   "MAT3",
+		AccessorMat4:   "MAT4",
 	}[*a])
 }
 
