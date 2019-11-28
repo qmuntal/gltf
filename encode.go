@@ -81,7 +81,7 @@ func (e *Encoder) Encode(doc *Document) error {
 	}
 
 	for i := externalBufferIndex; i < len(doc.Buffers); i++ {
-		buffer := &doc.Buffers[i]
+		buffer := doc.Buffers[i]
 		if len(buffer.Data) == 0 || buffer.IsEmbeddedResource() {
 			continue
 		}
@@ -111,7 +111,7 @@ func (e *Encoder) encodeBinary(doc *Document) error {
 	var binBufferLength uint32
 	var binBuffer *Buffer
 	if len(doc.Buffers) > 0 {
-		binBuffer = &doc.Buffers[0]
+		binBuffer = doc.Buffers[0]
 		binBufferLength = binBuffer.ByteLength
 	}
 	binPaddedLength := ((binBufferLength + 3) / 4) * 4

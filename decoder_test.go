@@ -28,58 +28,58 @@ func TestOpen(t *testing.T) {
 	}{
 		{args{"openError", ""}, nil, true},
 		{args{"testdata/Cube/glTF/Cube.gltf", ""}, &Document{
-			Accessors: []Accessor{
+			Accessors: []*Accessor{
 				{BufferView: Index(0), ByteOffset: 0, ComponentType: ComponentUshort, Count: 36, Max: []float64{35}, Min: []float64{0}, Type: AccessorScalar},
 				{BufferView: Index(1), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: AccessorVec3},
 				{BufferView: Index(2), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 1, 1}, Min: []float64{-1, -1, -1}, Type: AccessorVec3},
 				{BufferView: Index(3), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 0, 0, 1}, Min: []float64{0, 0, -1, -1}, Type: AccessorVec4},
 				{BufferView: Index(4), ByteOffset: 0, ComponentType: ComponentFloat, Count: 36, Max: []float64{1, 1}, Min: []float64{-1, -1}, Type: AccessorVec2}},
 			Asset: Asset{Generator: "VKTS glTF 2.0 exporter", Version: "2.0"},
-			BufferViews: []BufferView{
+			BufferViews: []*BufferView{
 				{Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: TargetElementArrayBuffer},
 				{Buffer: 0, ByteLength: 432, ByteOffset: 72, Target: TargetArrayBuffer},
 				{Buffer: 0, ByteLength: 432, ByteOffset: 504, Target: TargetArrayBuffer},
 				{Buffer: 0, ByteLength: 576, ByteOffset: 936, Target: TargetArrayBuffer},
 				{Buffer: 0, ByteLength: 288, ByteOffset: 1512, Target: TargetArrayBuffer},
 			},
-			Buffers:   []Buffer{{ByteLength: 1800, URI: "Cube.bin", Data: readFile("testdata/Cube/glTF/Cube.bin")}},
-			Images:    []Image{{URI: "Cube_BaseColor.png"}, {URI: "Cube_MetallicRoughness.png"}},
-			Materials: []Material{{Name: "Cube", AlphaMode: AlphaOpaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorTexture: &TextureInfo{Index: 0}, MetallicRoughnessTexture: &TextureInfo{Index: 1}}}},
-			Meshes:    []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: Index(0), Material: Index(0), Mode: PrimitiveTriangles, Attributes: map[string]uint32{"NORMAL": 2, "POSITION": 1, "TANGENT": 3, "TEXCOORD_0": 4}}}}},
-			Nodes:     []Node{{Mesh: Index(0), Name: "Cube", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}}},
-			Samplers:  []Sampler{{WrapS: WrapRepeat, WrapT: WrapRepeat}},
+			Buffers:   []*Buffer{{ByteLength: 1800, URI: "Cube.bin", Data: readFile("testdata/Cube/glTF/Cube.bin")}},
+			Images:    []*Image{{URI: "Cube_BaseColor.png"}, {URI: "Cube_MetallicRoughness.png"}},
+			Materials: []*Material{{Name: "Cube", AlphaMode: AlphaOpaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorTexture: &TextureInfo{Index: 0}, MetallicRoughnessTexture: &TextureInfo{Index: 1}}}},
+			Meshes:    []*Mesh{{Name: "Cube", Primitives: []*Primitive{{Indices: Index(0), Material: Index(0), Mode: PrimitiveTriangles, Attributes: map[string]uint32{"NORMAL": 2, "POSITION": 1, "TANGENT": 3, "TEXCOORD_0": 4}}}}},
+			Nodes:     []*Node{{Mesh: Index(0), Name: "Cube", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}}},
+			Samplers:  []*Sampler{{WrapS: WrapRepeat, WrapT: WrapRepeat}},
 			Scene:     Index(0),
-			Scenes:    []Scene{{Nodes: []uint32{0}}},
-			Textures: []Texture{
+			Scenes:    []*Scene{{Nodes: []uint32{0}}},
+			Textures: []*Texture{
 				{Sampler: Index(0), Source: Index(0)}, {Sampler: Index(0), Source: Index(1)},
 			},
 		}, false},
 		{args{"testdata/Cameras/glTF/Cameras.gltf", "testdata/Cameras/glTF-Embedded/Cameras.gltf"}, &Document{
-			Accessors: []Accessor{
+			Accessors: []*Accessor{
 				{BufferView: Index(0), ByteOffset: 0, ComponentType: ComponentUshort, Count: 6, Max: []float64{3}, Min: []float64{0}, Type: AccessorScalar},
 				{BufferView: Index(1), ByteOffset: 0, ComponentType: ComponentFloat, Count: 4, Max: []float64{1, 1, 0}, Min: []float64{0, 0, 0}, Type: AccessorVec3},
 			},
 			Asset: Asset{Version: "2.0"},
-			BufferViews: []BufferView{
+			BufferViews: []*BufferView{
 				{Buffer: 0, ByteLength: 12, ByteOffset: 0, Target: TargetElementArrayBuffer},
 				{Buffer: 0, ByteLength: 48, ByteOffset: 12, Target: TargetArrayBuffer},
 			},
-			Buffers: []Buffer{{ByteLength: 60, URI: "simpleSquare.bin", Data: readFile("testdata/Cameras/glTF/simpleSquare.bin")}},
-			Cameras: []Camera{
+			Buffers: []*Buffer{{ByteLength: 60, URI: "simpleSquare.bin", Data: readFile("testdata/Cameras/glTF/simpleSquare.bin")}},
+			Cameras: []*Camera{
 				{Perspective: &Perspective{AspectRatio: Float64(1.0), Yfov: 0.7, Zfar: Float64(100), Znear: 0.01}},
 				{Orthographic: &Orthographic{Xmag: 1.0, Ymag: 1.0, Zfar: 100, Znear: 0.01}},
 			},
-			Meshes: []Mesh{{Primitives: []Primitive{{Indices: Index(0), Mode: PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1}}}}},
-			Nodes: []Node{
+			Meshes: []*Mesh{{Primitives: []*Primitive{{Indices: Index(0), Mode: PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1}}}}},
+			Nodes: []*Node{
 				{Mesh: Index(0), Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{-0.3, 0, 0, 0.9}, Scale: [3]float64{1, 1, 1}},
 				{Camera: Index(0), Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}, Translation: [3]float64{0.5, 0.5, 3.0}},
 				{Camera: Index(1), Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}, Translation: [3]float64{0.5, 0.5, 3.0}},
 			},
 			Scene:  nil,
-			Scenes: []Scene{{Nodes: []uint32{0, 1, 2}}},
+			Scenes: []*Scene{{Nodes: []uint32{0, 1, 2}}},
 		}, false},
 		{args{"testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb", ""}, &Document{
-			Accessors: []Accessor{
+			Accessors: []*Accessor{
 				{BufferView: Index(0), ByteOffset: 0, ComponentType: ComponentUshort, Count: 36, Type: AccessorScalar},
 				{BufferView: Index(1), ByteOffset: 0, ComponentType: ComponentFloat, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.5, -0.5}, Type: AccessorVec3},
 				{BufferView: Index(2), ByteOffset: 0, ComponentType: ComponentFloat, Count: 24, Type: AccessorVec3},
@@ -87,25 +87,25 @@ func TestOpen(t *testing.T) {
 				{BufferView: Index(4), ByteOffset: 0, ComponentType: ComponentFloat, Count: 24, Type: AccessorVec2},
 			},
 			Asset: Asset{Version: "2.0", Generator: "FBX2glTF"},
-			BufferViews: []BufferView{
+			BufferViews: []*BufferView{
 				{Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: TargetElementArrayBuffer},
 				{Buffer: 0, ByteLength: 288, ByteOffset: 72, Target: TargetArrayBuffer},
 				{Buffer: 0, ByteLength: 288, ByteOffset: 360, Target: TargetArrayBuffer},
 				{Buffer: 0, ByteLength: 384, ByteOffset: 648, Target: TargetArrayBuffer},
 				{Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: TargetArrayBuffer},
 			},
-			Buffers:   []Buffer{{ByteLength: 1224, Data: readFile("testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb")[1628+20+8:]}},
-			Materials: []Material{{Name: "Default", AlphaMode: AlphaOpaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1}, MetallicFactor: Float64(0.1), RoughnessFactor: Float64(0.99)}}},
-			Meshes:    []Mesh{{Name: "Cube", Primitives: []Primitive{{Indices: Index(0), Material: Index(0), Mode: PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
-			Nodes: []Node{
+			Buffers:   []*Buffer{{ByteLength: 1224, Data: readFile("testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb")[1628+20+8:]}},
+			Materials: []*Material{{Name: "Default", AlphaMode: AlphaOpaque, AlphaCutoff: Float64(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1}, MetallicFactor: Float64(0.1), RoughnessFactor: Float64(0.99)}}},
+			Meshes:    []*Mesh{{Name: "Cube", Primitives: []*Primitive{{Indices: Index(0), Material: Index(0), Mode: PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
+			Nodes: []*Node{
 				{Name: "RootNode", Children: []uint32{1, 2, 3}, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 				{Name: "Mesh", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 				{Name: "Cube", Mesh: Index(0), Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 				{Name: "Texture Group", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 			},
-			Samplers: []Sampler{{WrapS: WrapRepeat, WrapT: WrapRepeat}},
+			Samplers: []*Sampler{{WrapS: WrapRepeat, WrapT: WrapRepeat}},
 			Scene:    Index(0),
-			Scenes:   []Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
+			Scenes:   []*Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
 		}, false},
 	}
 	for _, tt := range tests {
@@ -265,16 +265,16 @@ func TestDecoder_validateDocumentQuotas(t *testing.T) {
 	}{
 		{
 			"exceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
-			args{&Document{Buffers: make([]Buffer, 2)}, false}, true,
+			args{&Document{Buffers: []*Buffer{{}, {}}}, false}, true,
 		}, {
 			"noExceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
-			args{&Document{Buffers: make([]Buffer, 2)}, true}, false,
+			args{&Document{Buffers: []*Buffer{{}, {}}}, true}, false,
 		}, {
 			"exceedAllocs", &Decoder{MaxMemoryAllocation: 10, MaxExternalBufferCount: 100},
-			args{&Document{Buffers: []Buffer{{ByteLength: 11}}}, false}, true,
+			args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}, false}, true,
 		}, {
 			"noExceedAllocs", &Decoder{MaxMemoryAllocation: 11, MaxExternalBufferCount: 100},
-			args{&Document{Buffers: []Buffer{{ByteLength: 11}}}, true}, false,
+			args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}, true}, false,
 		},
 	}
 	for _, tt := range tests {

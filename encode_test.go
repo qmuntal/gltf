@@ -43,53 +43,53 @@ func TestEncoder_Encode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"withInvalidBuffer", args{&Document{Buffers: []Buffer{
+		{"withInvalidBuffer", args{&Document{Buffers: []*Buffer{
 			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1, 2, 3}},
 			{Extras: 8.0, Name: "binary2", ByteLength: 3, URI: "/../a.bin", Data: []uint8{1, 2, 3}},
 		}}}, true},
 		{"empty", args{&Document{}}, false},
 		{"withExtensions", args{&Document{Extras: 8.0, ExtensionsUsed: []string{"c"}, ExtensionsRequired: []string{"d", "e"}}}, false},
 		{"withAsset", args{&Document{Asset: Asset{Extras: 8.0, Copyright: "@2019", Generator: "qmuntal/gltf", Version: "2.0", MinVersion: "1.0"}}}, false},
-		{"withAccessors", args{&Document{Accessors: []Accessor{
+		{"withAccessors", args{&Document{Accessors: []*Accessor{
 			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: ComponentByte, Normalized: true, Count: 5, Type: AccessorVec3, Max: []float64{1, 2}, Min: []float64{2.4}},
 			{BufferView: Index(0), Normalized: false, Count: 50, Type: AccessorVec4, Sparse: &Sparse{Extras: 8.0, Count: 2,
 				Values:  SparseValues{Extras: 8.0, BufferView: 1, ByteOffset: 2},
 				Indices: SparseIndices{Extras: 8.0, BufferView: 1, ByteOffset: 2, ComponentType: ComponentFloat}},
 			},
 		}}}, false},
-		{"withAnimations", args{&Document{Animations: []Animation{
-			{Extras: 8.0, Name: "an_1", Channels: []Channel{
+		{"withAnimations", args{&Document{Animations: []*Animation{
+			{Extras: 8.0, Name: "an_1", Channels: []*Channel{
 				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSRotation}},
 				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSScale}},
 			}},
-			{Extras: 8.0, Name: "an_2", Channels: []Channel{
+			{Extras: 8.0, Name: "an_2", Channels: []*Channel{
 				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(3), Path: TRSWeights}},
 				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: TRSTranslation}},
 			}},
-			{Extras: 8.0, Name: "an_3", Samplers: []AnimationSampler{
+			{Extras: 8.0, Name: "an_3", Samplers: []*AnimationSampler{
 				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: InterpolationCubicSpline},
 			}},
 		}}}, false},
-		{"withBuffer", args{&Document{Buffers: []Buffer{
+		{"withBuffer", args{&Document{Buffers: []*Buffer{
 			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []uint8{1, 2, 3}},
 			{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
 			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []uint8{4, 5, 6, 7}},
 			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []uint8{0, 0, 0, 0}},
 		}}}, false},
-		{"withBufView", args{&Document{BufferViews: []BufferView{
+		{"withBufView", args{&Document{BufferViews: []*BufferView{
 			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: TargetArrayBuffer},
 			{Buffer: 10, ByteOffset: 10, ByteLength: 20, ByteStride: 50, Target: TargetElementArrayBuffer},
 		}}}, false},
-		{"withCameras", args{&Document{Cameras: []Camera{
+		{"withCameras", args{&Document{Cameras: []*Camera{
 			{Extras: 8.0, Name: "cam_1", Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
 			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: Float64(1), Yfov: 2, Zfar: Float64(3), Znear: 4}},
 		}}}, false},
-		{"withImages", args{&Document{Images: []Image{
+		{"withImages", args{&Document{Images: []*Image{
 			{Extras: 8.0, Name: "binary", BufferView: Index(1), MimeType: "data:image/png"},
 			{Extras: 8.0, Name: "embedded", URI: "data:image/png;base64,dsjdsaGGUDXGA", MimeType: "data:image/png"},
 			{Extras: 8.0, Name: "external", URI: "https://web.com/a", MimeType: "data:image/png"},
 		}}}, false},
-		{"withMaterials", args{&Document{Materials: []Material{
+		{"withMaterials", args{&Document{Materials: []*Material{
 			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float64{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque},
 			{Extras: 8.0, Name: "pbr", AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
@@ -106,33 +106,33 @@ func TestEncoder_Encode(t *testing.T) {
 			},
 			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float64(0.5), AlphaMode: AlphaMask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
 		}}}, false},
-		{"withMeshes", args{&Document{Meshes: []Mesh{
+		{"withMeshes", args{&Document{Meshes: []*Mesh{
 			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
-			{Extras: 8.0, Name: "mesh_2", Primitives: []Primitive{
+			{Extras: 8.0, Name: "mesh_2", Primitives: []*Primitive{
 				{Extras: 8.0, Attributes: Attribute{"POSITION": 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 				{Extras: 8.0, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 			}},
 		}}}, false},
-		{"withNodes", args{&Document{Nodes: []Node{
+		{"withNodes", args{&Document{Nodes: []*Node{
 			{Extras: 8.0, Name: "n-1", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
 				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
 			{Extras: 8.0, Name: "n-2", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
 				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 		}}}, false},
-		{"withSampler", args{&Document{Samplers: []Sampler{
+		{"withSampler", args{&Document{Samplers: []*Sampler{
 			{Extras: 8.0, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: WrapClampToEdge, WrapT: WrapMirroredRepeat},
 			{Extras: 8.0, Name: "s_2", MagFilter: MagNearest, MinFilter: MinLinearMipMapLinear, WrapS: WrapMirroredRepeat, WrapT: WrapRepeat},
 		}}}, false},
 		{"withScene", args{&Document{Scene: Index(1)}}, false},
-		{"withScenes", args{&Document{Scenes: []Scene{
+		{"withScenes", args{&Document{Scenes: []*Scene{
 			{Extras: 8.0, Name: "s_1", Nodes: []uint32{1, 2}},
 			{Extras: 8.0, Name: "s_2", Nodes: []uint32{2, 3}},
 		}}}, false},
-		{"withSkins", args{&Document{Skins: []Skin{
+		{"withSkins", args{&Document{Skins: []*Skin{
 			{Extras: 8.0, Name: "skin_1", InverseBindMatrices: Index(2), Skeleton: Index(4), Joints: []uint32{5, 6}},
 			{Extras: 8.0, Name: "skin_2", InverseBindMatrices: Index(3), Skeleton: Index(4), Joints: []uint32{7, 8}},
 		}}}, false},
-		{"withTextures", args{&Document{Textures: []Texture{
+		{"withTextures", args{&Document{Textures: []*Texture{
 			{Extras: 8.0, Name: "t_1", Sampler: Index(2), Source: Index(3)},
 			{Extras: 8.0, Name: "t_2", Sampler: Index(3), Source: Index(4)},
 		}}}, false},

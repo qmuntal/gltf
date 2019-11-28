@@ -30,25 +30,25 @@ type Asset struct {
 
 // Document defines the root object for a glTF asset.
 type Document struct {
-	Extensions         Extensions   `json:"extensions,omitempty"`
-	Extras             interface{}  `json:"extras,omitempty"`
-	ExtensionsUsed     []string     `json:"extensionsUsed,omitempty"`
-	ExtensionsRequired []string     `json:"extensionsRequired,omitempty"`
-	Accessors          []Accessor   `json:"accessors,omitempty" validate:"dive"`
-	Animations         []Animation  `json:"animations,omitempty" validate:"dive"`
-	Asset              Asset        `json:"asset"`
-	Buffers            []Buffer     `json:"buffers,omitempty" validate:"dive"`
-	BufferViews        []BufferView `json:"bufferViews,omitempty" validate:"dive"`
-	Cameras            []Camera     `json:"cameras,omitempty" validate:"dive"`
-	Images             []Image      `json:"images,omitempty" validate:"dive"`
-	Materials          []Material   `json:"materials,omitempty" validate:"dive"`
-	Meshes             []Mesh       `json:"meshes,omitempty" validate:"dive"`
-	Nodes              []Node       `json:"nodes,omitempty" validate:"dive"`
-	Samplers           []Sampler    `json:"samplers,omitempty" validate:"dive"`
-	Scene              *uint32      `json:"scene,omitempty"`
-	Scenes             []Scene      `json:"scenes,omitempty" validate:"dive"`
-	Skins              []Skin       `json:"skins,omitempty" validate:"dive"`
-	Textures           []Texture    `json:"textures,omitempty" validate:"dive"`
+	Extensions         Extensions    `json:"extensions,omitempty"`
+	Extras             interface{}   `json:"extras,omitempty"`
+	ExtensionsUsed     []string      `json:"extensionsUsed,omitempty"`
+	ExtensionsRequired []string      `json:"extensionsRequired,omitempty"`
+	Accessors          []*Accessor   `json:"accessors,omitempty" validate:"dive"`
+	Animations         []*Animation  `json:"animations,omitempty" validate:"dive"`
+	Asset              Asset         `json:"asset"`
+	Buffers            []*Buffer     `json:"buffers,omitempty" validate:"dive"`
+	BufferViews        []*BufferView `json:"bufferViews,omitempty" validate:"dive"`
+	Cameras            []*Camera     `json:"cameras,omitempty" validate:"dive"`
+	Images             []*Image      `json:"images,omitempty" validate:"dive"`
+	Materials          []*Material   `json:"materials,omitempty" validate:"dive"`
+	Meshes             []*Mesh       `json:"meshes,omitempty" validate:"dive"`
+	Nodes              []*Node       `json:"nodes,omitempty" validate:"dive"`
+	Samplers           []*Sampler    `json:"samplers,omitempty" validate:"dive"`
+	Scene              *uint32       `json:"scene,omitempty"`
+	Scenes             []*Scene      `json:"scenes,omitempty" validate:"dive"`
+	Skins              []*Skin       `json:"skins,omitempty" validate:"dive"`
+	Textures           []*Texture    `json:"textures,omitempty" validate:"dive"`
 }
 
 // An Accessor is a typed view into a bufferView.
@@ -236,11 +236,11 @@ type Perspective struct {
 
 // A Mesh is a set of primitives to be rendered. A node can contain one mesh. A node's transform places the mesh in the scene.
 type Mesh struct {
-	Extensions Extensions  `json:"extensions,omitempty"`
-	Extras     interface{} `json:"extras,omitempty"`
-	Name       string      `json:"name,omitempty"`
-	Primitives []Primitive `json:"primitives" validate:"required,gt=0,dive"`
-	Weights    []float64   `json:"weights,omitempty"`
+	Extensions Extensions   `json:"extensions,omitempty"`
+	Extras     interface{}  `json:"extras,omitempty"`
+	Name       string       `json:"name,omitempty"`
+	Primitives []*Primitive `json:"primitives" validate:"required,gt=0,dive"`
+	Weights    []float64    `json:"weights,omitempty"`
 }
 
 // Primitive defines the geometry to be rendered with the given material.
@@ -447,11 +447,11 @@ func (im *Image) MarshalData() ([]uint8, error) {
 
 // An Animation keyframe.
 type Animation struct {
-	Extensions Extensions         `json:"extensions,omitempty"`
-	Extras     interface{}        `json:"extras,omitempty"`
-	Name       string             `json:"name,omitempty"`
-	Channels   []Channel          `json:"channels" validate:"required,gt=0,dive"`
-	Samplers   []AnimationSampler `json:"samplers" validate:"required,gt=0,dive"`
+	Extensions Extensions          `json:"extensions,omitempty"`
+	Extras     interface{}         `json:"extras,omitempty"`
+	Name       string              `json:"name,omitempty"`
+	Channels   []*Channel          `json:"channels" validate:"required,gt=0,dive"`
+	Samplers   []*AnimationSampler `json:"samplers" validate:"required,gt=0,dive"`
 }
 
 // AnimationSampler combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).

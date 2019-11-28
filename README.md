@@ -98,9 +98,9 @@ func main() {
   positionAccessor := m.AddPosition(0, [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}})
   indicesAccessor := m.AddIndices(0, []uint8{0, 1, 2, 3, 1, 0, 0, 2, 3, 1, 4, 2, 4, 3, 2, 4, 1, 3})
   colorIndices := m.AddColor(0, [][3]uint8{{50, 155, 255}, {0, 100, 200}, {255, 155, 50}, {155, 155, 155}, {25, 25, 25}})
-  m.Document.Meshes = []gltf.Mesh{{
+  m.Document.Meshes = []*gltf.Mesh{{
     Name: "Pyramid",
-    Primitives: []gltf.Primitive{
+    Primitives: []*gltf.Primitive{
       {
         Indices: gltf.Index(indicesAccessor),
         Attributes: map[string]uint32{
@@ -110,7 +110,7 @@ func main() {
       },
     },
   }}
-  m.Nodes = []gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
+  m.Nodes = []*gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
   m.Scenes[0].Nodes = append(m.Scenes[0].Nodes, 0)
   if err := gltf.SaveBinary(m.Document, "./example.glb"); err != nil {
     panic(err)
@@ -134,7 +134,7 @@ import (
 
 func main() {
     doc := &gltf.Document{
-        Accessors: []gltf.Accessor{
+        Accessors: []*gltf.Accessor{
             {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUShort, Count: 36, Type: gltf.AccessorScalar},
             {BufferView: gltf.Index(1), ComponentType: gltf.Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.            -0.5}, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec3},
@@ -142,28 +142,28 @@ func main() {
             {BufferView: gltf.Index(4), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec2},
         },
         Asset: gltf.Asset{Version: "2.0", Generator: "FBX2glTF"},
-        BufferViews: []gltf.BufferView{
+        BufferViews: []*gltf.BufferView{
             {Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: gltf.TargetElementArrayBuffer},
             {Buffer: 0, ByteLength: 288, ByteOffset: 72, Target: gltf.TargetArrayBuffer},
             {Buffer: 0, ByteLength: 288, ByteOffset: 360, Target: gltf.TargetArrayBuffer},
             {Buffer: 0, ByteLength: 384, ByteOffset: 648, Target: gltf.TargetArrayBuffer},
             {Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: gltf.TargetArrayBuffer},
         },
-        Buffers: []gltf.Buffer{{ByteLength: 1224, URI: bufferData}},
-        Materials: []gltf.Material{{
+        Buffers: []*gltf.Buffer{{ByteLength: 1224, URI: bufferData}},
+        Materials: []*gltf.Material{{
             Name: "Default", AlphaMode: gltf.AlphaOpaque, AlphaCutoff: gltf.Float64(0.5),
             PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: &gltf.RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1}, MetallicFactor: gltf.Float64(0.1), RoughnessFactor: gltf.Float64(0.99)},
         }},
-        Meshes: []gltf.Mesh{{Name: "Cube", Primitives: []gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
-        Nodes: []gltf.Node{
+        Meshes: []*gltf.Mesh{{Name: "Cube", Primitives: []*gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
+        Nodes: []*gltf.Node{
             {Name: "RootNode", Children: []uint32{1, 2, 3}},
             {Name: "Mesh"},
             {Name: "Cube", Mesh: gltf.Index(0)},
             {Name: "Texture Group"},
         },
-        Samplers: []gltf.Sampler{{WrapS: gltf.WrapRepeat, WrapT: gltf.WrapRepeat}},
+        Samplers: []*gltf.Sampler{{WrapS: gltf.WrapRepeat, WrapT: gltf.WrapRepeat}},
         Scene:    gltf.Index(0),
-        Scenes:   []gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
+        Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
     }
     if err := gltf.Save(doc, "./cube.gltf"); err != nil {
         panic(err)

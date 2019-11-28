@@ -35,7 +35,7 @@ func NewModeler() *Modeler {
 	return &Modeler{
 		Document: &gltf.Document{
 			Scene:  gltf.Index(0),
-			Scenes: []gltf.Scene{{Name: "Root Scene"}},
+			Scenes: []*gltf.Scene{{Name: "Root Scene"}},
 		},
 		Compression: CompressionLossless,
 	}
@@ -204,7 +204,7 @@ func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reade
 	index := m.addBufferView(bufferIndex, uint32(len(buffer.Data))-offset, offset, 0, false)
 	buffer.ByteLength += uint32(len(buffer.Data))
 	m.BufferViews[index].Target = gltf.TargetNone
-	m.Images = append(m.Images, gltf.Image{
+	m.Images = append(m.Images, &gltf.Image{
 		Name:       name,
 		MimeType:   mimeType,
 		BufferView: gltf.Index(index),
@@ -223,7 +223,7 @@ func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, c
 	// Cannot return error as the buffer has enough size and the data type is controlled.
 	_ = binary.Write(buffer.Data[offset+padding:], data)
 	index := m.addBufferView(bufferIndex, size, offset+padding, uint32(elementSize), isIndex)
-	m.Accessors = append(m.Accessors, gltf.Accessor{
+	m.Accessors = append(m.Accessors, &gltf.Accessor{
 		BufferView:    gltf.Index(index),
 		ByteOffset:    0,
 		ComponentType: componentType,
@@ -234,7 +234,7 @@ func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, c
 }
 
 func (m *Modeler) addBufferView(buffer, size, offset, stride uint32, isIndices bool) uint32 {
-	bufferView := gltf.BufferView{
+	bufferView := &gltf.BufferView{
 		Buffer:     buffer,
 		ByteLength: size,
 		ByteOffset: offset,
@@ -251,7 +251,11 @@ func (m *Modeler) addBufferView(buffer, size, offset, stride uint32, isIndices b
 
 func (m *Modeler) buffer(bufferIndex uint32) *gltf.Buffer {
 	if int(bufferIndex) >= len(m.Buffers) {
-		m.Buffers = append(m.Buffers, make([]gltf.Buffer, int(bufferIndex)-len(m.Buffers)+1)...)
+		l := len(m.Buffers)
+		m.Buffers = append(m.Buffers, make([]*gltf.Buffer, int(bufferIndex)-l+1)...)
+		for i := l; i < len(m.Buffers); i++ {
+			m.Buffers[i] = new(gltf.Buffer)
+		}
 	}
-	return &m.Buffers[bufferIndex]
+	return m.Buffers[bufferIndex]
 }
