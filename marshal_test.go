@@ -91,8 +91,8 @@ func TestMaterial_UnmarshalJSON(t *testing.T) {
 		want    *Material
 		wantErr bool
 	}{
-		{"default", new(Material), args{[]byte("{}")}, &Material{AlphaCutoff: Float64(0.5), AlphaMode: Opaque}, false},
-		{"nodefault", new(Material), args{[]byte(`{"alphaCutoff": 0.2, "alphaMode": "MASK"}`)}, &Material{AlphaCutoff: Float64(0.2), AlphaMode: Mask}, false},
+		{"default", new(Material), args{[]byte("{}")}, &Material{AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque}, false},
+		{"nodefault", new(Material), args{[]byte(`{"alphaCutoff": 0.2, "alphaMode": "MASK"}`)}, &Material{AlphaCutoff: Float64(0.2), AlphaMode: AlphaMask}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -248,9 +248,9 @@ func TestMaterial_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &Material{AlphaCutoff: Float64(0.5), AlphaMode: Opaque}, []byte(`{}`), false},
-		{"empty", &Material{AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND"}`), false},
-		{"nodefault", &Material{AlphaCutoff: Float64(1), AlphaMode: Blend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
+		{"default", &Material{AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque}, []byte(`{}`), false},
+		{"empty", &Material{AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND"}`), false},
+		{"nodefault", &Material{AlphaCutoff: Float64(1), AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

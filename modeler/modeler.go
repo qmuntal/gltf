@@ -203,7 +203,7 @@ func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reade
 	}
 	index := m.addBufferView(bufferIndex, uint32(len(buffer.Data))-offset, offset, 0, false)
 	buffer.ByteLength += uint32(len(buffer.Data))
-	m.BufferViews[index].Target = gltf.None
+	m.BufferViews[index].Target = gltf.TargetNone
 	m.Images = append(m.Images, gltf.Image{
 		Name:       name,
 		MimeType:   mimeType,
@@ -240,9 +240,9 @@ func (m *Modeler) addBufferView(buffer, size, offset, stride uint32, isIndices b
 		ByteOffset: offset,
 	}
 	if isIndices {
-		bufferView.Target = gltf.ElementArrayBuffer
+		bufferView.Target = gltf.TargetElementArrayBuffer
 	} else {
-		bufferView.Target = gltf.ArrayBuffer
+		bufferView.Target = gltf.TargetArrayBuffer
 		bufferView.ByteStride = stride
 	}
 	m.BufferViews = append(m.BufferViews, bufferView)

@@ -59,15 +59,15 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withAnimations", args{&Document{Animations: []Animation{
 			{Extras: 8.0, Name: "an_1", Channels: []Channel{
-				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: Rotation}},
-				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: Scale}},
+				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSRotation}},
+				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSScale}},
 			}},
 			{Extras: 8.0, Name: "an_2", Channels: []Channel{
-				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(3), Path: Weights}},
-				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: Translation}},
+				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(3), Path: TRSWeights}},
+				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: TRSTranslation}},
 			}},
 			{Extras: 8.0, Name: "an_3", Samplers: []AnimationSampler{
-				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: CubicSpline},
+				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: InterpolationCubicSpline},
 			}},
 		}}}, false},
 		{"withBuffer", args{&Document{Buffers: []Buffer{
@@ -77,8 +77,8 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []uint8{0, 0, 0, 0}},
 		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []BufferView{
-			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: ArrayBuffer},
-			{Buffer: 10, ByteOffset: 10, ByteLength: 20, ByteStride: 50, Target: ElementArrayBuffer},
+			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: TargetArrayBuffer},
+			{Buffer: 10, ByteOffset: 10, ByteLength: 20, ByteStride: 50, Target: TargetElementArrayBuffer},
 		}}}, false},
 		{"withCameras", args{&Document{Cameras: []Camera{
 			{Extras: 8.0, Name: "cam_1", Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
@@ -90,27 +90,27 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "external", URI: "https://web.com/a", MimeType: "data:image/png"},
 		}}}, false},
 		{"withMaterials", args{&Document{Materials: []Material{
-			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float64{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: Float64(0.5), AlphaMode: Opaque},
-			{Extras: 8.0, Name: "pbr", AlphaCutoff: Float64(0.5), AlphaMode: Opaque,
+			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float64{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque},
+			{Extras: 8.0, Name: "pbr", AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
 					Extras: 8.0, MetallicFactor: Float64(1), RoughnessFactor: Float64(2), BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1},
 					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: 1, TexCoord: 3},
 					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: 6, TexCoord: 5},
 				},
 			},
-			{Extras: 8.0, Name: "normal", AlphaCutoff: Float64(0.7), AlphaMode: Blend,
+			{Extras: 8.0, Name: "normal", AlphaCutoff: Float64(0.7), AlphaMode: AlphaBlend,
 				NormalTexture: &NormalTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Scale: Float64(2.0)},
 			},
-			{Extras: 8.0, Name: "occlusion", AlphaCutoff: Float64(0.5), AlphaMode: Mask,
+			{Extras: 8.0, Name: "occlusion", AlphaCutoff: Float64(0.5), AlphaMode: AlphaMask,
 				OcclusionTexture: &OcclusionTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Strength: Float64(2.0)},
 			},
-			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float64(0.5), AlphaMode: Mask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
+			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float64(0.5), AlphaMode: AlphaMask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
 		}}}, false},
 		{"withMeshes", args{&Document{Meshes: []Mesh{
 			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
 			{Extras: 8.0, Name: "mesh_2", Primitives: []Primitive{
-				{Extras: 8.0, Attributes: Attribute{"POSITION": 1}, Indices: Index(2), Material: Index(1), Mode: Lines},
-				{Extras: 8.0, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: Lines},
+				{Extras: 8.0, Attributes: Attribute{"POSITION": 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
+				{Extras: 8.0, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 			}},
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []Node{
@@ -120,8 +120,8 @@ func TestEncoder_Encode(t *testing.T) {
 				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 		}}}, false},
 		{"withSampler", args{&Document{Samplers: []Sampler{
-			{Extras: 8.0, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: ClampToEdge, WrapT: MirroredRepeat},
-			{Extras: 8.0, Name: "s_2", MagFilter: MagNearest, MinFilter: MinLinearMipMapLinear, WrapS: MirroredRepeat, WrapT: Repeat},
+			{Extras: 8.0, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: WrapClampToEdge, WrapT: WrapMirroredRepeat},
+			{Extras: 8.0, Name: "s_2", MagFilter: MagNearest, MinFilter: MinLinearMipMapLinear, WrapS: WrapMirroredRepeat, WrapT: WrapRepeat},
 		}}}, false},
 		{"withScene", args{&Document{Scene: Index(1)}}, false},
 		{"withScenes", args{&Document{Scenes: []Scene{

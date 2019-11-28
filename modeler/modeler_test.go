@@ -51,7 +51,7 @@ func TestModeler_AddNormal(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 12, Target: gltf.ArrayBuffer, ByteStride: 12},
+				{ByteLength: 12, Target: gltf.TargetArrayBuffer, ByteStride: 12},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 22, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64}},
@@ -94,7 +94,7 @@ func TestModeler_AddTangent(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 42, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
@@ -137,7 +137,7 @@ func TestModeler_AddPosition(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 24, Target: gltf.ArrayBuffer, ByteStride: 12},
+				{ByteLength: 24, Target: gltf.TargetArrayBuffer, ByteStride: 12},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 34, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 191}},
@@ -180,7 +180,7 @@ func TestModeler_AddJoints(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
@@ -195,7 +195,7 @@ func TestModeler_AddJoints(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
@@ -238,7 +238,7 @@ func TestModeler_AddWeights(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
@@ -253,7 +253,7 @@ func TestModeler_AddWeights(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
@@ -268,7 +268,7 @@ func TestModeler_AddWeights(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 42, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
@@ -311,7 +311,7 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 0, 0}},
@@ -326,7 +326,7 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 0, 2, 0}},
@@ -341,7 +341,7 @@ func TestModeler_AddTextureCoord(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 16, Target: gltf.ArrayBuffer, Buffer: 2, ByteStride: 8},
+				{ByteLength: 16, Target: gltf.TargetArrayBuffer, Buffer: 2, ByteStride: 8},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 10},
@@ -386,7 +386,7 @@ func TestModeler_AddIndices(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
+				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
@@ -401,7 +401,7 @@ func TestModeler_AddIndices(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUshort},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ElementArrayBuffer},
+				{ByteLength: 4, Target: gltf.TargetElementArrayBuffer},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 0, 2, 0}},
@@ -416,7 +416,7 @@ func TestModeler_AddIndices(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
+				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
@@ -431,7 +431,7 @@ func TestModeler_AddIndices(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUint},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ElementArrayBuffer},
+				{ByteLength: 8, Target: gltf.TargetElementArrayBuffer},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 0, 0, 2, 0, 0, 0}},
@@ -446,7 +446,7 @@ func TestModeler_AddIndices(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.ElementArrayBuffer},
+				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
@@ -489,7 +489,7 @@ func TestModeler_AddColor(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 4, Target: gltf.ArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
@@ -504,7 +504,7 @@ func TestModeler_AddColor(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 8, Target: gltf.ArrayBuffer, ByteStride: 8},
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
@@ -518,7 +518,7 @@ func TestModeler_AddColor(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 32, Target: gltf.ArrayBuffer, ByteStride: 16},
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 32, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
@@ -564,7 +564,7 @@ func TestModeler_AddImage(t *testing.T) {
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.None},
+				{ByteLength: 2, Target: gltf.TargetNone},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
@@ -579,7 +579,7 @@ func TestModeler_AddImage(t *testing.T) {
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
 			},
 			BufferViews: []gltf.BufferView{
-				{ByteLength: 2, Target: gltf.None},
+				{ByteLength: 2, Target: gltf.TargetNone},
 			},
 			Buffers: []gltf.Buffer{
 				{ByteLength: 12, Data: []byte{1, 2}},
