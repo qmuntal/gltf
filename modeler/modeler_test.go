@@ -557,32 +557,32 @@ func TestModeler_AddImage(t *testing.T) {
 	}{
 		{"base", &Modeler{Document: &gltf.Document{
 			Images:  []*gltf.Image{{}},
-			Buffers: []*gltf.Buffer{{ByteLength: 10}},
+			Buffers: []*gltf.Buffer{{ByteLength: 10, Data: make([]byte, 10)}},
 		}}, args{0, "fake", "fake/type", bytes.NewReader([]byte{1, 2})}, 1, &gltf.Document{
 			Images: []*gltf.Image{
 				{},
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 2, Target: gltf.TargetNone},
+				{ByteOffset: 10, ByteLength: 2, Target: gltf.TargetNone},
 			},
 			Buffers: []*gltf.Buffer{
-				{ByteLength: 12, Data: []byte{1, 2}},
+				{ByteLength: 12, Data: []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2}},
 			},
 		}, false},
 		{"buffer", &Modeler{Document: &gltf.Document{
 			Images:  []*gltf.Image{{}},
-			Buffers: []*gltf.Buffer{{ByteLength: 10}},
+			Buffers: []*gltf.Buffer{{ByteLength: 10, Data: make([]byte, 10)}},
 		}}, args{0, "fake", "fake/type", bytes.NewBuffer([]byte{1, 2})}, 1, &gltf.Document{
 			Images: []*gltf.Image{
 				{},
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 2, Target: gltf.TargetNone},
+				{ByteOffset: 10, ByteLength: 2, Target: gltf.TargetNone},
 			},
 			Buffers: []*gltf.Buffer{
-				{ByteLength: 12, Data: []byte{1, 2}},
+				{ByteLength: 12, Data: []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2}},
 			},
 		}, false},
 		{"err", &Modeler{Document: &gltf.Document{
