@@ -202,7 +202,7 @@ func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reade
 		buffer.Data = append(buffer.Data, data...)
 	}
 	index := m.addBufferView(bufferIndex, uint32(len(buffer.Data))-offset, offset, 0, false)
-	buffer.ByteLength += uint32(len(buffer.Data))
+	buffer.ByteLength = uint32(len(buffer.Data))
 	m.BufferViews[index].Target = gltf.TargetNone
 	m.Images = append(m.Images, &gltf.Image{
 		Name:       name,
