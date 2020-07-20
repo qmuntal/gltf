@@ -1,6 +1,7 @@
 package gltf
 
 import (
+	"math"
 	"bufio"
 	"bytes"
 	"encoding/binary"
@@ -15,8 +16,8 @@ import (
 )
 
 const (
-	defaultMaxExternalBufferCount = 10
-	defaultMaxMemoryAllocation    = 4 * 1024 * 1024 * 1024 // 4GB
+	defaultMaxExternalBufferCount  = 10
+	defaultMaxMemoryAllocation     = math.MaxUint32 // 4GB
 )
 
 // ReadHandler is the interface that wraps the ReadFullResource method.
@@ -47,7 +48,7 @@ func Open(name string) (*Document, error) {
 type Decoder struct {
 	ReadHandler            ReadHandler
 	MaxExternalBufferCount int
-	MaxMemoryAllocation    int
+	MaxMemoryAllocation    uint64
 	r                      *bufio.Reader
 }
 
@@ -93,9 +94,9 @@ func (d *Decoder) Decode(doc *Document) error {
 
 func (d *Decoder) validateDocumentQuotas(doc *Document, isBinary bool) error {
 	var externalCount int
-	var allocs int
+	var allocs uint64
 	for _, b := range doc.Buffers {
-		allocs += int(b.ByteLength)
+		allocs += uint64(b.ByteLength)
 		if !b.IsEmbeddedResource() {
 			externalCount++
 		}
