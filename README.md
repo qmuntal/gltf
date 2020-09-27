@@ -1,6 +1,6 @@
 # gltf
 
-[![Documentation](https://godoc.org/github.com/qmuntal/gltf?status.svg)](https://godoc.org/github.com/qmuntal/gltf)
+[![PkgGoDev](https://pkg.go.dev/badge/qmuntal/gltf)](https://pkg.go.dev/qmuntal/gltf)
 [![Build Status](https://travis-ci.com/qmuntal/gltf.svg?branch=master)](https://travis-ci.com/qmuntal/gltf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/qmuntal/gltf)](https://goreportcard.com/report/github.com/qmuntal/gltf)
 [![codecov](https://coveralls.io/repos/github/qmuntal/gltf/badge.svg)](https://coveralls.io/github/qmuntal/gltf?branch=master)
@@ -78,7 +78,7 @@ The results show that the perfomance of this package is equivalent to [fx-gltf](
 ```go
 doc, err := gltf.Open("./a.gltf")
 if err != nil {
-  panic(err)
+    panic(err)
 }
 fmt.Print(doc.Asset)
 ```
@@ -89,32 +89,30 @@ fmt.Print(doc.Asset)
 package main
 
 import (
- "github.com/qmuntal/gltf"
- "github.com/qmuntal/gltf/modeler"
+    "github.com/qmuntal/gltf"
+    "github.com/qmuntal/gltf/modeler"
 )
 
 func main() {
-  m := modeler.NewModeler()
-  positionAccessor := m.AddPosition(0, [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}})
-  indicesAccessor := m.AddIndices(0, []uint8{0, 1, 2, 3, 1, 0, 0, 2, 3, 1, 4, 2, 4, 3, 2, 4, 1, 3})
-  colorIndices := m.AddColor(0, [][3]uint8{{50, 155, 255}, {0, 100, 200}, {255, 155, 50}, {155, 155, 155}, {25, 25, 25}})
-  m.Document.Meshes = []*gltf.Mesh{{
-    Name: "Pyramid",
-    Primitives: []*gltf.Primitive{
-      {
-        Indices: gltf.Index(indicesAccessor),
-        Attributes: map[string]uint32{
-          "POSITION": positionAccessor,
-          "COLOR_0":  colorIndices,
-        },
-      },
-    },
-  }}
-  m.Nodes = []*gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
-  m.Scenes[0].Nodes = append(m.Scenes[0].Nodes, 0)
-  if err := gltf.SaveBinary(m.Document, "./example.glb"); err != nil {
-    panic(err)
-  }
+    m := modeler.NewModeler()
+    positionAccessor := m.AddPosition(0, [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}})
+    indicesAccessor := m.AddIndices(0, []uint8{0, 1, 2, 3, 1, 0, 0, 2, 3, 1, 4, 2, 4, 3, 2, 4, 1, 3})
+    colorIndices := m.AddColor(0, [][3]uint8{{50, 155, 255}, {0, 100, 200}, {255, 155, 50}, {155, 155, 155}, {25, 25, 25}})
+    m.Document.Meshes = []*gltf.Mesh{{
+        Name: "Pyramid",
+        Primitives: []*gltf.Primitive{{
+            Indices: gltf.Index(indicesAccessor),
+            Attributes: map[string]uint32{
+              "POSITION": positionAccessor,
+              "COLOR_0":  colorIndices,
+            },
+        }},
+    }}
+    m.Nodes = []*gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
+    m.Scenes[0].Nodes = append(m.Scenes[0].Nodes, 0)
+    if err := gltf.SaveBinary(m.Document, "./example.glb"); err != nil {
+        panic(err)
+    }
 }
 ```
 
@@ -128,15 +126,13 @@ The following example generates a 3D box with colors per vertex.
 
 package main
 
-import (
-    "github.com/qmuntal/gltf"
-)
+import "github.com/qmuntal/gltf"
 
 func main() {
     doc := &gltf.Document{
         Accessors: []*gltf.Accessor{
             {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUShort, Count: 36, Type: gltf.AccessorScalar},
-            {BufferView: gltf.Index(1), ComponentType: gltf.Float, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.            -0.5}, Type: gltf.AccessorVec3},
+            {BufferView: gltf.Index(1), ComponentType: gltf.ComponentFloat, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.            -0.5}, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(3), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec4},
             {BufferView: gltf.Index(4), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec2},
