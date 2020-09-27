@@ -2,11 +2,11 @@ package modeler
 
 import (
 	"bytes"
+	"fmt"
 	"image/color"
 	"io"
 	"io/ioutil"
 	"math"
-	"reflect"
 
 	"github.com/qmuntal/gltf"
 	"github.com/qmuntal/gltf/binary"
@@ -62,7 +62,7 @@ func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) uint32 {
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		panic("modeler.AddIndices: invalid type " + reflect.TypeOf(data).String())
+		panic(fmt.Sprintf("modeler.AddIndices: invalid type %T", data))
 	}
 	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
 	return uint32(index)
@@ -100,7 +100,7 @@ func (m *Modeler) AddTextureCoord(bufferIndex uint32, data interface{}) uint32 {
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		panic("modeler.AddTextureCoord: invalid type " + reflect.TypeOf(data).String())
+		panic(fmt.Sprintf("modeler.AddTextureCoord: invalid type %T", data))
 	}
 	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	m.Document.Accessors[index].Normalized = normalized
@@ -121,7 +121,7 @@ func (m *Modeler) AddWeights(bufferIndex uint32, data interface{}) uint32 {
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		panic("modeler.AddWeights: invalid type " + reflect.TypeOf(data).String())
+		panic(fmt.Sprintf("modeler.AddWeights: invalid type %T", data))
 	}
 	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	m.Document.Accessors[index].Normalized = normalized
@@ -139,7 +139,7 @@ func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) uint32 {
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		panic("modeler.AddJoints: invalid type " + reflect.TypeOf(data).String())
+		panic(fmt.Sprintf("modeler.AddJoints: invalid type %T", data))
 	}
 	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	return uint32(index)
@@ -178,7 +178,7 @@ func (m *Modeler) AddColor(bufferIndex uint32, data interface{}) uint32 {
 	}
 	componentType, accessorType, length := binary.Type(data)
 	if !ok || length <= 0 {
-		panic("modeler.AddColor: invalid type " + reflect.TypeOf(data).String())
+		panic(fmt.Sprintf("modeler.AddColor: invalid type %T", data))
 	}
 	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
 	m.Document.Accessors[index].Normalized = normalized
