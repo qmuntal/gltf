@@ -1,3 +1,5 @@
+// Package modeler implements helper methods to write common glTF entities
+// (indices, positions, colors, ...) into buffers.
 package modeler
 
 import (
