@@ -177,7 +177,7 @@ func WriteBufferView(doc *gltf.Document, target gltf.Target, data interface{}) u
 	bufferView := &gltf.BufferView{
 		Buffer:     uint32(len(doc.Buffers)) - 1,
 		ByteLength: size,
-		ByteOffset: offset,
+		ByteOffset: offset + padding,
 		Target:     target,
 	}
 	doc.BufferViews = append(doc.BufferViews, bufferView)
