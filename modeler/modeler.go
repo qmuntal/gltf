@@ -14,143 +14,82 @@ import (
 	"github.com/qmuntal/gltf/binary"
 )
 
-// CompressionLevel defines the different levels of compression.
-type CompressionLevel uint8
-
-const (
-	// CompressionNone will not apply any compression.
-	CompressionNone CompressionLevel = iota
-	// CompressionLossless will reduce the byte size without sacrificing quality.
-	CompressionLossless
-)
-
-// Modeler wraps a Document and add useful methods to build it.
-// If Compress is true, all the data added to accessors that support different component types
-// will be evaluated to see if it fits in a smaller component type.
-type Modeler struct {
-	*gltf.Document
-	Compression CompressionLevel
-}
-
-// NewModeler returns a new Modeler instance.
-func NewModeler() *Modeler {
-	return &Modeler{
-		Document: &gltf.Document{
-			Scene:  gltf.Index(0),
-			Scenes: []*gltf.Scene{{Name: "Root Scene"}},
-		},
-		Compression: CompressionLossless,
-	}
-}
-
-// AddIndices adds a new INDICES accessor to the Document
-// and fills the buffer with the indices data.
+// WriteIndices adds a new INDICES accessor to doc
+// and fills the last buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddIndices(bufferIndex uint32, data interface{}) uint32 {
-	var ok bool
+func WriteIndices(doc *gltf.Document, data interface{}) uint32 {
 	switch data.(type) {
-	case []uint8:
-		ok = true
-	case []uint16:
-		ok = true
-		if m.Compression >= CompressionLossless {
-			data = compressUint16(data.([]uint16))
-		}
-	case []uint32:
-		ok = true
-		if m.Compression >= CompressionLossless {
-			data = compressUint32(data.([]uint32))
-		}
+	case []uint8, []uint16, []uint32:
+	default:
+		panic(fmt.Sprintf("modeler.WriteIndices: invalid type %T", data))
 	}
-	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		panic(fmt.Sprintf("modeler.AddIndices: invalid type %T", data))
-	}
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, true)
-	return uint32(index)
+	return WriteAccessor(doc, gltf.TargetElementArrayBuffer, data)
 }
 
-// AddNormal adds a new NORMAL accessor to the Document
-// and fills the buffer with the indices data.
+// WriteNormal adds a new NORMAL accessor to doc
+// and fills the last buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddNormal(bufferIndex uint32, data [][3]float32) uint32 {
-	componentType, accessorType, length := binary.Type(data)
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	return uint32(index)
+func WriteNormal(doc *gltf.Document, data [][3]float32) uint32 {
+	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
-// AddTangent adds a new TANGENT accessor to the Document
-// and fills the buffer with the indices data.
+// WriteTangent adds a new TANGENT accessor to doc
+// and fills the last buffer with the indices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddTangent(bufferIndex uint32, data [][4]float32) uint32 {
-	componentType, accessorType, length := binary.Type(data)
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	return uint32(index)
+func WriteTangent(doc *gltf.Document, data [][4]float32) uint32 {
+	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
-// AddTextureCoord adds a new TEXTURECOORD accessor to the Document
-// and fills the buffer with the texturecoord data.
+// WriteTextureCoord adds a new TEXTURECOORD accessor to doc
+// and fills the last buffer with the texturecoord data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddTextureCoord(bufferIndex uint32, data interface{}) uint32 {
-	var normalized, ok bool
+func WriteTextureCoord(doc *gltf.Document, data interface{}) uint32 {
+	var normalized bool
 	switch data.(type) {
 	case [][2]uint8, [][2]uint16:
-		ok = true
 		normalized = true
 	case [][2]float32:
-		ok = true
+	default:
+		panic(fmt.Sprintf("modeler.WriteTextureCoord: invalid type %T", data))
 	}
-	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		panic(fmt.Sprintf("modeler.AddTextureCoord: invalid type %T", data))
-	}
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	m.Document.Accessors[index].Normalized = normalized
-	return uint32(index)
+	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
+	doc.Accessors[index].Normalized = normalized
+	return index
 }
 
-// AddWeights adds a new WEIGHTS accessor to the Document
-// and fills the buffer with the weights data.
+// WriteWeights adds a new WEIGHTS accessor to doc
+// and fills the last buffer with the weights data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddWeights(bufferIndex uint32, data interface{}) uint32 {
-	var normalized, ok bool
+func WriteWeights(doc *gltf.Document, data interface{}) uint32 {
+	var normalized bool
 	switch data.(type) {
 	case [][4]uint8, [][4]uint16:
-		ok = true
 		normalized = true
 	case [][4]float32:
-		ok = true
+	default:
+		panic(fmt.Sprintf("modeler.WriteWeights: invalid type %T", data))
 	}
-	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		panic(fmt.Sprintf("modeler.AddWeights: invalid type %T", data))
-	}
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	m.Document.Accessors[index].Normalized = normalized
-	return uint32(index)
+	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
+	doc.Accessors[index].Normalized = normalized
+	return index
 }
 
-// AddJoints adds a new JOINTS accessor to the Document
-// and fills the buffer with the joints data.
+// WriteJoints adds a new JOINTS accessor to doc
+// and fills the last buffer with the joints data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddJoints(bufferIndex uint32, data interface{}) uint32 {
-	var ok bool
+func WriteJoints(doc *gltf.Document, data interface{}) uint32 {
 	switch data.(type) {
 	case [][4]uint8, [][4]uint16:
-		ok = true
+	default:
+		panic(fmt.Sprintf("modeler.WriteJoints: invalid type %T", data))
 	}
-	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		panic(fmt.Sprintf("modeler.AddJoints: invalid type %T", data))
-	}
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	return uint32(index)
+	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
-// AddPosition adds a new POSITION accessor to the Document
-// and fills the buffer with the vertices data.
+// WritePosition adds a new POSITION accessor to doc
+// and fills the last buffer with the vertices data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddPosition(bufferIndex uint32, data [][3]float32) uint32 {
+func WritePosition(doc *gltf.Document, data [][3]float32) uint32 {
 	min := [3]float64{math.MaxFloat64, math.MaxFloat64, math.MaxFloat64}
 	max := [3]float64{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
 	for _, v := range data {
@@ -159,105 +98,103 @@ func (m *Modeler) AddPosition(bufferIndex uint32, data [][3]float32) uint32 {
 			max[i] = math.Max(max[i], float64(x))
 		}
 	}
-	componentType, accessorType, length := binary.Type(data)
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	m.Accessors[index].Min = min[:]
-	m.Accessors[index].Max = max[:]
-	return uint32(index)
+	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
+	doc.Accessors[index].Min = min[:]
+	doc.Accessors[index].Max = max[:]
+	return index
 }
 
-// AddColor adds a new COLOR accessor to the Document
+// WriteColor adds a new COLOR accessor to doc
 // and fills the buffer with the color data.
 // If success it returns the index of the new accessor.
-func (m *Modeler) AddColor(bufferIndex uint32, data interface{}) uint32 {
-	var normalized, ok bool
+func WriteColor(doc *gltf.Document, data interface{}) uint32 {
+	var normalized bool
 	switch data.(type) {
 	case []color.RGBA, []color.RGBA64, [][4]uint8, [][3]uint8, [][4]uint16, [][3]uint16:
 		normalized = true
-		ok = true
-	case []gltf.RGBA, []gltf.RGB, [][3]float32, [][4]float32:
-		ok = true
+	case []gltf.RGB, []gltf.RGBA, [][3]float32, [][4]float32:
+	default:
+		panic(fmt.Sprintf("modeler.WriteColor: invalid type %T", data))
 	}
-	componentType, accessorType, length := binary.Type(data)
-	if !ok || length <= 0 {
-		panic(fmt.Sprintf("modeler.AddColor: invalid type %T", data))
-	}
-	index := m.addAccessor(bufferIndex, length, data, componentType, accessorType, false)
-	m.Document.Accessors[index].Normalized = normalized
-	return uint32(index)
+	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
+	doc.Accessors[index].Normalized = normalized
+	return index
 }
 
-// AddImage adds a new image to the Document
+// WriteImage adds a new image to doc
 // and fills the buffer with the image data.
 // If success it returns the index of the new image.
-func (m *Modeler) AddImage(bufferIndex uint32, name, mimeType string, r io.Reader) (uint32, error) {
-	buffer := m.buffer(bufferIndex)
-	offset := uint32(len(buffer.Data))
+func WriteImage(doc *gltf.Document, name string, mimeType string, r io.Reader) (uint32, error) {
+	var data []byte
 	switch r := r.(type) {
 	case *bytes.Buffer:
-		buffer.Data = append(buffer.Data, r.Bytes()...)
+		data = r.Bytes()
 	default:
-		data, err := ioutil.ReadAll(r)
+		var err error
+		data, err = ioutil.ReadAll(r)
 		if err != nil {
 			return 0, err
 		}
-		buffer.Data = append(buffer.Data, data...)
 	}
-	index := m.addBufferView(bufferIndex, uint32(len(buffer.Data))-offset, offset, 0, false)
-	buffer.ByteLength = uint32(len(buffer.Data))
-	m.BufferViews[index].Target = gltf.TargetNone
-	m.Images = append(m.Images, &gltf.Image{
+	index := WriteBufferView(doc, gltf.TargetNone, data)
+	doc.Images = append(doc.Images, &gltf.Image{
 		Name:       name,
 		MimeType:   mimeType,
 		BufferView: gltf.Index(index),
 	})
-	return uint32(len(m.Images) - 1), nil
+	return uint32(len(doc.Images) - 1), nil
 }
 
-func (m *Modeler) addAccessor(bufferIndex uint32, count int, data interface{}, componentType gltf.ComponentType, accessorType gltf.AccessorType, isIndex bool) uint32 {
-	buffer := m.buffer(bufferIndex)
-	offset := uint32(len(buffer.Data))
-	padding := ((offset+3)/4)*4 - offset
-	elementSize := binary.SizeOfElement(componentType, accessorType)
-	size := uint32(count * elementSize)
-	buffer.ByteLength += uint32(size + padding)
-	buffer.Data = append(buffer.Data, make([]byte, size+padding)...)
-	// Cannot return error as the buffer has enough size and the data type is controlled.
-	_ = binary.Write(buffer.Data[offset+padding:], data)
-	index := m.addBufferView(bufferIndex, size, offset+padding, uint32(elementSize), isIndex)
-	m.Accessors = append(m.Accessors, &gltf.Accessor{
+// WriteAccessor adds a new Accessor to doc
+// and fills the buffer with data.
+// If success it returns the index of the new accessor.
+func WriteAccessor(doc *gltf.Document, target gltf.Target, data interface{}) uint32 {
+	c, a, l := binary.Type(data)
+	index := WriteBufferView(doc, target, data)
+	doc.Accessors = append(doc.Accessors, &gltf.Accessor{
 		BufferView:    gltf.Index(index),
 		ByteOffset:    0,
-		ComponentType: componentType,
-		Type:          accessorType,
-		Count:         uint32(count),
+		ComponentType: c,
+		Type:          a,
+		Count:         l,
 	})
-	return uint32(len(m.Accessors) - 1)
+	return uint32(len(doc.Accessors) - 1)
 }
 
-func (m *Modeler) addBufferView(buffer, size, offset, stride uint32, isIndices bool) uint32 {
+// WriteBufferView adds a new BufferView to doc
+// and fills the buffer with the data.
+// If success it returns the index of the new buffer view.
+func WriteBufferView(doc *gltf.Document, target gltf.Target, data interface{}) uint32 {
+	c, a, l := binary.Type(data)
+	size := l * binary.SizeOfElement(c, a)
+	buffer := lastBuffer(doc)
+	offset := uint32(len(buffer.Data))
+	padding := getPadding(offset, c.ByteSize())
+	buffer.ByteLength += size + padding
+	buffer.Data = append(buffer.Data, make([]byte, size+padding)...)
+	// Cannot return error as the buffer has enough size and the data type is controlled.
+	_ = binary.Write(buffer.Data[offset+padding:], 0, data)
 	bufferView := &gltf.BufferView{
-		Buffer:     buffer,
+		Buffer:     uint32(len(doc.Buffers)) - 1,
 		ByteLength: size,
 		ByteOffset: offset,
+		Target:     target,
 	}
-	if isIndices {
-		bufferView.Target = gltf.TargetElementArrayBuffer
-	} else {
-		bufferView.Target = gltf.TargetArrayBuffer
-		bufferView.ByteStride = stride
-	}
-	m.BufferViews = append(m.BufferViews, bufferView)
-	return uint32(len(m.BufferViews)) - 1
+	doc.BufferViews = append(doc.BufferViews, bufferView)
+	return uint32(len(doc.BufferViews)) - 1
 }
 
-func (m *Modeler) buffer(bufferIndex uint32) *gltf.Buffer {
-	if int(bufferIndex) >= len(m.Buffers) {
-		l := len(m.Buffers)
-		m.Buffers = append(m.Buffers, make([]*gltf.Buffer, int(bufferIndex)-l+1)...)
-		for i := l; i < len(m.Buffers); i++ {
-			m.Buffers[i] = new(gltf.Buffer)
-		}
+func lastBuffer(doc *gltf.Document) *gltf.Buffer {
+	if len(doc.Buffers) == 0 {
+		doc.Buffers = append(doc.Buffers, new(gltf.Buffer))
 	}
-	return m.Buffers[bufferIndex]
+	return doc.Buffers[len(doc.Buffers)-1]
+}
+
+func getPadding(offset uint32, alignment uint32) uint32 {
+	padAlign := offset % alignment
+	if padAlign == 0 {
+		return 0
+	}
+	return alignment - padAlign
 }

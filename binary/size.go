@@ -7,36 +7,11 @@ import (
 	"github.com/qmuntal/gltf"
 )
 
-// SizeOf returns the size, in bytes, of a component type.
-func SizeOf(c gltf.ComponentType) int {
-	return map[gltf.ComponentType]int{
-		gltf.ComponentByte:   1,
-		gltf.ComponentUbyte:  1,
-		gltf.ComponentShort:  2,
-		gltf.ComponentUshort: 2,
-		gltf.ComponentUint:   4,
-		gltf.ComponentFloat:  4,
-	}[c]
-}
-
-// ComponentsOf returns the number of components of an accessor type.
-func ComponentsOf(t gltf.AccessorType) int {
-	return map[gltf.AccessorType]int{
-		gltf.AccessorScalar: 1,
-		gltf.AccessorVec2:   2,
-		gltf.AccessorVec3:   3,
-		gltf.AccessorVec4:   4,
-		gltf.AccessorMat2:   4,
-		gltf.AccessorMat3:   9,
-		gltf.AccessorMat4:   16,
-	}[t]
-}
-
 // SizeOfElement returns the size, in bytes, of an element.
 // The element size may not be (component size) * (number of components),
 // as some of the elements are tightly packed in order to ensure
 // that they are aligned to 4-byte boundaries.
-func SizeOfElement(c gltf.ComponentType, t gltf.AccessorType) int {
+func SizeOfElement(c gltf.ComponentType, t gltf.AccessorType) uint32 {
 	// special cases
 	switch {
 	case (t == gltf.AccessorVec3 || t == gltf.AccessorVec2) && (c == gltf.ComponentByte || c == gltf.ComponentUbyte):
@@ -50,17 +25,17 @@ func SizeOfElement(c gltf.ComponentType, t gltf.AccessorType) int {
 	case t == gltf.AccessorMat3 && (c == gltf.ComponentShort || c == gltf.ComponentUshort):
 		return 24
 	}
-	return SizeOf(c) * ComponentsOf(t)
+	return c.ByteSize() * t.Components()
 }
 
 // Type returns the associated glTF type data.
 // If data is an slice, it also returns the length of the slice.
-// If data does not have an associated glTF type, length will be -1.
-func Type(data interface{}) (c gltf.ComponentType, t gltf.AccessorType, length int) {
+// If data does not have an associated glTF type length will be 0.
+func Type(data interface{}) (c gltf.ComponentType, t gltf.AccessorType, length uint32) {
 	v := reflect.ValueOf(data)
 	switch v.Kind() {
 	case reflect.Slice:
-		length = v.Len()
+		length = uint32(v.Len())
 	}
 	switch data.(type) {
 	case []int8, int8:
@@ -148,7 +123,7 @@ func Type(data interface{}) (c gltf.ComponentType, t gltf.AccessorType, length i
 	case [][4][4]float32, [4][4]float32:
 		c, t = gltf.ComponentFloat, gltf.AccessorMat4
 	default:
-		length = -1
+		length = 0
 	}
 	return
 }

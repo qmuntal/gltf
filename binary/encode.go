@@ -9,18 +9,18 @@ import (
 	"github.com/qmuntal/gltf"
 )
 
-// Read reads structured binary data from r into data.
+// Read reads structured binary data from b into data.
 // Data should be a slice of glTF predefined fixed-size types,
 // else it fallbacks to `encoding/binary.Read`.
 //
 // If data length is greater than the length of b, Read returns io.ErrShortBuffer.
 func Read(b []byte, data interface{}) error {
 	c, t, n := Type(data)
-	if n <= 0 {
+	if n == 0 {
 		return binary.Read(bytes.NewReader(b), binary.LittleEndian, data)
 	}
-	e := SizeOfElement(c, t)
-	if len(b) < n*e {
+	e := int(SizeOfElement(c, t))
+	if len(b) < int(n)*e {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {
@@ -184,46 +184,51 @@ func Read(b []byte, data interface{}) error {
 		}
 	case []uint32:
 		for i := range data {
-			data[i] = UInt.Scalar(b[e*i:])
+			data[i] = Uint.Scalar(b[e*i:])
 		}
 	case [][2]uint32:
 		for i := range data {
-			data[i] = UInt.Vec2(b[e*i:])
+			data[i] = Uint.Vec2(b[e*i:])
 		}
 	case [][3]uint32:
 		for i := range data {
-			data[i] = UInt.Vec3(b[e*i:])
+			data[i] = Uint.Vec3(b[e*i:])
 		}
 	case [][4]uint32:
 		for i := range data {
-			data[i] = UInt.Vec4(b[e*i:])
+			data[i] = Uint.Vec4(b[e*i:])
 		}
 	case [][2][2]uint32:
 		for i := range data {
-			data[i] = UInt.Mat2(b[e*i:])
+			data[i] = Uint.Mat2(b[e*i:])
 		}
 	case [][3][3]uint32:
 		for i := range data {
-			data[i] = UInt.Mat3(b[e*i:])
+			data[i] = Uint.Mat3(b[e*i:])
 		}
 	case [][4][4]uint32:
 		for i := range data {
-			data[i] = UInt.Mat4(b[e*i:])
+			data[i] = Uint.Mat4(b[e*i:])
 		}
 	}
 	return nil
 }
 
 // Write writes the binary representation of data into b.
+// If stride is diferent than zero data will be interleaved.
+//
 // Data must be a slice of glTF predefined fixed-size types,
 // else it fallbacks to `encoding/binary.Write`.
-func Write(b []byte, data interface{}) error {
+func Write(b []byte, stride uint32, data interface{}) error {
 	c, t, n := Type(data)
-	if n <= 0 {
+	if n == 0 {
 		return binary.Write(bytes.NewBuffer(b), binary.LittleEndian, data)
 	}
-	e := SizeOfElement(c, t)
-	if len(b) < e*n {
+	e := int(stride)
+	if stride == 0 {
+		e = int(SizeOfElement(c, t))
+	}
+	if len(b) < e*int(n) {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {
@@ -245,7 +250,7 @@ func Write(b []byte, data interface{}) error {
 		}
 	case []int8:
 		for i, x := range data {
-			b[i] = byte(x)
+			b[e*i] = byte(x)
 		}
 	case [][2]int8:
 		for i := range data {
@@ -383,31 +388,31 @@ func Write(b []byte, data interface{}) error {
 		}
 	case []uint32:
 		for i := range data {
-			UInt.PutScalar(b[e*i:], data[i])
+			Uint.PutScalar(b[e*i:], data[i])
 		}
 	case [][2]uint32:
 		for i := range data {
-			UInt.PutVec2(b[e*i:], data[i])
+			Uint.PutVec2(b[e*i:], data[i])
 		}
 	case [][3]uint32:
 		for i := range data {
-			UInt.PutVec3(b[e*i:], data[i])
+			Uint.PutVec3(b[e*i:], data[i])
 		}
 	case [][4]uint32:
 		for i := range data {
-			UInt.PutVec4(b[e*i:], data[i])
+			Uint.PutVec4(b[e*i:], data[i])
 		}
 	case [][2][2]uint32:
 		for i := range data {
-			UInt.PutMat2(b[e*i:], data[i])
+			Uint.PutMat2(b[e*i:], data[i])
 		}
 	case [][3][3]uint32:
 		for i := range data {
-			UInt.PutMat3(b[e*i:], data[i])
+			Uint.PutMat3(b[e*i:], data[i])
 		}
 	case [][4][4]uint32:
 		for i := range data {
-			UInt.PutMat4(b[e*i:], data[i])
+			Uint.PutMat4(b[e*i:], data[i])
 		}
 	}
 	return nil

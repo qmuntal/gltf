@@ -305,7 +305,7 @@ func TestWrite(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := make([]byte, tt.args.n)
-			if err := Write(b, tt.args.data); (err != nil) != tt.wantErr {
+			if err := Write(b, 0, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("Write() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !tt.wantErr && !reflect.DeepEqual(b, tt.want) {

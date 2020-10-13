@@ -8,6 +8,29 @@ import (
 	"github.com/go-test/deep"
 )
 
+func TestDocument(t *testing.T) {
+	tests := []struct {
+		name string
+		want *Document
+	}{
+		{"base", &Document{
+			Scene:  Index(0),
+			Scenes: []*Scene{{Name: "Root Scene"}},
+			Asset: Asset{
+				Generator: "qmuntal/gltf",
+				Version:   "2.0",
+			},
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewDocument(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewDocument() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestBuffer_IsEmbeddedResource(t *testing.T) {
 	tests := []struct {
 		name string

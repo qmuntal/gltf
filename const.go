@@ -38,6 +38,18 @@ const (
 	ComponentUint
 )
 
+// ByteSize returns the size of a component in bytes.
+func (c ComponentType) ByteSize() uint32 {
+	return map[ComponentType]uint32{
+		ComponentByte:   1,
+		ComponentUbyte:  1,
+		ComponentShort:  2,
+		ComponentUshort: 2,
+		ComponentUint:   4,
+		ComponentFloat:  4,
+	}[c]
+}
+
 // UnmarshalJSON unmarshal the component type with the correct default values.
 func (c *ComponentType) UnmarshalJSON(data []byte) error {
 	var tmp uint16
@@ -86,6 +98,19 @@ const (
 	// AccessorMat4 corresponds to a 4x4 matrix.
 	AccessorMat4
 )
+
+// Components returns the number of components of an accessor type.
+func (a AccessorType) Components() uint32 {
+	return map[AccessorType]uint32{
+		AccessorScalar: 1,
+		AccessorVec2:   2,
+		AccessorVec3:   3,
+		AccessorVec4:   4,
+		AccessorMat2:   4,
+		AccessorMat3:   9,
+		AccessorMat4:   16,
+	}[a]
+}
 
 // UnmarshalJSON unmarshal the accessor type with the correct default values.
 func (a *AccessorType) UnmarshalJSON(data []byte) error {
