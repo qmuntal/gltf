@@ -45,8 +45,8 @@ var Short shortComponent
 // Ushort is the usnigned short implementation of Component.
 var Ushort ushortComponent
 
-// UInt is the unsigned int implementation of Component.
-var UInt uintComponent
+// Uint is the unsigned int implementation of Component.
+var Uint uintComponent
 
 // Float is the float implementation of Component.
 var Float floatComponent

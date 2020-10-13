@@ -51,6 +51,18 @@ type Document struct {
 	Textures           []*Texture    `json:"textures,omitempty" validate:"dive"`
 }
 
+// NewDocument returns a new Document with sane defaults.
+func NewDocument() *Document {
+	return &Document{
+		Scene:  Index(0),
+		Scenes: []*Scene{{Name: "Root Scene"}},
+		Asset: Asset{
+			Generator: "qmuntal/gltf",
+			Version:   "2.0",
+		},
+	}
+}
+
 // An Accessor is a typed view into a bufferView.
 // An accessor provides a typed view into a bufferView or a subset of a bufferView
 // similar to how WebGL's vertexAttribPointer() defines an attribute in a buffer.

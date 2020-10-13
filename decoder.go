@@ -1,7 +1,6 @@
 package gltf
 
 import (
-	"math"
 	"bufio"
 	"bytes"
 	"encoding/binary"
@@ -9,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	defaultMaxExternalBufferCount  = 10
-	defaultMaxMemoryAllocation     = math.MaxUint32 // 4GB
+	defaultMaxExternalBufferCount = 10
+	defaultMaxMemoryAllocation    = math.MaxUint32 // 4GB
 )
 
 // ReadHandler is the interface that wraps the ReadFullResource method.

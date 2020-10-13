@@ -4,54 +4,51 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/gltf"
 )
 
-func TestNewModeler(t *testing.T) {
-	tests := []struct {
-		name string
-		want *Modeler
-	}{
-		{"base", &Modeler{Document: &gltf.Document{
-			Scene:  gltf.Index(0),
-			Scenes: []*gltf.Scene{{Name: "Root Scene"}},
-		}, Compression: CompressionLossless}},
+func TestAlignment(t *testing.T) {
+	doc := gltf.NewDocument()
+	WriteIndices(doc, []uint16{0, 1, 2})
+	WritePosition(doc, [][3]float32{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}})
+	if len(doc.Buffers) != 1 {
+		t.Errorf("Testalignment() buffer size = %v, want 1", len(doc.Buffers))
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewModeler(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewModeler() = %v, want %v", got, tt.want)
-			}
-		})
+	buffer := doc.Buffers[0]
+	want := make([]byte, 44)
+	want[2], want[4] = 1, 2
+	want[22], want[23] = 0x80, 0x3f
+	want[38], want[39] = 0x80, 0x3f
+	if diff := deep.Equal(buffer.Data, want); diff != nil {
+		t.Errorf("Testalignment() = %v", diff)
+		return
 	}
 }
 
-func TestModeler_AddNormal(t *testing.T) {
+func TestWriteNormal(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        [][3]float32
+		data [][3]float32
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"base", &Modeler{Document: &gltf.Document{
+		{"base", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][3]float32{{1, 2, 3}}}, 1, &gltf.Document{
+		}, args{[][3]float32{{1, 2, 3}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 12, Target: gltf.TargetArrayBuffer, ByteStride: 12},
+				{ByteLength: 12, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 22, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64}},
@@ -60,41 +57,40 @@ func TestModeler_AddNormal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddNormal(tt.args.bufferIndex, tt.args.data)
+			got := WriteNormal(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddNormal() = %v, want %v", got, tt.want)
+				t.Errorf("WriteNormal() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddNormal() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteNormal() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddTangent(t *testing.T) {
+func TestWriteTangent(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        [][4]float32
+		data [][4]float32
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"base", &Modeler{Document: &gltf.Document{
+		{"base", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
+		}, args{[][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 42, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
@@ -103,41 +99,40 @@ func TestModeler_AddTangent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddTangent(tt.args.bufferIndex, tt.args.data)
+			got := WriteTangent(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddTangent() = %v, want %v", got, tt.want)
+				t.Errorf("WriteTangent() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddTangent() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteTangent() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddPosition(t *testing.T) {
+func TestWritePosition(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        [][3]float32
+		data [][3]float32
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"base", &Modeler{Document: &gltf.Document{
+		{"base", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][3]float32{{1, 2, 3}, {0, 0, -1}}}, 1, &gltf.Document{
+		}, args{[][3]float32{{1, 2, 3}, {0, 0, -1}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 24, Target: gltf.TargetArrayBuffer, ByteStride: 12},
+				{ByteLength: 24, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 34, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 191}},
@@ -146,56 +141,55 @@ func TestModeler_AddPosition(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddPosition(tt.args.bufferIndex, tt.args.data)
+			got := WritePosition(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddPosition() = %v, want %v", got, tt.want)
+				t.Errorf("WritePosition() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddPosition() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WritePosition() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddJoints(t *testing.T) {
+func TestWriteJoints(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        interface{}
+		data interface{}
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"uint8", &Modeler{Document: &gltf.Document{
+		{"uint8", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
+		}, args{[][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
 			},
 		}},
-		{"uint16", &Modeler{Document: &gltf.Document{
+		{"uint16", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
+		}, args{[][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
@@ -204,71 +198,70 @@ func TestModeler_AddJoints(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddJoints(tt.args.bufferIndex, tt.args.data)
+			got := WriteJoints(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddJoints() = %v, want %v", got, tt.want)
+				t.Errorf("WriteJoints() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddJoints() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteJoints() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddWeights(t *testing.T) {
+func TestWriteWeights(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        interface{}
+		data interface{}
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"uint8", &Modeler{Document: &gltf.Document{
+		{"uint8", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
+		}, args{[][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
 			},
 		}},
-		{"uint16", &Modeler{Document: &gltf.Document{
+		{"uint16", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
+		}, args{[][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
 			},
 		}},
-		{"float", &Modeler{Document: &gltf.Document{
+		{"float", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
+		}, args{[][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 42, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
@@ -277,110 +270,106 @@ func TestModeler_AddWeights(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddWeights(tt.args.bufferIndex, tt.args.data)
+			got := WriteWeights(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddWeights() = %v, want %v", got, tt.want)
+				t.Errorf("WriteWeights() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddWeights() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteWeights() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddTextureCoord(t *testing.T) {
+func TestWriteTextureCoord(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        interface{}
+		data interface{}
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"uint8", &Modeler{Document: &gltf.Document{
+		{"uint8", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][2]uint8{{1, 2}}}, 1, &gltf.Document{
+		}, args{[][2]uint8{{1, 2}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 0, 0}},
 			},
 		}},
-		{"uint16", &Modeler{Document: &gltf.Document{
+		{"uint16", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][2]uint16{{1, 2}}}, 1, &gltf.Document{
+		}, args{[][2]uint16{{1, 2}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 0, 2, 0}},
 			},
 		}},
-		{"float", &Modeler{Document: &gltf.Document{
+		{"float", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{2, [][2]float32{{1, 2}, {}}}, 1, &gltf.Document{
+		}, args{[][2]float32{{1, 2}, {}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 16, Target: gltf.TargetArrayBuffer, Buffer: 2, ByteStride: 8},
+				{ByteLength: 16, Target: gltf.TargetArrayBuffer, Buffer: 0},
 			},
 			Buffers: []*gltf.Buffer{
-				{ByteLength: 10},
-				{},
-				{ByteLength: 16, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0}},
+				{ByteLength: 26, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0}},
 			},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddTextureCoord(tt.args.bufferIndex, tt.args.data)
+			got := WriteTextureCoord(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddTextureCoord() = %v, want %v", got, tt.want)
+				t.Errorf("WriteTextureCoord() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddTextureCoord() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteTextureCoord() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddIndices(t *testing.T) {
+func TestWriteIndices(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        interface{}
+		data interface{}
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"uint8", &Modeler{Document: &gltf.Document{
+		{"uint8", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, []uint8{1, 2}}, 1, &gltf.Document{
+		}, args{[]uint8{1, 2}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
@@ -392,10 +381,10 @@ func TestModeler_AddIndices(t *testing.T) {
 				{ByteLength: 12, Data: []byte{1, 2}},
 			},
 		}},
-		{"uint16", &Modeler{Document: &gltf.Document{
+		{"uint16", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
+		}, args{[]uint16{1, 2}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUshort},
@@ -407,25 +396,10 @@ func TestModeler_AddIndices(t *testing.T) {
 				{ByteLength: 14, Data: []byte{1, 0, 2, 0}},
 			},
 		}},
-		{"uint16-compress", &Modeler{Document: &gltf.Document{
+		{"uint32", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}, Compression: CompressionLossless}, args{0, []uint16{1, 2}}, 1, &gltf.Document{
-			Accessors: []*gltf.Accessor{
-				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
-			},
-			BufferViews: []*gltf.BufferView{
-				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
-			},
-			Buffers: []*gltf.Buffer{
-				{ByteLength: 12, Data: []byte{1, 2}},
-			},
-		}},
-		{"uint32", &Modeler{Document: &gltf.Document{
-			Accessors: []*gltf.Accessor{{}},
-			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
+		}, args{[]uint32{1, 2}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUint},
@@ -437,88 +411,72 @@ func TestModeler_AddIndices(t *testing.T) {
 				{ByteLength: 18, Data: []byte{1, 0, 0, 0, 2, 0, 0, 0}},
 			},
 		}},
-		{"uint32-compress", &Modeler{Document: &gltf.Document{
-			Accessors: []*gltf.Accessor{{}},
-			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}, Compression: CompressionLossless}, args{0, []uint32{1, 2}}, 1, &gltf.Document{
-			Accessors: []*gltf.Accessor{
-				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
-			},
-			BufferViews: []*gltf.BufferView{
-				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
-			},
-			Buffers: []*gltf.Buffer{
-				{ByteLength: 12, Data: []byte{1, 2}},
-			},
-		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddIndices(tt.args.bufferIndex, tt.args.data)
+			got := WriteIndices(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddIndices() = %v, want %v", got, tt.want)
+				t.Errorf("WriteIndices() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddIndices() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteIndices() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddColor(t *testing.T) {
+func TestWriteColor(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		data        interface{}
+		data interface{}
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"uint8", &Modeler{Document: &gltf.Document{
+		{"uint8", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
+		}, args{[][4]uint8{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 3, 4}},
 			},
 		}},
-		{"uint16", &Modeler{Document: &gltf.Document{
+		{"uint16", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, [][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
+		}, args{[][4]uint16{{1, 2, 3, 4}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 8, Target: gltf.TargetArrayBuffer, ByteStride: 8},
+				{ByteLength: 8, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 18, Data: []byte{1, 0, 2, 0, 3, 0, 4, 0}},
 			},
 		}},
-		{"float", &Modeler{Document: &gltf.Document{
+		{"float", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
-		}}, args{0, [][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
+		}, args{[][4]float32{{1, 2, 3, 4}, {}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
 				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 32, Target: gltf.TargetArrayBuffer, ByteStride: 16},
+				{ByteLength: 32, Target: gltf.TargetArrayBuffer},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 32, Data: []byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
@@ -527,38 +485,37 @@ func TestModeler_AddColor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.AddColor(tt.args.bufferIndex, tt.args.data)
+			got := WriteColor(tt.m, tt.args.data)
 			if tt.want != got {
-				t.Errorf("Modeler.AddColor() = %v, want %v", got, tt.want)
+				t.Errorf("WriteColor() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddColor() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteColor() = %v", diff)
 				return
 			}
 		})
 	}
 }
 
-func TestModeler_AddImage(t *testing.T) {
+func TestWriteImage(t *testing.T) {
 	type args struct {
-		bufferIndex uint32
-		name        string
-		mimeType    string
-		r           io.Reader
+		name     string
+		mimeType string
+		r        io.Reader
 	}
 	tests := []struct {
 		name    string
-		m       *Modeler
+		m       *gltf.Document
 		args    args
 		want    uint32
 		wantDoc *gltf.Document
 		wantErr bool
 	}{
-		{"base", &Modeler{Document: &gltf.Document{
+		{"base", &gltf.Document{
 			Images:  []*gltf.Image{{}},
 			Buffers: []*gltf.Buffer{{ByteLength: 10, Data: make([]byte, 10)}},
-		}}, args{0, "fake", "fake/type", bytes.NewReader([]byte{1, 2})}, 1, &gltf.Document{
+		}, args{"fake", "fake/type", bytes.NewReader([]byte{1, 2})}, 1, &gltf.Document{
 			Images: []*gltf.Image{
 				{},
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
@@ -570,10 +527,10 @@ func TestModeler_AddImage(t *testing.T) {
 				{ByteLength: 12, Data: []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2}},
 			},
 		}, false},
-		{"buffer", &Modeler{Document: &gltf.Document{
+		{"buffer", &gltf.Document{
 			Images:  []*gltf.Image{{}},
 			Buffers: []*gltf.Buffer{{ByteLength: 10, Data: make([]byte, 10)}},
-		}}, args{0, "fake", "fake/type", bytes.NewBuffer([]byte{1, 2})}, 1, &gltf.Document{
+		}, args{"fake", "fake/type", bytes.NewBuffer([]byte{1, 2})}, 1, &gltf.Document{
 			Images: []*gltf.Image{
 				{},
 				{BufferView: gltf.Index(0), Name: "fake", MimeType: "fake/type"},
@@ -585,10 +542,10 @@ func TestModeler_AddImage(t *testing.T) {
 				{ByteLength: 12, Data: []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2}},
 			},
 		}, false},
-		{"err", &Modeler{Document: &gltf.Document{
+		{"err", &gltf.Document{
 			Images:  []*gltf.Image{{}},
 			Buffers: []*gltf.Buffer{{ByteLength: 10}},
-		}}, args{0, "fake", "fake/type", &errReader{}}, 0, &gltf.Document{
+		}, args{"fake", "fake/type", &errReader{}}, 0, &gltf.Document{
 			Images: []*gltf.Image{
 				{},
 			},
@@ -599,17 +556,17 @@ func TestModeler_AddImage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.m.AddImage(tt.args.bufferIndex, tt.args.name, tt.args.mimeType, tt.args.r)
+			got, err := WriteImage(tt.m, tt.args.name, tt.args.mimeType, tt.args.r)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Modeler.AddImage() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("WriteImage() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if tt.want != got {
-				t.Errorf("Modeler.AddImage() = %v, want %v", got, tt.want)
+				t.Errorf("WriteImage() = %v, want %v", got, tt.want)
 				return
 			}
-			if diff := deep.Equal(tt.m.Document, tt.wantDoc); diff != nil {
-				t.Errorf("Modeler.AddImage() = %v", diff)
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteImage() = %v", diff)
 				return
 			}
 		})
