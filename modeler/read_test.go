@@ -80,7 +80,7 @@ func TestReadAccessor(t *testing.T) {
 			Buffer: 0, ByteLength: 6, ByteOffset: 3,
 		}}}, &gltf.Accessor{
 			BufferView: gltf.Index(1), ByteOffset: 3, ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 3,
-		}}, []byte{7, 8, 9}, false},
+		}}, nil, true},
 		{"interleaved", args{&gltf.Document{
 			Buffers: []*gltf.Buffer{{ByteLength: 52, Data: []byte{
 				0, 0, 0, 0,
