@@ -11,8 +11,8 @@ func Index(i uint32) *uint32 {
 	return &i
 }
 
-// Float64 is an utility function that returns a pointer to a float64.
-func Float64(val float64) *float64 {
+// Float is an utility function that returns a pointer to a float32.
+func Float(val float32) *float32 {
 	return &val
 }
 
@@ -74,8 +74,8 @@ type Accessor struct {
 	Normalized    bool          `json:"normalized,omitempty"`      // Specifies whether integer data values should be normalized.
 	Count         uint32        `json:"count" validate:"required"` // The number of attributes referenced by this accessor.
 	Type          AccessorType  `json:"type" validate:"lte=6"`
-	Max           []float64     `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
-	Min           []float64     `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
+	Max           []float32     `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
+	Min           []float32     `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
 	Sparse        *Sparse       `json:"sparse,omitempty"`                          // Sparse storage of attributes that deviate from their initialization value.
 }
 
@@ -168,16 +168,16 @@ type Node struct {
 	Camera      *uint32     `json:"camera,omitempty"`
 	Children    []uint32    `json:"children,omitempty" validate:"omitempty,unique"`
 	Skin        *uint32     `json:"skin,omitempty"`
-	Matrix      [16]float64 `json:"matrix"` // A 4x4 transformation matrix stored in column-major order.
+	Matrix      [16]float32 `json:"matrix"` // A 4x4 transformation matrix stored in column-major order.
 	Mesh        *uint32     `json:"mesh,omitempty"`
-	Rotation    [4]float64  `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
-	Scale       [3]float64  `json:"scale"`
-	Translation [3]float64  `json:"translation"`
-	Weights     []float64   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
+	Rotation    [4]float32  `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+	Scale       [3]float32  `json:"scale"`
+	Translation [3]float32  `json:"translation"`
+	Weights     []float32   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
 }
 
 // MatrixOrDefault returns the node matrix if it represents a valid affine matrix, else return the default one.
-func (n *Node) MatrixOrDefault() [16]float64 {
+func (n *Node) MatrixOrDefault() [16]float32 {
 	if n.Matrix == emptyMatrix {
 		return DefaultMatrix
 	}
@@ -185,7 +185,7 @@ func (n *Node) MatrixOrDefault() [16]float64 {
 }
 
 // RotationOrDefault returns the node rotation if it represents a valid quaternion, else return the default one.
-func (n *Node) RotationOrDefault() [4]float64 {
+func (n *Node) RotationOrDefault() [4]float32 {
 	if n.Rotation == emptyRotation {
 		return DefaultRotation
 	}
@@ -193,7 +193,7 @@ func (n *Node) RotationOrDefault() [4]float64 {
 }
 
 // ScaleOrDefault returns the node scale if it represents a valid scale factor, else return the default one.
-func (n *Node) ScaleOrDefault() [3]float64 {
+func (n *Node) ScaleOrDefault() [3]float32 {
 	if n.Scale == emptyScale {
 		return DefaultScale
 	}
@@ -201,7 +201,7 @@ func (n *Node) ScaleOrDefault() [3]float64 {
 }
 
 // TranslationOrDefault returns the node translation.
-func (n *Node) TranslationOrDefault() [3]float64 {
+func (n *Node) TranslationOrDefault() [3]float32 {
 	return n.Translation
 }
 
@@ -228,20 +228,20 @@ type Camera struct {
 type Orthographic struct {
 	Extensions Extensions  `json:"extensions,omitempty"`
 	Extras     interface{} `json:"extras,omitempty"`
-	Xmag       float64     `json:"xmag"`                               // The horizontal magnification of the view.
-	Ymag       float64     `json:"ymag"`                               // The vertical magnification of the view.
-	Zfar       float64     `json:"zfar" validate:"gt=0,gtfield=Znear"` // The distance to the far clipping plane.
-	Znear      float64     `json:"znear" validate:"gte=0"`             // The distance to the near clipping plane.
+	Xmag       float32     `json:"xmag"`                               // The horizontal magnification of the view.
+	Ymag       float32     `json:"ymag"`                               // The vertical magnification of the view.
+	Zfar       float32     `json:"zfar" validate:"gt=0,gtfield=Znear"` // The distance to the far clipping plane.
+	Znear      float32     `json:"znear" validate:"gte=0"`             // The distance to the near clipping plane.
 }
 
 // Perspective camera containing properties to create a perspective projection matrix.
 type Perspective struct {
 	Extensions  Extensions  `json:"extensions,omitempty"`
 	Extras      interface{} `json:"extras,omitempty"`
-	AspectRatio *float64    `json:"aspectRatio,omitempty"`
-	Yfov        float64     `json:"yfov"`           // The vertical field of view in radians.
-	Zfar        *float64    `json:"zfar,omitempty"` // The distance to the far clipping plane.
-	Znear       float64     `json:"znear"`          // The distance to the near clipping plane.
+	AspectRatio *float32    `json:"aspectRatio,omitempty"`
+	Yfov        float32     `json:"yfov"`           // The vertical field of view in radians.
+	Zfar        *float32    `json:"zfar,omitempty"` // The distance to the far clipping plane.
+	Znear       float32     `json:"znear"`          // The distance to the near clipping plane.
 }
 
 // A Mesh is a set of primitives to be rendered. A node can contain one mesh. A node's transform places the mesh in the scene.
@@ -250,7 +250,7 @@ type Mesh struct {
 	Extras     interface{}  `json:"extras,omitempty"`
 	Name       string       `json:"name,omitempty"`
 	Primitives []*Primitive `json:"primitives" validate:"required,gt=0,dive"`
-	Weights    []float64    `json:"weights,omitempty"`
+	Weights    []float32    `json:"weights,omitempty"`
 }
 
 // Primitive defines the geometry to be rendered with the given material.
@@ -273,14 +273,14 @@ type Material struct {
 	NormalTexture        *NormalTexture        `json:"normalTexture,omitempty"`
 	OcclusionTexture     *OcclusionTexture     `json:"occlusionTexture,omitempty"`
 	EmissiveTexture      *TextureInfo          `json:"emissiveTexture,omitempty"`
-	EmissiveFactor       [3]float64            `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
+	EmissiveFactor       [3]float32            `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
 	AlphaMode            AlphaMode             `json:"alphaMode,omitempty" validate:"lte=2"`
-	AlphaCutoff          *float64              `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
+	AlphaCutoff          *float32              `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
 	DoubleSided          bool                  `json:"doubleSided,omitempty"`
 }
 
 // AlphaCutoffOrDefault returns the scale if it is not nil, else return the default one.
-func (m *Material) AlphaCutoffOrDefault() float64 {
+func (m *Material) AlphaCutoffOrDefault() float32 {
 	if m.AlphaCutoff == nil {
 		return 0.5
 	}
@@ -293,11 +293,11 @@ type NormalTexture struct {
 	Extras     interface{} `json:"extras,omitempty"`
 	Index      *uint32     `json:"index,omitempty"`
 	TexCoord   uint32      `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
-	Scale      *float64    `json:"scale,omitempty"`
+	Scale      *float32    `json:"scale,omitempty"`
 }
 
 // ScaleOrDefault returns the scale if it is not nil, else return the default one.
-func (n *NormalTexture) ScaleOrDefault() float64 {
+func (n *NormalTexture) ScaleOrDefault() float32 {
 	if n.Scale == nil {
 		return 1
 	}
@@ -310,11 +310,11 @@ type OcclusionTexture struct {
 	Extras     interface{} `json:"extras,omitempty"`
 	Index      *uint32     `json:"index,omitempty"`
 	TexCoord   uint32      `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
-	Strength   *float64    `json:"strength,omitempty" validate:"omitempty,gte=0,lte=1"`
+	Strength   *float32    `json:"strength,omitempty" validate:"omitempty,gte=0,lte=1"`
 }
 
 // StrengthOrDefault returns the strength if it is not nil, else return the default one.
-func (o *OcclusionTexture) StrengthOrDefault() float64 {
+func (o *OcclusionTexture) StrengthOrDefault() float32 {
 	if o.Strength == nil {
 		return 1
 	}
@@ -327,13 +327,13 @@ type PBRMetallicRoughness struct {
 	Extras                   interface{}  `json:"extras,omitempty"`
 	BaseColorFactor          *[4]float32  `json:"baseColorFactor,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
 	BaseColorTexture         *TextureInfo `json:"baseColorTexture,omitempty"`
-	MetallicFactor           *float64     `json:"metallicFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
-	RoughnessFactor          *float64     `json:"roughnessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	MetallicFactor           *float32     `json:"metallicFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	RoughnessFactor          *float32     `json:"roughnessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
 	MetallicRoughnessTexture *TextureInfo `json:"metallicRoughnessTexture,omitempty"`
 }
 
 // MetallicFactorOrDefault returns the metallic factor if it is not nil, else return the default one.
-func (p *PBRMetallicRoughness) MetallicFactorOrDefault() float64 {
+func (p *PBRMetallicRoughness) MetallicFactorOrDefault() float32 {
 	if p.MetallicFactor == nil {
 		return 1
 	}
@@ -341,7 +341,7 @@ func (p *PBRMetallicRoughness) MetallicFactorOrDefault() float64 {
 }
 
 // RoughnessFactorOrDefault returns the roughness factor if it is not nil, else return the default one.
-func (p *PBRMetallicRoughness) RoughnessFactorOrDefault() float64 {
+func (p *PBRMetallicRoughness) RoughnessFactorOrDefault() float32 {
 	if p.RoughnessFactor == nil {
 		return 1
 	}

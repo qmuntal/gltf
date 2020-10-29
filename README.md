@@ -132,7 +132,7 @@ func main() {
     doc := &gltf.Document{
         Accessors: []*gltf.Accessor{
             {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUShort, Count: 36, Type: gltf.AccessorScalar},
-            {BufferView: gltf.Index(1), ComponentType: gltf.ComponentFloat, Count: 24, Max: []float64{0.5, 0.5, 0.5}, Min: []float64{-0.5, -0.            -0.5}, Type: gltf.AccessorVec3},
+            {BufferView: gltf.Index(1), ComponentType: gltf.ComponentFloat, Count: 24, Max: []float32{0.5, 0.5, 0.5}, Min: []float32{-0.5, -0.            -0.5}, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(3), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec4},
             {BufferView: gltf.Index(4), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec2},

@@ -149,11 +149,11 @@ func TestReadAccessorAllocs(t *testing.T) {
 		BufferView: gltf.Index(0), ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 4,
 	}
 
-	testFunc := func(t *testing.T, buf [][3]float32, want float64) {
+	testFunc := func(t *testing.T, buf [][3]float32, want float32) {
 		allocs := testing.AllocsPerRun(10, func() {
 			ReadAccessor(doc, acr, buf)
 		})
-		if allocs != want {
+		if allocs != float64(want) {
 			t.Errorf("ReadAccessor expected %v allocs got %v", want, allocs)
 		}
 

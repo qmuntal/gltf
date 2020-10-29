@@ -114,11 +114,11 @@ func TestNode_MatrixOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [16]float64
+		want [16]float32
 	}{
 		{"default", &Node{Matrix: DefaultMatrix}, DefaultMatrix},
 		{"zeros", &Node{Matrix: emptyMatrix}, DefaultMatrix},
-		{"other", &Node{Matrix: [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}}, [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}},
+		{"other", &Node{Matrix: [16]float32{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}}, [16]float32{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -133,11 +133,11 @@ func TestNode_RotationOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [4]float64
+		want [4]float32
 	}{
 		{"default", &Node{Rotation: DefaultRotation}, DefaultRotation},
 		{"zeros", &Node{Rotation: emptyRotation}, DefaultRotation},
-		{"other", &Node{Rotation: [4]float64{1, 2, 3, 4}}, [4]float64{1, 2, 3, 4}},
+		{"other", &Node{Rotation: [4]float32{1, 2, 3, 4}}, [4]float32{1, 2, 3, 4}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -152,11 +152,11 @@ func TestNode_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [3]float64
+		want [3]float32
 	}{
 		{"default", &Node{Scale: DefaultScale}, DefaultScale},
 		{"zeros", &Node{Scale: emptyScale}, DefaultScale},
-		{"other", &Node{Scale: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
+		{"other", &Node{Scale: [3]float32{1, 2, 3}}, [3]float32{1, 2, 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -171,10 +171,10 @@ func TestNode_TranslationOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [3]float64
+		want [3]float32
 	}{
 		{"default", &Node{Translation: DefaultTranslation}, DefaultTranslation},
-		{"other", &Node{Translation: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
+		{"other", &Node{Translation: [3]float32{1, 2, 3}}, [3]float32{1, 2, 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -207,10 +207,10 @@ func TestOcclusionTexture_StrengthOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		o    *OcclusionTexture
-		want float64
+		want float32
 	}{
 		{"empty", &OcclusionTexture{}, 1},
-		{"other", &OcclusionTexture{Strength: Float64(2)}, 2},
+		{"other", &OcclusionTexture{Strength: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -225,10 +225,10 @@ func TestNormalTexture_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *NormalTexture
-		want float64
+		want float32
 	}{
 		{"empty", &NormalTexture{}, 1},
-		{"other", &NormalTexture{Scale: Float64(2)}, 2},
+		{"other", &NormalTexture{Scale: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -243,10 +243,10 @@ func TestMaterial_AlphaCutoffOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *Material
-		want float64
+		want float32
 	}{
 		{"empty", &Material{}, 0.5},
-		{"other", &Material{AlphaCutoff: Float64(2)}, 2},
+		{"other", &Material{AlphaCutoff: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -261,10 +261,10 @@ func TestPBRMetallicRoughness_MetallicFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want float64
+		want float32
 	}{
 		{"empty", &PBRMetallicRoughness{}, 1},
-		{"other", &PBRMetallicRoughness{MetallicFactor: Float64(2)}, 2},
+		{"other", &PBRMetallicRoughness{MetallicFactor: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -279,10 +279,10 @@ func TestPBRMetallicRoughness_RoughnessFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want float64
+		want float32
 	}{
 		{"empty", &PBRMetallicRoughness{}, 1},
-		{"other", &PBRMetallicRoughness{RoughnessFactor: Float64(2)}, 2},
+		{"other", &PBRMetallicRoughness{RoughnessFactor: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

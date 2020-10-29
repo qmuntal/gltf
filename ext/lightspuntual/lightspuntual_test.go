@@ -13,10 +13,10 @@ func TestLight_IntensityOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		l    *Light
-		want float64
+		want float32
 	}{
 		{"empty", &Light{}, 1},
-		{"other", &Light{Intensity: gltf.Float64(0.5)}, 0.5},
+		{"other", &Light{Intensity: gltf.Float(0.5)}, 0.5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -49,10 +49,10 @@ func TestSpot_OuterConeAngleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		s    *Spot
-		want float64
+		want float32
 	}{
 		{"empty", &Spot{}, math.Pi / 4},
-		{"other", &Spot{OuterConeAngle: gltf.Float64(0.5)}, 0.5},
+		{"other", &Spot{OuterConeAngle: gltf.Float(0.5)}, 0.5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -75,7 +75,7 @@ func TestLight_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", new(Light), args{[]byte("{}")}, &Light{
-			Color: &[3]float32{1, 1, 1}, Intensity: gltf.Float64(1), Range: gltf.Float64(math.Inf(0)),
+			Color: &[3]float32{1, 1, 1}, Intensity: gltf.Float(1), Range: gltf.Float(float32(math.Inf(0))),
 		}, false},
 		{"nodefault", new(Light), args{[]byte(`{
 			"color": [0.3, 0.7, 1.0],
@@ -88,10 +88,10 @@ func TestLight_UnmarshalJSON(t *testing.T) {
 			  "outerConeAngle": 2.0
 			}
 		  }`)}, &Light{
-			Name: "AAA", Type: "spot", Color: &[3]float32{0.3, 0.7, 1}, Intensity: gltf.Float64(40), Range: gltf.Float64(10),
+			Name: "AAA", Type: "spot", Color: &[3]float32{0.3, 0.7, 1}, Intensity: gltf.Float(40), Range: gltf.Float(10),
 			Spot: &Spot{
 				InnerConeAngle: 1.0,
-				OuterConeAngle: gltf.Float64(2.0),
+				OuterConeAngle: gltf.Float(2.0),
 			},
 		}, false},
 	}
@@ -133,8 +133,8 @@ func TestUnmarshal(t *testing.T) {
 			  "type": "point"
 			}
 		  ]}`)}, Lights{
-			{Color: &[3]float32{1, 0.9, 0.7}, Name: "Directional", Intensity: gltf.Float64(3.0), Type: "directional", Range: gltf.Float64(math.Inf(0))},
-			{Color: &[3]float32{1, 0, 0}, Name: "Point", Intensity: gltf.Float64(20.0), Type: "point", Range: gltf.Float64(math.Inf(0))},
+			{Color: &[3]float32{1, 0.9, 0.7}, Name: "Directional", Intensity: gltf.Float(3.0), Type: "directional", Range: gltf.Float(float32(math.Inf(0)))},
+			{Color: &[3]float32{1, 0, 0}, Name: "Point", Intensity: gltf.Float(20.0), Type: "point", Range: gltf.Float(float32(math.Inf(0)))},
 		}, false},
 	}
 	for _, tt := range tests {

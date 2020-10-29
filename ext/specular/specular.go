@@ -28,14 +28,14 @@ type PBRSpecularGlossiness struct {
 	DiffuseFactor             *[4]float32       `json:"diffuseFactor,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
 	DiffuseTexture            *gltf.TextureInfo `json:"diffuseTexture,omitempty"`
 	SpecularFactor            *[3]float32       `json:"specularFactor,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
-	GlossinessFactor          *float64          `json:"glossinessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	GlossinessFactor          *float32          `json:"glossinessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
 	SpecularGlossinessTexture *gltf.TextureInfo `json:"specularGlossinessTexture,omitempty"`
 }
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.
 func (p *PBRSpecularGlossiness) UnmarshalJSON(data []byte) error {
 	type alias PBRSpecularGlossiness
-	tmp := alias(PBRSpecularGlossiness{DiffuseFactor: &[4]float32{1, 1, 1, 1}, SpecularFactor: &[3]float32{1, 1, 1}, GlossinessFactor: gltf.Float64(1)})
+	tmp := alias(PBRSpecularGlossiness{DiffuseFactor: &[4]float32{1, 1, 1, 1}, SpecularFactor: &[3]float32{1, 1, 1}, GlossinessFactor: gltf.Float(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*p = PBRSpecularGlossiness(tmp)

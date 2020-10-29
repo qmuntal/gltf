@@ -90,12 +90,12 @@ func WriteJoints(doc *gltf.Document, data interface{}) uint32 {
 // and fills the last buffer with the vertices data.
 // If success it returns the index of the new accessor.
 func WritePosition(doc *gltf.Document, data [][3]float32) uint32 {
-	min := [3]float64{math.MaxFloat64, math.MaxFloat64, math.MaxFloat64}
-	max := [3]float64{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
+	min := [3]float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+	max := [3]float32{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 	for _, v := range data {
 		for i, x := range v {
-			min[i] = math.Min(min[i], float64(x))
-			max[i] = math.Max(max[i], float64(x))
+			min[i] = float32(math.Min(float64(min[i]), float64(x)))
+			max[i] = float32(math.Max(float64(max[i]), float64(x)))
 		}
 	}
 	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
