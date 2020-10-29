@@ -3,8 +3,6 @@ package gltf
 import (
 	"encoding/base64"
 	"fmt"
-	"image/color"
-	"math"
 	"strings"
 )
 
@@ -323,53 +321,11 @@ func (o *OcclusionTexture) StrengthOrDefault() float64 {
 	return *o.Strength
 }
 
-// The RGBA components of a color.
-// Each element must be greater than or equal to 0 and less than or equal to 1.
-type RGBA struct {
-	R, G, B, A float64 `validate:"gte=0,lte=1"`
-}
-
-// NewRGBA returns a default RGBA color.
-func NewRGBA() *RGBA {
-	return &RGBA{1, 1, 1, 1}
-}
-
-// NewRGBAColor transform a RGB uint8 color (from 0 to 255) to its float represtation (from 0 to 1).
-func NewRGBAColor(c color.RGBA) *RGBA {
-	linear := NewRGBColor(c)
-	return &RGBA{R: linear.R, G: linear.G, B: linear.B, A: float64(c.A) / 255}
-}
-
-// The RGB components of a color.
-// Each element must be greater than or equal to 0 and less than or equal to 1.
-type RGB struct {
-	R, G, B float64 `validate:"gte=0,lte=1"`
-}
-
-// NewRGB returns a default RGB color.
-func NewRGB() *RGB {
-	return &RGB{1, 1, 1}
-}
-
-// NewRGBColor transform a RGB uint8 color (from 0 to 255) to its float represtation (from 0 to 1).
-func NewRGBColor(c color.RGBA) *RGB {
-	sRGB := [3]float64{float64(c.R) / 255, float64(c.G) / 255, float64(c.B) / 255}
-	var linear [3]float64
-	for i := 0; i < 3; i++ {
-		if sRGB[i] <= 0.04045 {
-			linear[i] = sRGB[i] / 12.92
-		} else {
-			linear[i] = math.Pow(((sRGB[i] + 0.055) / 1.055), 2.4)
-		}
-	}
-	return &RGB{R: linear[0], G: linear[1], B: linear[2]}
-}
-
 // PBRMetallicRoughness defines a set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
 type PBRMetallicRoughness struct {
 	Extensions               Extensions   `json:"extensions,omitempty"`
 	Extras                   interface{}  `json:"extras,omitempty"`
-	BaseColorFactor          *RGBA        `json:"baseColorFactor,omitempty"`
+	BaseColorFactor          *[4]float32  `json:"baseColorFactor,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
 	BaseColorTexture         *TextureInfo `json:"baseColorTexture,omitempty"`
 	MetallicFactor           *float64     `json:"metallicFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
 	RoughnessFactor          *float64     `json:"roughnessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
@@ -393,9 +349,9 @@ func (p *PBRMetallicRoughness) RoughnessFactorOrDefault() float64 {
 }
 
 // BaseColorFactorOrDefault returns the base color factor if it is not nil, else return the default one.
-func (p *PBRMetallicRoughness) BaseColorFactorOrDefault() RGBA {
+func (p *PBRMetallicRoughness) BaseColorFactorOrDefault() [4]float32 {
 	if p.BaseColorFactor == nil {
-		return *NewRGBA()
+		return [4]float32{1, 1, 1, 1}
 	}
 	return *p.BaseColorFactor
 }

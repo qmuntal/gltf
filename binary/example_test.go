@@ -36,8 +36,8 @@ func ExampleRead() {
 	sizeIndices := uint32(len(indices)) * binary.SizeOfElement(gltf.ComponentUbyte, gltf.AccessorScalar)
 
 	// Write
-	binary.Read(b, indices)
-	binary.Read(b[sizeIndices:], vertices)
+	binary.Read(b, 0, indices)
+	binary.Read(b[sizeIndices:], 0, vertices)
 
 	fmt.Println(indices)
 	fmt.Println(vertices)

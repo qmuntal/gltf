@@ -79,12 +79,12 @@ type Lights []*Light
 // Light defines a directional, point, or spot light.
 // When a light's type is spot, the spot property on the light is required.
 type Light struct {
-	Type      string    `json:"type"`
-	Name      string    `json:"name,omitempty"`
-	Color     *gltf.RGB `json:"color,omitempty"`
-	Intensity *float64  `json:"intensity,omitempty"`
-	Range     *float64  `json:"range,omitempty"`
-	Spot      *Spot     `json:"spot,omitempty"`
+	Type      string      `json:"type"`
+	Name      string      `json:"name,omitempty"`
+	Color     *[3]float32 `json:"color,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
+	Intensity *float64    `json:"intensity,omitempty"`
+	Range     *float64    `json:"range,omitempty"`
+	Spot      *Spot       `json:"spot,omitempty"`
 }
 
 // IntensityOrDefault returns the itensity if it is not nil, else return the default one.
@@ -96,9 +96,9 @@ func (l *Light) IntensityOrDefault() float64 {
 }
 
 // ColorOrDefault returns the color if it is not nil, else return the default one.
-func (l *Light) ColorOrDefault() gltf.RGB {
+func (l *Light) ColorOrDefault() [3]float32 {
 	if l.Color == nil {
-		return *gltf.NewRGB()
+		return [3]float32{1, 1, 1}
 	}
 	return *l.Color
 }
@@ -106,7 +106,7 @@ func (l *Light) ColorOrDefault() gltf.RGB {
 // UnmarshalJSON unmarshal the light with the correct default values.
 func (l *Light) UnmarshalJSON(data []byte) error {
 	type alias Light
-	tmp := alias(Light{Color: gltf.NewRGB(), Intensity: gltf.Float64(1), Range: gltf.Float64(math.Inf(0))})
+	tmp := alias(Light{Color: &[3]float32{1, 1, 1}, Intensity: gltf.Float64(1), Range: gltf.Float64(math.Inf(0))})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*l = Light(tmp)

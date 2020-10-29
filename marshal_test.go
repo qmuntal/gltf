@@ -174,9 +174,9 @@ func TestPBRMetallicRoughness_UnmarshalJSON(t *testing.T) {
 		want    *PBRMetallicRoughness
 		wantErr bool
 	}{
-		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: NewRGBA(), MetallicFactor: Float64(1), RoughnessFactor: Float64(1)}, false},
+		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: &[4]float32{1, 1, 1, 1}, MetallicFactor: Float64(1), RoughnessFactor: Float64(1)}, false},
 		{"nodefault", new(PBRMetallicRoughness), args{[]byte(`{"baseColorFactor": [0.1,0.2,0.6,0.7],"metallicFactor":0.5,"roughnessFactor":0.1}`)}, &PBRMetallicRoughness{
-			BaseColorFactor: &RGBA{R: 0.1, G: 0.2, B: 0.6, A: 0.7}, MetallicFactor: Float64(0.5), RoughnessFactor: Float64(0.1),
+			BaseColorFactor: &[4]float32{0.1, 0.2, 0.6, 0.7}, MetallicFactor: Float64(0.5), RoughnessFactor: Float64(0.1),
 		}, false},
 	}
 	for _, tt := range tests {
@@ -323,9 +323,9 @@ func TestPBRMetallicRoughness_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &PBRMetallicRoughness{MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorFactor: NewRGBA()}, []byte(`{}`), false},
+		{"default", &PBRMetallicRoughness{MetallicFactor: Float64(1), RoughnessFactor: Float64(1), BaseColorFactor: &[4]float32{1, 1, 1, 1}}, []byte(`{}`), false},
 		{"empty", &PBRMetallicRoughness{MetallicFactor: Float64(0), RoughnessFactor: Float64(0)}, []byte(`{"metallicFactor":0,"roughnessFactor":0}`), false},
-		{"nodefault", &PBRMetallicRoughness{MetallicFactor: Float64(0.5), RoughnessFactor: Float64(0.5), BaseColorFactor: &RGBA{R: 1, G: 0.5, B: 1, A: 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
+		{"nodefault", &PBRMetallicRoughness{MetallicFactor: Float64(0.5), RoughnessFactor: Float64(0.5), BaseColorFactor: &[4]float32{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

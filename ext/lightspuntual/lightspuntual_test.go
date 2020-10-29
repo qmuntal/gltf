@@ -31,10 +31,10 @@ func TestLight_ColorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		l    *Light
-		want gltf.RGB
+		want [3]float32
 	}{
-		{"empty", &Light{}, *gltf.NewRGB()},
-		{"other", &Light{Color: &gltf.RGB{R: 0.8, G: 0.8, B: 0.8}}, gltf.RGB{R: 0.8, G: 0.8, B: 0.8}},
+		{"empty", &Light{}, [3]float32{1, 1, 1}},
+		{"other", &Light{Color: &[3]float32{0.8, 0.8, 0.8}}, [3]float32{0.8, 0.8, 0.8}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -75,7 +75,7 @@ func TestLight_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", new(Light), args{[]byte("{}")}, &Light{
-			Color: gltf.NewRGB(), Intensity: gltf.Float64(1), Range: gltf.Float64(math.Inf(0)),
+			Color: &[3]float32{1, 1, 1}, Intensity: gltf.Float64(1), Range: gltf.Float64(math.Inf(0)),
 		}, false},
 		{"nodefault", new(Light), args{[]byte(`{
 			"color": [0.3, 0.7, 1.0],
@@ -88,7 +88,7 @@ func TestLight_UnmarshalJSON(t *testing.T) {
 			  "outerConeAngle": 2.0
 			}
 		  }`)}, &Light{
-			Name: "AAA", Type: "spot", Color: &gltf.RGB{R: 0.3, G: 0.7, B: 1.0}, Intensity: gltf.Float64(40), Range: gltf.Float64(10),
+			Name: "AAA", Type: "spot", Color: &[3]float32{0.3, 0.7, 1}, Intensity: gltf.Float64(40), Range: gltf.Float64(10),
 			Spot: &Spot{
 				InnerConeAngle: 1.0,
 				OuterConeAngle: gltf.Float64(2.0),
@@ -133,8 +133,8 @@ func TestUnmarshal(t *testing.T) {
 			  "type": "point"
 			}
 		  ]}`)}, Lights{
-			{Color: &gltf.RGB{R: 1.0, G: 0.9, B: 0.7}, Name: "Directional", Intensity: gltf.Float64(3.0), Type: "directional", Range: gltf.Float64(math.Inf(0))},
-			{Color: &gltf.RGB{R: 1.0}, Name: "Point", Intensity: gltf.Float64(20.0), Type: "point", Range: gltf.Float64(math.Inf(0))},
+			{Color: &[3]float32{1, 0.9, 0.7}, Name: "Directional", Intensity: gltf.Float64(3.0), Type: "directional", Range: gltf.Float64(math.Inf(0))},
+			{Color: &[3]float32{1, 0, 0}, Name: "Point", Intensity: gltf.Float64(20.0), Type: "point", Range: gltf.Float64(math.Inf(0))},
 		}, false},
 	}
 	for _, tt := range tests {

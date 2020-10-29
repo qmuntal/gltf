@@ -148,7 +148,7 @@ func main() {
         Buffers: []*gltf.Buffer{{ByteLength: 1224, URI: bufferData}},
         Materials: []*gltf.Material{{
             Name: "Default", AlphaMode: gltf.AlphaOpaque, AlphaCutoff: gltf.Float64(0.5),
-            PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: &gltf.RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1}, MetallicFactor: gltf.Float64(0.1), RoughnessFactor: gltf.Float64(0.99)},
+            PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 0.5}, MetallicFactor: gltf.Float64(0.1), RoughnessFactor: gltf.Float64(0.99)},
         }},
         Meshes: []*gltf.Mesh{{Name: "Cube", Primitives: []*gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
         Nodes: []*gltf.Node{

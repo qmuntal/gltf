@@ -112,7 +112,7 @@ func WriteColor(doc *gltf.Document, data interface{}) uint32 {
 	switch data.(type) {
 	case []color.RGBA, []color.RGBA64, [][4]uint8, [][3]uint8, [][4]uint16, [][3]uint16:
 		normalized = true
-	case []gltf.RGB, []gltf.RGBA, [][3]float32, [][4]float32:
+	case [][3]float32, [][4]float32:
 	default:
 		panic(fmt.Sprintf("modeler.WriteColor: invalid type %T", data))
 	}
