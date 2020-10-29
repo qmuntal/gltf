@@ -1,11 +1,8 @@
 package gltf
 
 import (
-	"image/color"
 	"reflect"
 	"testing"
-
-	"github.com/go-test/deep"
 )
 
 func TestDocument(t *testing.T) {
@@ -117,11 +114,11 @@ func TestNode_MatrixOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [16]float64
+		want [16]float32
 	}{
 		{"default", &Node{Matrix: DefaultMatrix}, DefaultMatrix},
 		{"zeros", &Node{Matrix: emptyMatrix}, DefaultMatrix},
-		{"other", &Node{Matrix: [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}}, [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}},
+		{"other", &Node{Matrix: [16]float32{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}}, [16]float32{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -136,11 +133,11 @@ func TestNode_RotationOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [4]float64
+		want [4]float32
 	}{
 		{"default", &Node{Rotation: DefaultRotation}, DefaultRotation},
 		{"zeros", &Node{Rotation: emptyRotation}, DefaultRotation},
-		{"other", &Node{Rotation: [4]float64{1, 2, 3, 4}}, [4]float64{1, 2, 3, 4}},
+		{"other", &Node{Rotation: [4]float32{1, 2, 3, 4}}, [4]float32{1, 2, 3, 4}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -155,11 +152,11 @@ func TestNode_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [3]float64
+		want [3]float32
 	}{
 		{"default", &Node{Scale: DefaultScale}, DefaultScale},
 		{"zeros", &Node{Scale: emptyScale}, DefaultScale},
-		{"other", &Node{Scale: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
+		{"other", &Node{Scale: [3]float32{1, 2, 3}}, [3]float32{1, 2, 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -174,10 +171,10 @@ func TestNode_TranslationOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [3]float64
+		want [3]float32
 	}{
 		{"default", &Node{Translation: DefaultTranslation}, DefaultTranslation},
-		{"other", &Node{Translation: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
+		{"other", &Node{Translation: [3]float32{1, 2, 3}}, [3]float32{1, 2, 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -192,10 +189,10 @@ func TestPBRMetallicRoughness_BaseColorFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want RGBA
+		want [4]float32
 	}{
-		{"empty", &PBRMetallicRoughness{}, *NewRGBA()},
-		{"other", &PBRMetallicRoughness{BaseColorFactor: &RGBA{0.8, 0.8, 0.8, 0.5}}, RGBA{0.8, 0.8, 0.8, 0.5}},
+		{"empty", &PBRMetallicRoughness{}, [4]float32{1, 1, 1, 1}},
+		{"other", &PBRMetallicRoughness{BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 0.5}}, [4]float32{0.8, 0.8, 0.8, 0.5}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -210,10 +207,10 @@ func TestOcclusionTexture_StrengthOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		o    *OcclusionTexture
-		want float64
+		want float32
 	}{
 		{"empty", &OcclusionTexture{}, 1},
-		{"other", &OcclusionTexture{Strength: Float64(2)}, 2},
+		{"other", &OcclusionTexture{Strength: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -228,10 +225,10 @@ func TestNormalTexture_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *NormalTexture
-		want float64
+		want float32
 	}{
 		{"empty", &NormalTexture{}, 1},
-		{"other", &NormalTexture{Scale: Float64(2)}, 2},
+		{"other", &NormalTexture{Scale: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -246,10 +243,10 @@ func TestMaterial_AlphaCutoffOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *Material
-		want float64
+		want float32
 	}{
 		{"empty", &Material{}, 0.5},
-		{"other", &Material{AlphaCutoff: Float64(2)}, 2},
+		{"other", &Material{AlphaCutoff: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -264,10 +261,10 @@ func TestPBRMetallicRoughness_MetallicFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want float64
+		want float32
 	}{
 		{"empty", &PBRMetallicRoughness{}, 1},
-		{"other", &PBRMetallicRoughness{MetallicFactor: Float64(2)}, 2},
+		{"other", &PBRMetallicRoughness{MetallicFactor: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -282,81 +279,15 @@ func TestPBRMetallicRoughness_RoughnessFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want float64
+		want float32
 	}{
 		{"empty", &PBRMetallicRoughness{}, 1},
-		{"other", &PBRMetallicRoughness{RoughnessFactor: Float64(2)}, 2},
+		{"other", &PBRMetallicRoughness{RoughnessFactor: Float(2)}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.RoughnessFactorOrDefault(); got != tt.want {
 				t.Errorf("PBRMetallicRoughness.RoughnessFactorOrDefault() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNewRGBColor(t *testing.T) {
-	deep.FloatPrecision = 6
-	type args struct {
-		c color.RGBA
-	}
-	tests := []struct {
-		name string
-		args args
-		want *RGB
-	}{
-		{"empty", args{color.RGBA{}}, &RGB{}},
-		{"base", args{color.RGBA{R: 1, G: 1, B: 1}}, &RGB{R: 0.0003035, G: 0.0003035, B: 0.0003035}},
-		{"max", args{color.RGBA{R: 255, G: 255, B: 255}}, &RGB{R: 1, G: 1, B: 1}},
-		{"other", args{color.RGBA{R: 60, G: 120, B: 180}}, &RGB{R: 0.045186, G: 0.1878207, B: 0.4564110}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewRGBColor(tt.args.c)
-			if diff := deep.Equal(got, tt.want); diff != nil {
-				t.Errorf("NewRGBColor() = %v", diff)
-			}
-		})
-	}
-}
-
-func TestNewRGB(t *testing.T) {
-	tests := []struct {
-		name string
-		want *RGB
-	}{
-		{"base", &RGB{1, 1, 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewRGB(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewRGB() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNewRGBAColor(t *testing.T) {
-	deep.FloatPrecision = 6
-	type args struct {
-		c color.RGBA
-	}
-	tests := []struct {
-		name string
-		args args
-		want *RGBA
-	}{
-		{"empty", args{color.RGBA{}}, &RGBA{}},
-		{"base", args{color.RGBA{R: 1, G: 1, B: 1, A: 1}}, &RGBA{R: 0.0003035, G: 0.0003035, B: 0.0003035, A: 0.00392156}},
-		{"max", args{color.RGBA{R: 255, G: 255, B: 255, A: 255}}, &RGBA{R: 1, G: 1, B: 1, A: 1}},
-		{"other", args{color.RGBA{R: 60, G: 120, B: 180, A: 220}}, &RGBA{R: 0.045186, G: 0.1878207, B: 0.4564110, A: 0.86274509}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewRGBAColor(tt.args.c)
-			if diff := deep.Equal(got, tt.want); diff != nil {
-				t.Errorf("NewRGBAColor() = %v", diff)
 			}
 		})
 	}

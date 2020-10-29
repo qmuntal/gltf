@@ -5,22 +5,25 @@ import (
 	"encoding/binary"
 	"image/color"
 	"io"
-
-	"github.com/qmuntal/gltf"
 )
 
 // Read reads structured binary data from b into data.
-// Data should be a slice of glTF predefined fixed-size types,
-// else it fallbacks to `encoding/binary.Read`.
+// byteStride can be zero for non-interleaved buffer views.
 //
+// Data should be a slice of glTF predefined fixed-size types.
 // If data length is greater than the length of b, Read returns io.ErrShortBuffer.
-func Read(b []byte, data interface{}) error {
+func Read(b []byte, byteStride uint32, data interface{}) error {
 	c, t, n := Type(data)
-	if n == 0 {
-		return binary.Read(bytes.NewReader(b), binary.LittleEndian, data)
+	size := SizeOfElement(c, t)
+	if byteStride == 0 {
+		byteStride = size
 	}
-	e := int(SizeOfElement(c, t))
-	if len(b) < int(n)*e {
+	e := int(byteStride)
+	high := int(n) * e
+	if byteStride != size {
+		high -= int(size)
+	}
+	if len(b) < high {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {
@@ -33,16 +36,6 @@ func Read(b []byte, data interface{}) error {
 		for i := range data {
 			c := Ushort.Vec4(b[e*i:])
 			data[i] = color.RGBA64{R: c[0], G: c[1], B: c[2], A: c[3]}
-		}
-	case []gltf.RGBA:
-		for i := range data {
-			c := Float.Vec4(b[e*i:])
-			data[i] = gltf.RGBA{R: float64(c[0]), G: float64(c[1]), B: float64(c[2]), A: float64(c[3])}
-		}
-	case []gltf.RGB:
-		for i := range data {
-			c := Float.Vec3(b[e*i:])
-			data[i] = gltf.RGB{R: float64(c[0]), G: float64(c[1]), B: float64(c[2])}
 		}
 	case []int8:
 		for i, x := range b {
@@ -73,7 +66,13 @@ func Read(b []byte, data interface{}) error {
 			data[i] = Byte.Mat4(b[e*i:])
 		}
 	case []uint8:
-		copy(data, b)
+		if byteStride != 1 {
+			copy(data, b)
+		} else {
+			for i := range data {
+				data[i] = Ubyte.Scalar(b[e*i:])
+			}
+		}
 	case [][2]uint8:
 		for i := range data {
 			data[i] = Ubyte.Vec2(b[e*i:])
@@ -210,6 +209,8 @@ func Read(b []byte, data interface{}) error {
 		for i := range data {
 			data[i] = Uint.Mat4(b[e*i:])
 		}
+	default:
+		panic("unsupported type")
 	}
 	return nil
 }
@@ -239,14 +240,6 @@ func Write(b []byte, stride uint32, data interface{}) error {
 	case []color.RGBA64:
 		for i, x := range data {
 			Ushort.PutVec4(b[e*i:], [4]uint16{x.R, x.G, x.B, x.A})
-		}
-	case []gltf.RGBA:
-		for i, x := range data {
-			Float.PutVec4(b[e*i:], [4]float32{float32(x.R), float32(x.G), float32(x.B), float32(x.A)})
-		}
-	case []gltf.RGB:
-		for i, x := range data {
-			Float.PutVec3(b[e*i:], [3]float32{float32(x.R), float32(x.G), float32(x.B)})
 		}
 	case []int8:
 		for i, x := range data {

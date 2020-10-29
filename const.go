@@ -4,19 +4,19 @@ import "encoding/json"
 
 var (
 	// DefaultMatrix defines an identity matrix.
-	DefaultMatrix = [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+	DefaultMatrix = [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
 	// DefaultRotation defines a quaternion without rotation.
-	DefaultRotation = [4]float64{0, 0, 0, 1}
+	DefaultRotation = [4]float32{0, 0, 0, 1}
 	// DefaultScale defines a scaling that does not modify the size of the object.
-	DefaultScale = [3]float64{1, 1, 1}
+	DefaultScale = [3]float32{1, 1, 1}
 	// DefaultTranslation defines a translation that does not move the object.
-	DefaultTranslation = [3]float64{0, 0, 0}
+	DefaultTranslation = [3]float32{0, 0, 0}
 )
 
 var (
-	emptyMatrix   = [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	emptyRotation = [4]float64{0, 0, 0, 0}
-	emptyScale    = [3]float64{0, 0, 0}
+	emptyMatrix   = [16]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	emptyRotation = [4]float32{0, 0, 0, 0}
+	emptyScale    = [3]float32{0, 0, 0}
 )
 
 // The ComponentType is the datatype of components in the attribute. All valid values correspond to WebGL enums.

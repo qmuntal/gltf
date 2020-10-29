@@ -51,7 +51,7 @@ func TestEncoder_Encode(t *testing.T) {
 		{"withExtensions", args{&Document{Extras: 8.0, ExtensionsUsed: []string{"c"}, ExtensionsRequired: []string{"d", "e"}}}, false},
 		{"withAsset", args{&Document{Asset: Asset{Extras: 8.0, Copyright: "@2019", Generator: "qmuntal/gltf", Version: "2.0", MinVersion: "1.0"}}}, false},
 		{"withAccessors", args{&Document{Accessors: []*Accessor{
-			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: ComponentByte, Normalized: true, Count: 5, Type: AccessorVec3, Max: []float64{1, 2}, Min: []float64{2.4}},
+			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: ComponentByte, Normalized: true, Count: 5, Type: AccessorVec3, Max: []float32{1, 2}, Min: []float32{2.4}},
 			{BufferView: Index(0), Normalized: false, Count: 50, Type: AccessorVec4, Sparse: &Sparse{Extras: 8.0, Count: 2,
 				Values:  SparseValues{Extras: 8.0, BufferView: 1, ByteOffset: 2},
 				Indices: SparseIndices{Extras: 8.0, BufferView: 1, ByteOffset: 2, ComponentType: ComponentFloat}},
@@ -82,7 +82,7 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withCameras", args{&Document{Cameras: []*Camera{
 			{Extras: 8.0, Name: "cam_1", Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
-			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: Float64(1), Yfov: 2, Zfar: Float64(3), Znear: 4}},
+			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: Float(1), Yfov: 2, Zfar: Float(3), Znear: 4}},
 		}}}, false},
 		{"withImages", args{&Document{Images: []*Image{
 			{Extras: 8.0, Name: "binary", BufferView: Index(1), MimeType: "data:image/png"},
@@ -90,24 +90,24 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "external", URI: "https://web.com/a", MimeType: "data:image/png"},
 		}}}, false},
 		{"withMaterials", args{&Document{Materials: []*Material{
-			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float64{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque},
-			{Extras: 8.0, Name: "pbr", AlphaCutoff: Float64(0.5), AlphaMode: AlphaOpaque,
+			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float32{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque},
+			{Extras: 8.0, Name: "pbr", AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
-					Extras: 8.0, MetallicFactor: Float64(1), RoughnessFactor: Float64(2), BaseColorFactor: &RGBA{R: 0.8, G: 0.8, B: 0.8, A: 1},
+					Extras: 8.0, MetallicFactor: Float(1), RoughnessFactor: Float(2), BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 1},
 					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: 1, TexCoord: 3},
 					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: 6, TexCoord: 5},
 				},
 			},
-			{Extras: 8.0, Name: "normal", AlphaCutoff: Float64(0.7), AlphaMode: AlphaBlend,
-				NormalTexture: &NormalTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Scale: Float64(2.0)},
+			{Extras: 8.0, Name: "normal", AlphaCutoff: Float(0.7), AlphaMode: AlphaBlend,
+				NormalTexture: &NormalTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Scale: Float(2.0)},
 			},
-			{Extras: 8.0, Name: "occlusion", AlphaCutoff: Float64(0.5), AlphaMode: AlphaMask,
-				OcclusionTexture: &OcclusionTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Strength: Float64(2.0)},
+			{Extras: 8.0, Name: "occlusion", AlphaCutoff: Float(0.5), AlphaMode: AlphaMask,
+				OcclusionTexture: &OcclusionTexture{Extras: 8.0, Index: Index(1), TexCoord: 2, Strength: Float(2.0)},
 			},
-			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float64(0.5), AlphaMode: AlphaMask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
+			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float(0.5), AlphaMode: AlphaMask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
 		}}}, false},
 		{"withMeshes", args{&Document{Meshes: []*Mesh{
-			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
+			{Extras: 8.0, Name: "mesh_1", Weights: []float32{1.2, 2}},
 			{Extras: 8.0, Name: "mesh_2", Primitives: []*Primitive{
 				{Extras: 8.0, Attributes: Attribute{"POSITION": 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 				{Extras: 8.0, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
@@ -115,9 +115,9 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []*Node{
 			{Extras: 8.0, Name: "n-1", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
-				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
+				Matrix: [16]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float32{1.5, 1.3, 12, 0}, Scale: [3]float32{1, 3, 4}, Translation: [3]float32{0, 7.8, 9}, Weights: []float32{1, 3}},
 			{Extras: 8.0, Name: "n-2", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
-				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
+				Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}},
 		}}}, false},
 		{"withSampler", args{&Document{Samplers: []*Sampler{
 			{Extras: 8.0, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: WrapClampToEdge, WrapT: WrapMirroredRepeat},

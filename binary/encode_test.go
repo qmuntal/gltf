@@ -6,8 +6,6 @@ import (
 	"math"
 	"reflect"
 	"testing"
-
-	"github.com/qmuntal/gltf"
 )
 
 func buildBuffer1(n int, empty ...int) []byte {
@@ -59,7 +57,6 @@ func TestRead(t *testing.T) {
 		want    interface{}
 		wantErr bool
 	}{
-		{"not suported", args{make([]byte, 2), 1}, nil, true},
 		{"small", args{[]byte{0, 0}, []int8{1, 2, 3}}, []int8{0, 0}, true},
 		{"empty", args{make([]byte, 0), []int8{}}, []int8{}, false},
 		{"int8", args{buildBuffer1(4), make([]int8, 4)}, []int8{1, 2, 3, 4}, false},
@@ -166,12 +163,10 @@ func TestRead(t *testing.T) {
 		}, false},
 		{"color.RGBA", args{buildBuffer1(2 * 4), make([]color.RGBA, 2)}, []color.RGBA{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
 		{"color.RGBA64", args{buildBuffer2(2 * 4), make([]color.RGBA64, 2)}, []color.RGBA64{{1, 2, 3, 4}, {5, 6, 7, 8}}, false},
-		{"gltf.RGBA", args{buildBufferF(2 * 4), make([]gltf.RGBA, 2)}, []gltf.RGBA{{R: 1, G: 2, B: 3, A: 4}, {R: 5, G: 6, B: 7, A: 8}}, false},
-		{"gltf.RGB", args{buildBufferF(2 * 3), make([]gltf.RGB, 2)}, []gltf.RGB{{R: 1, G: 2, B: 3}, {R: 4, G: 5, B: 6}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := Read(tt.args.b, tt.args.data); (err != nil) != tt.wantErr {
+			if err := Read(tt.args.b, 0, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("Read() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !tt.wantErr && !reflect.DeepEqual(tt.args.data, tt.want) {
@@ -192,7 +187,6 @@ func TestWrite(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"not suported", args{2, 1}, nil, true},
 		{"small", args{2, []int8{1, 2, 3}}, []byte{1, 2, 3}, true},
 		{"empty", args{0, []int8{}}, []byte{}, false},
 		{"int8", args{4, []int8{1, 2, 3, 4}}, buildBuffer1(4), false},
@@ -299,8 +293,6 @@ func TestWrite(t *testing.T) {
 		}}, buildBufferF(32), false},
 		{"color.RGBA", args{8, []color.RGBA{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer1(2 * 4), false},
 		{"color.RGBA64", args{16, []color.RGBA64{{1, 2, 3, 4}, {5, 6, 7, 8}}}, buildBuffer2(2 * 4), false},
-		{"gltf.RGBA", args{32, []gltf.RGBA{{R: 1, G: 2, B: 3, A: 4}, {R: 5, G: 6, B: 7, A: 8}}}, buildBufferF(2 * 4), false},
-		{"gltf.RGB", args{24, []gltf.RGB{{R: 1, G: 2, B: 3}, {R: 4, G: 5, B: 6}}}, buildBufferF(2 * 3), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

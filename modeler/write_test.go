@@ -129,7 +129,7 @@ func TestWritePosition(t *testing.T) {
 		}, args{[][3]float32{{1, 2, 3}, {0, 0, -1}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat, Max: []float32{1, 2, 3}, Min: []float32{0, 0, -1}},
 			},
 			BufferViews: []*gltf.BufferView{
 				{ByteLength: 24, Target: gltf.TargetArrayBuffer},
