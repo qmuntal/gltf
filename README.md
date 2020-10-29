@@ -1,6 +1,6 @@
 # gltf
 
-[![PkgGoDev](https://pkg.go.dev/github.com/qmuntal/gltf)](https://pkg.go.dev/github.com/qmuntal/gltf)
+[![PkgGoDev](https://pkg.go.dev/qmuntal/gltf)](https://pkg.go.dev/github.com/qmuntal/gltf)
 [![Build Status](https://travis-ci.com/qmuntal/gltf.svg?branch=master)](https://travis-ci.com/qmuntal/gltf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/qmuntal/gltf)](https://goreportcard.com/report/github.com/qmuntal/gltf)
 [![codecov](https://coveralls.io/repos/github/qmuntal/gltf/badge.svg)](https://coveralls.io/github/qmuntal/gltf?branch=master)
