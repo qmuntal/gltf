@@ -131,11 +131,12 @@ func (e *Encoder) encodeBinary(doc *Document) error {
 	if err != nil {
 		return err
 	}
-	binary.Write(e.w, binary.LittleEndian, jsonText)
-	binary.Write(e.w, binary.LittleEndian, headerPadding)
+	e.w.Write(jsonText)
+	e.w.Write(headerPadding)
 	binary.Write(e.w, binary.LittleEndian, &binHeader)
 	if binBuffer != nil {
-		binary.Write(e.w, binary.LittleEndian, binBuffer.Data)
+		e.w.Write(binBuffer.Data)
 	}
-	return binary.Write(e.w, binary.LittleEndian, binPadding)
+	_, err = e.w.Write(binPadding)
+	return err
 }
