@@ -303,7 +303,7 @@ func TestWriteTextureCoord(t *testing.T) {
 				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUbyte, Normalized: true},
 			},
 			BufferViews: []*gltf.BufferView{
-				{ByteLength: 4, Target: gltf.TargetArrayBuffer},
+				{ByteLength: 4, Target: gltf.TargetArrayBuffer, ByteStride: 4},
 			},
 			Buffers: []*gltf.Buffer{
 				{ByteLength: 14, Data: []byte{1, 2, 0, 0}},
