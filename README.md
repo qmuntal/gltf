@@ -1,4 +1,4 @@
-<p align="center"><img width="125" src="./assets/gopher.png" alt="Gopher glTF"></p>
+<p align="center"><img width="640" src="./assets/gopher_high.png" alt="Gopher glTF"></p>
 
 [![PkgGoDev](https://pkg.go.dev/badge/qmuntal/gltf)](https://pkg.go.dev/github.com/qmuntal/gltf)
 [![Build Status](https://travis-ci.com/qmuntal/gltf.svg?branch=master)](https://travis-ci.com/qmuntal/gltf)
