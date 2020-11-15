@@ -121,7 +121,7 @@ func main() {
 
 ### Create a glb using raw data
 
-The following example generates a 3D box with colors per vertex.
+The following example generates a 3D box with colors per vertex and PBR material.
 
 ![screenshot](./assets/color-cube.png)
 
@@ -136,14 +136,12 @@ func main() {
         Accessors: []*gltf.Accessor{
             {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUshort, Count: 36, Type: gltf.AccessorScalar},
             {BufferView: gltf.Index(1), ComponentType: gltf.ComponentFloat, Count: 24, Max: []float32{0.5, 0.5, 0.5}, Min: []float32{-0.5, -0.5, -0.5}, Type: gltf.AccessorVec3},
-            {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec3},
-            {BufferView: gltf.Index(3), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec4},
+            {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec4},
         },
         Asset: gltf.Asset{Version: "2.0", Generator: "qmuntal/gltf"},
         BufferViews: []*gltf.BufferView{
             {ByteLength: 72, ByteOffset: 0, Target: gltf.TargetElementArrayBuffer},
             {ByteLength: 288, ByteOffset: 72, Target: gltf.TargetArrayBuffer},
-            {ByteLength: 288, ByteOffset: 360, Target: gltf.TargetArrayBuffer},
             {ByteLength: 384, ByteOffset: 648, Target: gltf.TargetArrayBuffer},
         },
         Buffers: []*gltf.Buffer{{ByteLength: 1033, URI: bufferData}},
@@ -163,7 +161,7 @@ func main() {
             Indices: gltf.Index(0),
             Material: gltf.Index(0),
             Mode: gltf.PrimitiveTriangles,
-            Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2},
+            Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 2},
           }},
         }},
         Nodes: []*gltf.Node{
