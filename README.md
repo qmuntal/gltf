@@ -94,9 +94,40 @@ gltf.Save(&doc, "./foo.gltf")
 gltf.SaveBinary(&doc, "./foo.glb")
 ```
 
-### Modeler
+### Manipulating bytes
 
-The package [gltf/modeler`](https://pkg.go.dev/github.com/qmuntal/gltf/modeler) defines a friendly API to read and write accessors and buffer views, abstracting away all the byte manipulation work and the idiosyncrasy of the glTF spec.
+The package [gltf/binary](https://pkg.go.dev/github.com/qmuntal/gltf/binary) defines a friendly and efficient API to read and write bytes from buffers, abstracting away all the byte manipulation work. This package is very similary to the Go `binary` package, the main differences are that it is highly specialized in glTF data types and that it only have to deal with little endian encoding.
+
+The following example reads vertices data from a buffer:
+
+```go
+buffer := []byte{0, 0, 44, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 124, 66, 0, 0, 124, 66, 0, 0, 32, 66, 0, 0, 44, 66, 0, 0, 166, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 166, 66, 0, 0, 0, 0}
+
+vertices := make([][3]float32, 5)
+binary.Read(buffer, 0, vertices)
+
+fmt.Println(vertices)
+// Output:
+// [[43 43 0] [83 43 0] [63 63 40] [43 83 0] [83 83 0]]
+```
+
+The following example writes vertices to a buffer:
+
+```go
+vertices := [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}}
+
+sizeVertices := uint32(len(vertices)) * binary.SizeOfElement(gltf.ComponentFloat, gltf.AccessorVec3)
+buffer := make([]byte, sizeVertices)
+binary.Write(buffer, 0, vertices)
+
+fmt.Print(b)
+// Output:
+// [0 0 44 66 0 0 44 66 0 0 0 0 0 0 166 66 0 0 44 66 0 0 0 0 0 0 124 66 0 0 124 66 0 0 32 66 0 0 44 66 0 0 166 66 0 0 0 0 0 0 166 66 0 0 166 66 0 0 0 0]
+```
+
+### Manipulating buffer views and accessors
+
+The package [gltf/modeler](https://pkg.go.dev/github.com/qmuntal/gltf/modeler) defines a friendly API to read and write accessors and buffer views, abstracting away all the byte manipulation work and the idiosyncrasy of the glTF spec.
 
 The following example creates a single colored triangle:
 
