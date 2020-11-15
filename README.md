@@ -1,4 +1,4 @@
-# gltf
+<p align="center"><img width="125" src="./assets/gopher.png" alt="Gopher glTF"></p>
 
 [![PkgGoDev](https://pkg.go.dev/badge/qmuntal/gltf)](https://pkg.go.dev/github.com/qmuntal/gltf)
 [![Build Status](https://travis-ci.com/qmuntal/gltf.svg?branch=master)](https://travis-ci.com/qmuntal/gltf)
@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)  
 
-<p align="center"><img width="125" src="./assets/gopher.png" alt="Gopher glTF"></p>
+# gltf
 
 A Go package for simple, efficient, and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/) (GL Transmission Format), a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications.
 
