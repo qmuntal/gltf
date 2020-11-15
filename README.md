@@ -13,6 +13,17 @@
 
 A Go module for efficient and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/) (GL Transmission Format), a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications.
 
+- [qmuntal/gltf](#qmuntalgltf)
+  - [Features](#features)
+    - [Optional parameters](#optional-parameters)
+    - [Reading a document](#reading-a-document)
+    - [Writing a document](#writing-a-document)
+    - [Manipulating buffer views and accessors](#manipulating-buffer-views-and-accessors)
+    - [Manipulating bytes](#manipulating-bytes)
+    - [Dealing with extensions](#dealing-with-extensions)
+      - [Custom extensions](#custom-extensions)
+  - [Project Goals](#project-goals)
+
 ## Features
 
 `qmuntal/gltf` implements the hole glTF 2.0 specification. The top level element is the [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) and it contains all the information to hold a gltf document in memory:
@@ -41,11 +52,11 @@ gltf.Document{
 
 All optional properties whose default value does not match with the golang type zero value are defines as pointers. Take the following guidelines into account when working with optional values:
 
-* It is safe to not define them when writing the glTF if the desired value is the default one.
-* It is safe to expect that the optional values are not nil when reading a glTF.
-* When assigning values to optional properties one can use the utility functions that take the reference of basic types:
-  * `gltf.Index(1)`
-  * `gltf.Float64(0.5)`
+- It is safe to not define them when writing the glTF if the desired value is the default one.
+- It is safe to expect that the optional values are not nil when reading a glTF.
+- When assigning values to optional properties one can use the utility functions that take the reference of basic types:
+  - `gltf.Index(1)`
+  - `gltf.Float64(0.5)`
 
 ### Reading a document
 
@@ -94,37 +105,6 @@ gltf.Save(&doc, "./foo.gltf")
 gltf.SaveBinary(&doc, "./foo.glb")
 ```
 
-### Manipulating bytes
-
-The package [gltf/binary](https://pkg.go.dev/github.com/qmuntal/gltf/binary) defines a friendly and efficient API to read and write bytes from buffers, abstracting away all the byte manipulation work. This package is very similary to the Go `binary` package, the main differences are that it is highly specialized in glTF data types and that it only have to deal with little endian encoding.
-
-The following example reads vertices data from a buffer:
-
-```go
-buffer := []byte{0, 0, 44, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 124, 66, 0, 0, 124, 66, 0, 0, 32, 66, 0, 0, 44, 66, 0, 0, 166, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 166, 66, 0, 0, 0, 0}
-
-vertices := make([][3]float32, 5)
-binary.Read(buffer, 0, vertices)
-
-fmt.Println(vertices)
-// Output:
-// [[43 43 0] [83 43 0] [63 63 40] [43 83 0] [83 83 0]]
-```
-
-The following example writes vertices to a buffer:
-
-```go
-vertices := [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}}
-
-sizeVertices := uint32(len(vertices)) * binary.SizeOfElement(gltf.ComponentFloat, gltf.AccessorVec3)
-buffer := make([]byte, sizeVertices)
-binary.Write(buffer, 0, vertices)
-
-fmt.Print(b)
-// Output:
-// [0 0 44 66 0 0 44 66 0 0 0 0 0 0 166 66 0 0 44 66 0 0 0 0 0 0 124 66 0 0 124 66 0 0 32 66 0 0 44 66 0 0 166 66 0 0 0 0 0 0 166 66 0 0 166 66 0 0 0 0]
-```
-
 ### Manipulating buffer views and accessors
 
 The package [gltf/modeler](https://pkg.go.dev/github.com/qmuntal/gltf/modeler) defines a friendly API to read and write accessors and buffer views, abstracting away all the byte manipulation work and the idiosyncrasy of the glTF spec.
@@ -161,7 +141,40 @@ func main() {
 }
 ```
 
-### Extensions
+### Manipulating bytes
+
+The package [gltf/binary](https://pkg.go.dev/github.com/qmuntal/gltf/binary) defines a friendly and efficient API to read and write bytes from buffers, abstracting away all the byte manipulation work. This package is very low level and normal users should use `gltf/modeler` instead as it provides another level of abstraction that understands how bytes are associated to other entities.
+
+This package is very similary to the Go `binary` package, the main differences are that it is highly specialized in glTF data types and that it only have to deal with little endian encoding.
+
+The following example reads vertices data from a buffer:
+
+```go
+buffer := []byte{0, 0, 44, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 44, 66, 0, 0, 0, 0, 0, 0, 124, 66, 0, 0, 124, 66, 0, 0, 32, 66, 0, 0, 44, 66, 0, 0, 166, 66, 0, 0, 0, 0, 0, 0, 166, 66, 0, 0, 166, 66, 0, 0, 0, 0}
+
+vertices := make([][3]float32, 5)
+binary.Read(buffer, 0, vertices)
+
+fmt.Println(vertices)
+// Output:
+// [[43 43 0] [83 43 0] [63 63 40] [43 83 0] [83 83 0]]
+```
+
+The following example writes vertices to a buffer:
+
+```go
+vertices := [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}}
+
+sizeVertices := uint32(len(vertices)) * binary.SizeOfElement(gltf.ComponentFloat, gltf.AccessorVec3)
+buffer := make([]byte, sizeVertices)
+binary.Write(buffer, 0, vertices)
+
+fmt.Print(b)
+// Output:
+// [0 0 44 66 0 0 44 66 0 0 0 0 0 0 166 66 0 0 44 66 0 0 0 0 0 0 124 66 0 0 124 66 0 0 32 66 0 0 44 66 0 0 166 66 0 0 0 0 0 0 166 66 0 0 166 66 0 0 0 0]
+```
+
+### Dealing with extensions
 
 `qmuntal/gltf` is designed to support dynamic extensions. By default only the core specification is decoded and the data inside the extensions objects are stored as `json.RawMessage` so they can be decoded by the caller or automatically encoded when saving the document.
 
@@ -211,3 +224,13 @@ func Unmarshal(data []byte) (interface{}, error) {
     return foo, err
 }
 ```
+
+## Project Goals
+
+This library is a complete implementation of glTF 2.0, and its explicit aim is to provide a production-ready, idiomatic and curated API to perform any kind of glTF manipulation.
+
+It is out of the scope to implement convertes to/from other file formats and to provide mechanisms to create and manipulate 3D geometry.
+
+The current API is still not frozen and can suffer minor changes until it reached v1.0.
+
+Please use the issue tracker or the if you'd like to report problems or discuss features.
