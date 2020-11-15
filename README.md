@@ -11,7 +11,7 @@
 
 # qmuntal/gltf
 
-A Go module for efficient and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/) (GL Transmission Format), a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications.
+A Go module for efficient and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/), a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications, also known as "the JPEG of 3D".
 
 - [qmuntal/gltf](#qmuntalgltf)
   - [Features](#features)
