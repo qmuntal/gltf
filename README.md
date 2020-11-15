@@ -11,84 +11,96 @@
 
 # qmuntal/gltf
 
-A Go package for simple, efficient, and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/) (GL Transmission Format), a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications.
+A Go module for efficient and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/) (GL Transmission Format), a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications.
 
 ## Features
 
-* High parsing speed and moderate memory consumption
-* glTF specification v2.0.0
-  * [x] ASCII glTF
-  * [x] Binary glTF(GLB)
-  * [x] PBR material description
-  * [x] Modeler package
-* glTF validaton
-  * [ ] Validate against schemas
-  * [ ] Validate coherence
-* Buffers
-  * [x] Parse BASE64 encoded embedded buffer data(DataURI)
-  * [x] Load .bin file
-  * [x] Binary package
-* Read from io.Reader
-  * [x] Boilerplate for disk loading
-  * [x] Custom callback handlers
-  * [x] Automatic ASCII / glTF detection
-* Write to io.Writer
-  * [x] Boilerplate for disk saving
-  * [x] Custom callback handlers
-  * [x] ASCII / Binary
-* Extensions
-  * [x] KHR_draco_mesh_compression
-  * [x] KHR_lights_punctual
-  * [x] KHR_materials_pbrSpecularGlossiness
-  * [x] KHR_materials_unlit
-  * [ ] KHR_techniques_webgl
-  * [x] KHR_texture_transform
-  * [x] Support custom extensions
-
-## Extensions
-
-This module is designed to support dynamic extensions. By default only the core specification is decoded and the data inside the extensions objects are stored as `json.RawMessage` so they can be decoded outside this package or automatically encoded when saving the document.
-
-To decode one of the supported extensions the only required action is to import the associated package, this way the extension will not be stored as `json.RawMessage` but as the type defined in the extension package:
+`qmuntal/gltf` implements the hole glTF 2.0 specification. The top level element is the [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) and it contains all the information to hold a gltf document in memory:
 
 ```go
-import (
-  "github.com/qmuntal/gltf"
-  "github.com/qmuntal/gltf/ext/lightspuntual"
-)
-
-func ExampleExension() {
-  doc, _ := gltf.Open("...")
-  if v, ok := doc.Extensions[lightspuntual.ExtensionName]; ok {
-      for _, l := range v.(lightspuntual.Lights) {
-          fmt.Print(l.Type)
-      }
-  }
+// This document does not produce any valid glTF, it is just an example.
+&gltf.Document{
+  Accessors: []*gltf.Accessor{
+      {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUshort, Count: 36, Type: gltf.AccessorScalar},
+  },
+  Asset: gltf.Asset{Version: "2.0", Generator: "qmuntal/gltf"},
+  BufferViews: []*gltf.BufferView{
+      {ByteLength: 72, ByteOffset: 0, Target: gltf.TargetElementArrayBuffer},
+  },
+  Buffers: []*gltf.Buffer{{ByteLength: 1033, URI: bufferData}},
+  Meshes: []*gltf.Mesh{{
+    Name: "Cube",
+  }},
+  Nodes: []*gltf.Node{{Name: "Cube", Mesh: gltf.Index(0)}},
+  Scene:    gltf.Index(0),
+  Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
 }
 ```
 
-It is not necessary to call `gltf.RegisterExtension` for built-in extensions, as these auto-register themselves on `init()`.
+### Read document
 
-## Perfomance
-
-All the functionality is benchmarked and tested using the official [glTF Samples](https://github.com/KhronosGroup/glTF-Sample-Models) in the utility package [qmuntal/gltf-bench](https://github.com/qmuntal/gltf-bench/).
-The results show that the perfomance of this package is equivalent to [fx-gltf](https://github.com/jessey-git/fx-gltf), a reference perfomance-driven glTF implementation for C++, .
-
-## Examples
-
-### Read
+A [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) can be decoded from any `io.Reader` by using [gltf.Decoder](https://pkg.go.dev/github.com/qmuntal/gltf#Decoder):
 
 ```go
-doc, err := gltf.Open("./a.gltf")
-if err != nil {
-    panic(err)
-}
+resp, _ := http.Get("https://example.com/static/foo.gltf")
+var doc gltf.Document
+gltf.NewDecoder(resp.Body).Decode(&doc)
 fmt.Print(doc.Asset)
 ```
 
-### Create a glb using gltf/modeler
+When working with the file system it is more convenient to use [gltf.Open](https://pkg.go.dev/github.com/qmuntal/gltf#Open) as it automatically manages relative external buffers:
 
-The following example generates a single triangle with colors per vertex.
+```go
+doc, _ := gltf.Open("./foo.gltf")
+fmt.Print(doc.Asset)
+```
+
+In both cases the decoder will automatically detect if the file is JSON/ASCII (gltf) or Binary (glb) based on its content.
+
+### Optional parameters
+
+All optional properties whose default value does not match with the golang type zero value are defines as pointers.
+
+When working with optional values take this into account:
+
+* It is safe to not define them when writing the glTF if the desired value is the default one.
+* It is safe to expect that the optional values are not nil when reading a glTF.
+* When assigning values to optional properties one can use the utility functions that take the reference of basic types:
+  * `gltf.Index(1)`
+  * `gltf.Float64(0.5)`
+
+### Write document
+
+A [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) can be encoded to any `io.Writer` by using [gltf.Encoder](https://pkg.go.dev/github.com/qmuntal/gltf#Encoder):
+
+```go
+var buf bytes.Buffer
+gltf.NewEncoder(&buf).Encode(&doc)
+http.Post("http://example.com/upload", "model/gltf+binary", &buf)
+```
+
+By default `gltf.NewEncoder` outputs a binary file. If a JSON/ASCII file is required one can follow this example:
+
+```go
+var buf bytes.Buffer
+enc := gltf.NewEncoder(&buf)
+enc.AsBinary = false
+enc.Encode(&doc)
+http.Post("http://example.com/upload", "model/gltf+json", &buf)
+```
+
+When working with the file system it is more convenient to use [gltf.Save](https://pkg.go.dev/github.com/qmuntal/gltf#Save) and [gltf.SaveBinary](https://pkg.go.dev/github.com/qmuntal/gltf#SaveBinary) as it automatically manages relative external buffers:
+
+```go
+gltf.Save(&doc, "./foo.gltf")
+gltf.SaveBinary(&doc, "./foo.glb")
+```
+
+### Modeler
+
+The package [gltf/modeler`](https://pkg.go.dev/github.com/qmuntal/gltf/modeler) defines a friendly API to read and write accessors and buffer views, abstracting away all the byte manipulation work and the idiosyncrasy of the glTF spec.
+
+The following example creates a single colored triangle:
 
 ![screenshot](./assets/color-triangle.png)
 
@@ -120,63 +132,53 @@ func main() {
 }
 ```
 
-### Create a glb using raw data
+### Extensions
 
-The following example generates a 3D box with colors per vertex and PBR material.
+`qmuntal/gltf` designed to support dynamic extensions. By default only the core specification is decoded and the data inside the extensions objects are stored as `json.RawMessage` so they can be decoded outside this package or automatically encoded when saving the document.
 
-![screenshot](./assets/color-cube.png)
+Some of the official extensions are implemented under `ext/`.
+
+To decode one of the supported extensions the only required action is to import the associated package, this way the extension will not be stored as `json.RawMessage` but as the type defined in the extension package:
 
 ```go
-
-package main
-
-import "github.com/qmuntal/gltf"
+import (
+  "github.com/qmuntal/gltf"
+  "github.com/qmuntal/gltf/ext/lightspuntual"
+)
 
 func main() {
-    doc := &gltf.Document{
-        Accessors: []*gltf.Accessor{
-            {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUshort, Count: 36, Type: gltf.AccessorScalar},
-            {BufferView: gltf.Index(1), ComponentType: gltf.ComponentFloat, Count: 24, Max: []float32{0.5, 0.5, 0.5}, Min: []float32{-0.5, -0.5, -0.5}, Type: gltf.AccessorVec3},
-            {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec4},
-        },
-        Asset: gltf.Asset{Version: "2.0", Generator: "qmuntal/gltf"},
-        BufferViews: []*gltf.BufferView{
-            {ByteLength: 72, ByteOffset: 0, Target: gltf.TargetElementArrayBuffer},
-            {ByteLength: 288, ByteOffset: 72, Target: gltf.TargetArrayBuffer},
-            {ByteLength: 384, ByteOffset: 648, Target: gltf.TargetArrayBuffer},
-        },
-        Buffers: []*gltf.Buffer{{ByteLength: 1033, URI: bufferData}},
-        Materials: []*gltf.Material{{
-            Name: "Default",
-            AlphaMode: gltf.AlphaOpaque,
-            AlphaCutoff: gltf.Float(0.5),
-            PBRMetallicRoughness: &gltf.PBRMetallicRoughness{
-              BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 0.5},
-              MetallicFactor: gltf.Float(0.1),
-              RoughnessFactor: gltf.Float(0.99),
-            },
-        }},
-        Meshes: []*gltf.Mesh{{
-          Name: "Cube",
-          Primitives: []*gltf.Primitive{{
-            Indices: gltf.Index(0),
-            Material: gltf.Index(0),
-            Mode: gltf.PrimitiveTriangles,
-            Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 2},
-          }},
-        }},
-        Nodes: []*gltf.Node{
-            {Name: "RootNode", Children: []uint32{1}},
-            {Name: "Cube", Mesh: gltf.Index(0)},
-        },
-        Scene:    gltf.Index(0),
-        Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
-    }
-    if err := gltf.Save(doc, "./cube.gltf"); err != nil {
-        panic(err)
+  doc, _ := gltf.Open("./foo.gltf")
+    if v, ok := doc.Extensions[lightspuntual.ExtensionName]; ok {
+        for _, l := range v.(lightspuntual.Lights) {
+            fmt.Print(l.Type)
+        }
     }
 }
+```
 
-const bufferData = "data:application/octet-stream;base64,AAABAAIAAQAAAAMABAAFAAYABwAEAAYACAAJAAoACwAJAAgADAANAA4ADQAMAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAAAAAvwAAAD8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAvwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAHekGMHp6JTz+/38/UdInMBHtfz9SNZs6rTHKPJsTwTrvy00/XMpNP0HLTT8AAIA/3ssCP4z/fz+gF+43whYUON7LAj+M/38/oBfuN8IWFDgd6QYwenolPP7/fz9R0icw6vR/PwjDNTqNSsY80xtiOu/LTT9cyk0/QctNPwAAgD8R7X8/UjWbOq0xyjybE8E678tNP1zKTT9By00/AACAP6bmIzurlgY+BNh/P0ziSzveywI/jP9/P6AX7jfCFhQ478tNP1zKTT9By00/AACAP6bmIzurlgY+BNh/P0ziSzsSAI885Oh+PxdguT574rE8Ee1/P1I1mzqtMco8mxPBOhIAjzzk6H4/F2C5PnvisTzq9H8/CMM1Oo1KxjzTG2I6HekGMHp6JTz+/38/UdInMO/LTT9cyk0/QctNPwAAgD+m5iM7q5YGPgTYfz9M4ks778tNP1zKTT9By00/AACAP+r0fz8IwzU6jUrGPNMbYjoSAI885Oh+PxdguT574rE8AA"
+It is not necessary to call `gltf.RegisterExtension` for built-in extensions, as these auto-register themselves on when the package is initialized.
 
+#### Custom extensions
+
+To implement a custom extension encoding one just have to provide a `struct` that can be encoded as a JSON object as dictated by the spec.
+
+To implement a custom extension decoding one have to call [gltf.RegisterExtension](https://pkg.go.dev/github.com/qmuntal/gltf#RegisterExtension) at least once before decoding, providing the identifier of the extension and a function that decodes the JSON bytes to the desired `struct`:
+
+```go
+const ExtensionName = "FAKE_Extension"
+
+type Foo struct {
+    BufferView uint32          `json:"bufferView"`
+    Attributes gltf.Attribute  `json:"attributes"`
+}
+
+func init() {
+    gltf.RegisterExtension(ExtensionName, Unmarshal)
+}
+
+func Unmarshal(data []byte) (interface{}, error) {
+    foo := new(Foo)
+    err := json.Unmarshal(data, foo)
+    return foo, err
+}
 ```
