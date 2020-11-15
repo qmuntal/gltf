@@ -19,9 +19,9 @@ A Go module for efficient and robust serialization/deserialization of [glTF 2.0]
 
 ```go
 // This document does not produce any valid glTF, it is just an example.
-&gltf.Document{
+gltf.Document{
   Accessors: []*gltf.Accessor{
-      {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUshort, Count: 36, Type: gltf.AccessorScalar},
+      {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUshort, Type: gltf.AccessorScalar},
   },
   Asset: gltf.Asset{Version: "2.0", Generator: "qmuntal/gltf"},
   BufferViews: []*gltf.BufferView{
@@ -37,7 +37,17 @@ A Go module for efficient and robust serialization/deserialization of [glTF 2.0]
 }
 ```
 
-### Read document
+### Optional parameters
+
+All optional properties whose default value does not match with the golang type zero value are defines as pointers. Take the following guidelines into account when working with optional values:
+
+* It is safe to not define them when writing the glTF if the desired value is the default one.
+* It is safe to expect that the optional values are not nil when reading a glTF.
+* When assigning values to optional properties one can use the utility functions that take the reference of basic types:
+  * `gltf.Index(1)`
+  * `gltf.Float64(0.5)`
+
+### Reading a document
 
 A [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) can be decoded from any `io.Reader` by using [gltf.Decoder](https://pkg.go.dev/github.com/qmuntal/gltf#Decoder):
 
@@ -57,19 +67,7 @@ fmt.Print(doc.Asset)
 
 In both cases the decoder will automatically detect if the file is JSON/ASCII (gltf) or Binary (glb) based on its content.
 
-### Optional parameters
-
-All optional properties whose default value does not match with the golang type zero value are defines as pointers.
-
-When working with optional values take this into account:
-
-* It is safe to not define them when writing the glTF if the desired value is the default one.
-* It is safe to expect that the optional values are not nil when reading a glTF.
-* When assigning values to optional properties one can use the utility functions that take the reference of basic types:
-  * `gltf.Index(1)`
-  * `gltf.Float64(0.5)`
-
-### Write document
+### Writing a document
 
 A [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) can be encoded to any `io.Writer` by using [gltf.Encoder](https://pkg.go.dev/github.com/qmuntal/gltf#Encoder):
 
@@ -134,9 +132,9 @@ func main() {
 
 ### Extensions
 
-`qmuntal/gltf` designed to support dynamic extensions. By default only the core specification is decoded and the data inside the extensions objects are stored as `json.RawMessage` so they can be decoded outside this package or automatically encoded when saving the document.
+`qmuntal/gltf` is designed to support dynamic extensions. By default only the core specification is decoded and the data inside the extensions objects are stored as `json.RawMessage` so they can be decoded by the caller or automatically encoded when saving the document.
 
-Some of the official extensions are implemented under `ext/`.
+Some of the official extensions are implemented under [ext](ext/).
 
 To decode one of the supported extensions the only required action is to import the associated package, this way the extension will not be stored as `json.RawMessage` but as the type defined in the extension package:
 
