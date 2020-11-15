@@ -101,16 +101,13 @@ import (
 
 func main() {
     doc := gltf.NewDocument()
-    positionAccessor := modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}})
-    indicesAccessor := modeler.WriteIndices(doc, []uint8{0, 1, 2})
-    colorAccessor := modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}})
     doc.Meshes = []*gltf.Mesh{{
         Name: "Pyramid",
         Primitives: []*gltf.Primitive{{
-            Indices: gltf.Index(indicesAccessor),
+            Indices: gltf.Index(modeler.WriteIndices(doc, []uint8{0, 1, 2})),
             Attributes: map[string]uint32{
-              "POSITION": positionAccessor,
-              "COLOR_0":  colorAccessor,
+              "POSITION": modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}),
+              "COLOR_0":  modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}),
             },
         }},
     }}
@@ -142,14 +139,14 @@ func main() {
             {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(3), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec4},
         },
-        Asset: gltf.Asset{Version: "2.0", Generator: "FBX2glTF"},
+        Asset: gltf.Asset{Version: "2.0", Generator: "qmuntal/gltf"},
         BufferViews: []*gltf.BufferView{
-            {Buffer: 0, ByteLength: 72, ByteOffset: 0, Target: gltf.TargetElementArrayBuffer},
-            {Buffer: 0, ByteLength: 288, ByteOffset: 72, Target: gltf.TargetArrayBuffer},
-            {Buffer: 0, ByteLength: 288, ByteOffset: 360, Target: gltf.TargetArrayBuffer},
-            {Buffer: 0, ByteLength: 384, ByteOffset: 648, Target: gltf.TargetArrayBuffer},
+            {ByteLength: 72, ByteOffset: 0, Target: gltf.TargetElementArrayBuffer},
+            {ByteLength: 288, ByteOffset: 72, Target: gltf.TargetArrayBuffer},
+            {ByteLength: 288, ByteOffset: 360, Target: gltf.TargetArrayBuffer},
+            {ByteLength: 384, ByteOffset: 648, Target: gltf.TargetArrayBuffer},
         },
-        Buffers: []*gltf.Buffer{{ByteLength: 1224, URI: bufferData}},
+        Buffers: []*gltf.Buffer{{ByteLength: 1033, URI: bufferData}},
         Materials: []*gltf.Material{{
             Name: "Default",
             AlphaMode: gltf.AlphaOpaque,
@@ -181,7 +178,6 @@ func main() {
     }
 }
 
-const bufferData = "data:application/octet-stream;base64,AAABAAIAAQAAAAMABAAFAAYABwAEAAYACAAJAAoACwAJAAgADAANAA4ADQAMAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAAAAAvwAAAD8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAvwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAHekGMHp6JTz+/38/UdInMBHtfz9SNZs6rTHKPJsTwTrvy00/XMpNP0HLTT8AAIA/3ssCP4z/fz+gF+43whYUON7LAj+M/38/oBfuN8IWFDgd6QYwenolPP7/fz9R0icw6vR/PwjDNTqNSsY80xtiOu/LTT9cyk0/QctNPwAAgD8R7X8/UjWbOq0xyjybE8E678tNP1zKTT9By00/AACAP6bmIzurlgY+BNh/P0ziSzveywI/jP9/P6AX7jfCFhQ478tNP1zKTT9By00/AACAP6bmIzurlgY+BNh/P0ziSzsSAI885Oh+PxdguT574rE8Ee1/P1I1mzqtMco8mxPBOhIAjzzk6H4/F2C5PnvisTzq9H8/CMM1Oo1KxjzTG2I6HekGMHp6JTz+/38/UdInMO/LTT9cyk0/QctNPwAAgD+m5iM7q5YGPgTYfz9M4ks778tNP1zKTT9By00/AACAP+r0fz8IwzU6jUrGPNMbYjoSAI885Oh+PxdguT574rE8AACAPgAAAAAAAAA/qqqqPgAAAD8AAAAAAACAPqqqqj4AAIA+qqqqPgAAAACqqqo+AAAAAKqqKj8AAIA+qqoqPwAAAD+qqqo+AACAPqqqKj8AAAA/qqoqPwAAgD6qqqo+AABAP6qqqj4AAAA/qqoqPwAAQD+qqio/AAAAP6qqqj4AAEA/qqoqPwAAgD+qqio/AACAP6qqqj4AAEA/qqqqPgAAAD+qqio/AACAPqqqKj8AAIA+AACAPwAAAD8AAIA/"
-
+const bufferData = "data:application/octet-stream;base64,AAABAAIAAQAAAAMABAAFAAYABwAEAAYACAAJAAoACwAJAAgADAANAA4ADQAMAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAAAAAvwAAAD8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAL8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAvwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAHekGMHp6JTz+/38/UdInMBHtfz9SNZs6rTHKPJsTwTrvy00/XMpNP0HLTT8AAIA/3ssCP4z/fz+gF+43whYUON7LAj+M/38/oBfuN8IWFDgd6QYwenolPP7/fz9R0icw6vR/PwjDNTqNSsY80xtiOu/LTT9cyk0/QctNPwAAgD8R7X8/UjWbOq0xyjybE8E678tNP1zKTT9By00/AACAP6bmIzurlgY+BNh/P0ziSzveywI/jP9/P6AX7jfCFhQ478tNP1zKTT9By00/AACAP6bmIzurlgY+BNh/P0ziSzsSAI885Oh+PxdguT574rE8Ee1/P1I1mzqtMco8mxPBOhIAjzzk6H4/F2C5PnvisTzq9H8/CMM1Oo1KxjzTG2I6HekGMHp6JTz+/38/UdInMO/LTT9cyk0/QctNPwAAgD+m5iM7q5YGPgTYfz9M4ks778tNP1zKTT9By00/AACAP+r0fz8IwzU6jUrGPNMbYjoSAI885Oh+PxdguT574rE8AA"
 
 ```
