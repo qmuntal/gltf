@@ -85,6 +85,10 @@ fmt.Print(doc.Asset)
 
 ### Create a glb using gltf/modeler
 
+The following example generates a single triangle with colors per vertex.
+
+![screenshot](./assets/color-triangle.png)
+
 ```go
 package main
 
@@ -95,16 +99,16 @@ import (
 
 func main() {
     doc := gltf.NewDocument()
-    positionAccessor := modeler.WritePosition(doc, [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}})
-    indicesAccessor := modeler.WriteIndices(doc, []uint8{0, 1, 2, 3, 1, 0, 0, 2, 3, 1, 4, 2, 4, 3, 2, 4, 1, 3})
-    colorIndices := modeler.WriteColor(doc, [][3]uint8{{50, 155, 255}, {0, 100, 200}, {255, 155, 50}, {155, 155, 155}, {25, 25, 25}})
+    positionAccessor := modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}})
+    indicesAccessor := modeler.WriteIndices(doc, []uint8{0, 1, 2})
+    colorAccessor := modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}})
     doc.Meshes = []*gltf.Mesh{{
         Name: "Pyramid",
         Primitives: []*gltf.Primitive{{
             Indices: gltf.Index(indicesAccessor),
             Attributes: map[string]uint32{
               "POSITION": positionAccessor,
-              "COLOR_0":  colorIndices,
+              "COLOR_0":  colorAccessor,
             },
         }},
     }}
@@ -120,7 +124,7 @@ func main() {
 
 The following example generates a 3D box with colors per vertex.
 
-![screenshot](https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/2eaf839717bba9ceb869dc1819af6e1bb98cfd3a/2.0/BoxVertexColors/screenshot/screenshot.png)
+![screenshot](./assets/color-cube.png)
 
 ```go
 
@@ -131,11 +135,10 @@ import "github.com/qmuntal/gltf"
 func main() {
     doc := &gltf.Document{
         Accessors: []*gltf.Accessor{
-            {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUShort, Count: 36, Type: gltf.AccessorScalar},
-            {BufferView: gltf.Index(1), ComponentType: gltf.ComponentFloat, Count: 24, Max: []float32{0.5, 0.5, 0.5}, Min: []float32{-0.5, -0.            -0.5}, Type: gltf.AccessorVec3},
+            {BufferView: gltf.Index(0), ComponentType: gltf.ComponentUshort, Count: 36, Type: gltf.AccessorScalar},
+            {BufferView: gltf.Index(1), ComponentType: gltf.ComponentFloat, Count: 24, Max: []float32{0.5, 0.5, 0.5}, Min: []float32{-0.5, -0.5, -0.5}, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(2), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec3},
             {BufferView: gltf.Index(3), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec4},
-            {BufferView: gltf.Index(4), ComponentType: gltf.ComponentFloat, Count: 24, Type: gltf.AccessorVec2},
         },
         Asset: gltf.Asset{Version: "2.0", Generator: "FBX2glTF"},
         BufferViews: []*gltf.BufferView{
@@ -143,21 +146,31 @@ func main() {
             {Buffer: 0, ByteLength: 288, ByteOffset: 72, Target: gltf.TargetArrayBuffer},
             {Buffer: 0, ByteLength: 288, ByteOffset: 360, Target: gltf.TargetArrayBuffer},
             {Buffer: 0, ByteLength: 384, ByteOffset: 648, Target: gltf.TargetArrayBuffer},
-            {Buffer: 0, ByteLength: 192, ByteOffset: 1032, Target: gltf.TargetArrayBuffer},
         },
         Buffers: []*gltf.Buffer{{ByteLength: 1224, URI: bufferData}},
         Materials: []*gltf.Material{{
-            Name: "Default", AlphaMode: gltf.AlphaOpaque, AlphaCutoff: gltf.Float64(0.5),
-            PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 0.5}, MetallicFactor: gltf.Float64(0.1), RoughnessFactor: gltf.Float64(0.99)},
+            Name: "Default",
+            AlphaMode: gltf.AlphaOpaque,
+            AlphaCutoff: gltf.Float(0.5),
+            PBRMetallicRoughness: &gltf.PBRMetallicRoughness{
+              BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 0.5},
+              MetallicFactor: gltf.Float(0.1),
+              RoughnessFactor: gltf.Float(0.99),
+            },
         }},
-        Meshes: []*gltf.Mesh{{Name: "Cube", Primitives: []*gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
+        Meshes: []*gltf.Mesh{{
+          Name: "Cube",
+          Primitives: []*gltf.Primitive{{
+            Indices: gltf.Index(0),
+            Material: gltf.Index(0),
+            Mode: gltf.PrimitiveTriangles,
+            Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2},
+          }},
+        }},
         Nodes: []*gltf.Node{
-            {Name: "RootNode", Children: []uint32{1, 2, 3}},
-            {Name: "Mesh"},
+            {Name: "RootNode", Children: []uint32{1}},
             {Name: "Cube", Mesh: gltf.Index(0)},
-            {Name: "Texture Group"},
         },
-        Samplers: []*gltf.Sampler{{WrapS: gltf.WrapRepeat, WrapT: gltf.WrapRepeat}},
         Scene:    gltf.Index(0),
         Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
     }
