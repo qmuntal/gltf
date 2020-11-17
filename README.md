@@ -26,7 +26,7 @@ A Go module for efficient and robust serialization/deserialization of [glTF 2.0]
 
 ## Features
 
-`qmuntal/gltf` implements the hole glTF 2.0 specification. The top level element is the [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) and it contains all the information to hold a gltf document in memory:
+`qmuntal/gltf` implements the whole glTF 2.0 specification. The top level element is the [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) and it contains all the information to hold a gltf document in memory:
 
 ```go
 // This document does not produce any valid glTF, it is just an example.
