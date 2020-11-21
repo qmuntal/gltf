@@ -28,13 +28,27 @@ func TestAlignment(t *testing.T) {
 	}
 }
 
+func TestWriteBufferViewInterleaved_Error(t *testing.T) {
+	doc := gltf.NewDocument()
+	_, err := WriteBufferViewInterleaved(doc,
+		[][3]float32{{1, 2, 3}, {0, 0, -1}},
+		[][3]float32{{3, 1, 2}},
+	)
+	if err == nil {
+		t.Error("TestWriteBufferViewInterleaved() expected an error")
+	}
+}
+
 func TestWriteBufferViewInterleaved(t *testing.T) {
 	doc := gltf.NewDocument()
-	WriteBufferViewInterleaved(doc,
+	_, err := WriteBufferViewInterleaved(doc,
 		[][3]float32{{1, 2, 3}, {0, 0, -1}},
 		[][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}},
 		[][3]float32{{3, 1, 2}, {4, 0, 1}},
 	)
+	if err != nil {
+		t.Fatalf("TestWriteBufferViewInterleaved() got error = %V", err)
+	}
 	if len(doc.Buffers) != 1 {
 		t.Errorf("TestWriteBufferViewInterleaved() buffer size = %v, want 1", len(doc.Buffers))
 	}
