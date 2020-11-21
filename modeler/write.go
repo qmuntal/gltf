@@ -166,8 +166,8 @@ func WriteAccessor(doc *gltf.Document, target gltf.Target, data interface{}) uin
 // If success it returns the index of the new buffer view.
 func WriteBufferView(doc *gltf.Document, target gltf.Target, data interface{}) uint32 {
 	c, a, l := binary.Type(data)
-	sizeElement := binary.SizeOfElement(c, a)
-	size := l * sizeElement
+	sizeOfElement := binary.SizeOfElement(c, a)
+	size := l * sizeOfElement
 	buffer := lastBuffer(doc)
 	offset := uint32(len(buffer.Data))
 	padding := getPadding(offset, c.ByteSize())
@@ -176,8 +176,8 @@ func WriteBufferView(doc *gltf.Document, target gltf.Target, data interface{}) u
 	// Cannot return error as the buffer has enough size and the data type is controlled.
 	_ = binary.Write(buffer.Data[offset+padding:], 0, data)
 	var stride uint32
-	if target == gltf.TargetArrayBuffer && c.ByteSize()*a.Components() != sizeElement {
-		stride = sizeElement
+	if target == gltf.TargetArrayBuffer && c.ByteSize()*a.Components() != sizeOfElement {
+		stride = sizeOfElement
 	}
 	bufferView := &gltf.BufferView{
 		Buffer:     uint32(len(doc.Buffers)) - 1,
