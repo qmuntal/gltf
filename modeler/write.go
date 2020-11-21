@@ -4,6 +4,7 @@ package modeler
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image/color"
 	"io"
@@ -149,8 +150,12 @@ func WriteImage(doc *gltf.Document, name string, mimeType string, r io.Reader) (
 // and fills the buffer with data.
 // If success it returns the index of the new accessor.
 func WriteAccessor(doc *gltf.Document, target gltf.Target, data interface{}) uint32 {
-	c, a, l := binary.Type(data)
+	buffer := lastBuffer(doc)
+	padding := getPadding(uint32(len(buffer.Data)))
+	buffer.Data = append(buffer.Data, make([]byte, padding)...)
+	buffer.ByteLength += padding
 	index := WriteBufferView(doc, target, data)
+	c, a, l := binary.Type(data)
 	doc.Accessors = append(doc.Accessors, &gltf.Accessor{
 		BufferView:    gltf.Index(index),
 		ByteOffset:    0,
@@ -161,33 +166,60 @@ func WriteAccessor(doc *gltf.Document, target gltf.Target, data interface{}) uin
 	return uint32(len(doc.Accessors) - 1)
 }
 
+// WriteBufferViewInterleaved adds a new BufferView to doc
+// and fills the buffer with one or more vertex attribute.
+// If success it returns the index of the new buffer view.
+// An error is returned if the attributes don´t have
+// the same length.
+func WriteBufferViewInterleaved(doc *gltf.Document, data ...interface{}) (uint32, error) {
+	return writeBufferViews(doc, gltf.TargetArrayBuffer, data...)
+}
+
 // WriteBufferView adds a new BufferView to doc
 // and fills the buffer with the data.
 // If success it returns the index of the new buffer view.
 func WriteBufferView(doc *gltf.Document, target gltf.Target, data interface{}) uint32 {
-	c, a, l := binary.Type(data)
-	sizeOfElement := binary.SizeOfElement(c, a)
-	size := l * sizeOfElement
+	index, _ := writeBufferViews(doc, target, data)
+	return index
+}
+
+func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...interface{}) (uint32, error) {
+	var refLength, stride, size uint32
+	for i, d := range data {
+		c, a, l := binary.Type(d)
+		if i == 0 {
+			refLength = l
+		} else if refLength != l {
+			return 0, errors.New("go3mf: interleaved data shall have the same number of elements in all chunks")
+		}
+		sizeOfElement := binary.SizeOfElement(c, a)
+		size += l * sizeOfElement
+		if len(data) > 1 {
+			stride += sizeOfElement
+		} else if target == gltf.TargetArrayBuffer && c.ByteSize()*a.Components() != sizeOfElement {
+			stride = sizeOfElement
+		}
+	}
 	buffer := lastBuffer(doc)
 	offset := uint32(len(buffer.Data))
-	padding := getPadding(offset, c.ByteSize())
-	buffer.ByteLength += size + padding
-	buffer.Data = append(buffer.Data, make([]byte, size+padding)...)
-	// Cannot return error as the buffer has enough size and the data type is controlled.
-	_ = binary.Write(buffer.Data[offset+padding:], 0, data)
-	var stride uint32
-	if target == gltf.TargetArrayBuffer && c.ByteSize()*a.Components() != sizeOfElement {
-		stride = sizeOfElement
+	buffer.ByteLength += size
+	buffer.Data = append(buffer.Data, make([]byte, size)...)
+	dataOffset := offset
+	for _, d := range data {
+		// Cannot return error as the buffer has enough size and the data type is controlled.
+		_ = binary.Write(buffer.Data[dataOffset:], stride, d)
+		c, a, _ := binary.Type(d)
+		dataOffset += binary.SizeOfElement(c, a)
 	}
 	bufferView := &gltf.BufferView{
 		Buffer:     uint32(len(doc.Buffers)) - 1,
 		ByteLength: size,
-		ByteOffset: offset + padding,
+		ByteOffset: offset,
 		ByteStride: stride,
 		Target:     target,
 	}
 	doc.BufferViews = append(doc.BufferViews, bufferView)
-	return uint32(len(doc.BufferViews)) - 1
+	return uint32(len(doc.BufferViews)) - 1, nil
 }
 
 func lastBuffer(doc *gltf.Document) *gltf.Buffer {
@@ -197,10 +229,10 @@ func lastBuffer(doc *gltf.Document) *gltf.Buffer {
 	return doc.Buffers[len(doc.Buffers)-1]
 }
 
-func getPadding(offset uint32, alignment uint32) uint32 {
-	padAlign := offset % alignment
+func getPadding(offset uint32) uint32 {
+	padAlign := offset % 4
 	if padAlign == 0 {
 		return 0
 	}
-	return alignment - padAlign
+	return 4 - padAlign
 }

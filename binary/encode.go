@@ -226,10 +226,11 @@ func Write(b []byte, stride uint32, data interface{}) error {
 		return binary.Write(bytes.NewBuffer(b), binary.LittleEndian, data)
 	}
 	e := int(stride)
+	sizeOfElement := int(SizeOfElement(c, t))
 	if stride == 0 {
-		e = int(SizeOfElement(c, t))
+		e = sizeOfElement
 	}
-	if len(b) < e*int(n) {
+	if len(b) < e*(int(n)-1)+sizeOfElement {
 		return io.ErrShortBuffer
 	}
 	switch data := data.(type) {

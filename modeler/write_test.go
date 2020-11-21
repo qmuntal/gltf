@@ -28,6 +28,31 @@ func TestAlignment(t *testing.T) {
 	}
 }
 
+func TestWriteBufferViewInterleaved(t *testing.T) {
+	doc := gltf.NewDocument()
+	WriteBufferViewInterleaved(doc,
+		[][3]float32{{1, 2, 3}, {0, 0, -1}},
+		[][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}},
+		[][3]float32{{3, 1, 2}, {4, 0, 1}},
+	)
+	if len(doc.Buffers) != 1 {
+		t.Errorf("TestWriteBufferViewInterleaved() buffer size = %v, want 1", len(doc.Buffers))
+	}
+	buffer := doc.Buffers[0]
+	want := []byte{
+		0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+		0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64,
+		0, 0, 64, 64, 0, 0, 128, 63, 0, 0, 0, 64,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 191,
+		0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64,
+		0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 128, 63,
+	}
+	if diff := deep.Equal(buffer.Data, want); diff != nil {
+		t.Errorf("TestWriteBufferViewInterleaved() = %v", diff)
+		return
+	}
+}
+
 func TestWriteNormal(t *testing.T) {
 	type args struct {
 		data [][3]float32
