@@ -47,7 +47,7 @@ func TestWriteBufferViewInterleaved(t *testing.T) {
 		[][3]float32{{3, 1, 2}, {4, 0, 1}},
 	)
 	if err != nil {
-		t.Fatalf("TestWriteBufferViewInterleaved() got error = %V", err)
+		t.Fatalf("TestWriteBufferViewInterleaved() got error = %v", err)
 	}
 	if len(doc.Buffers) != 1 {
 		t.Errorf("TestWriteBufferViewInterleaved() buffer size = %v, want 1", len(doc.Buffers))
