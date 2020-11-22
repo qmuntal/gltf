@@ -28,14 +28,141 @@ func TestAlignment(t *testing.T) {
 	}
 }
 
-func TestWriteBufferViewInterleaved_Error(t *testing.T) {
+func TestWriteAttributesInterleaved(t *testing.T) {
+	data := [][3]float32{{1, 2, 3}, {0, 0, -1}}
 	doc := gltf.NewDocument()
-	_, err := WriteBufferViewInterleaved(doc,
+	attrs, err := WriteAttributesInterleaved(doc, Attributes{
+		Position:       data,
+		Normal:         data,
+		Tangent:        [][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}},
+		TextureCoord_0: [][2]float32{{1, 2}, {1, 2}},
+		TextureCoord_1: [][2]float32{{1, 2}, {1, 2}},
+		Joints:         [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}},
+		Weights:        [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}},
+		Color:          data,
+		CustomAttributes: []CustomAttribute{
+			{Name: "COLOR_1", Data: data},
+			{Name: "COLOR_2", Data: data},
+		},
+	})
+	if err != nil {
+		t.Fatalf("TestWriteAttributesInterleaved() got error = %v", err)
+	}
+	if len(doc.Buffers) != 1 {
+		t.Errorf("TestWriteAttributesInterleaved() buffer size = %v, want 1", len(doc.Buffers))
+	}
+	if len(doc.BufferViews) != 1 {
+		t.Errorf("TestWriteAttributesInterleaved() buffer views size = %v, want 1", len(doc.BufferViews))
+	}
+	if len(doc.Accessors) != 10 {
+		t.Errorf("TestWriteAttributesInterleaved() accessors size = %v, want 10", len(doc.Accessors))
+	}
+	want := map[string]uint32{
+		"POSITION":   0,
+		"NORMAL":     1,
+		"TANGENT":    2,
+		"TEXCOORD_0": 3,
+		"TEXCOORD_1": 4,
+		"WEIGHTS_0":  5,
+		"JOINTS_0":   6,
+		"COLOR_0":    7,
+		"COLOR_1":    8,
+		"COLOR_2":    9,
+	}
+	if diff := deep.Equal(attrs, want); diff != nil {
+		t.Errorf("TestWriteAttributesInterleaved() = %v", diff)
+	}
+	accs := []*gltf.Accessor{
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, Min: []float32{0, 0, -1}, Max: []float32{1, 2, 3}},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ByteOffset: 12},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ByteOffset: 24},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec2, ByteOffset: 40},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec2, ByteOffset: 48},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ByteOffset: 56, ComponentType: gltf.ComponentUbyte, Normalized: true},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ByteOffset: 60, ComponentType: gltf.ComponentUbyte},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ByteOffset: 64},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ByteOffset: 76},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ByteOffset: 88},
+	}
+	if diff := deep.Equal(accs, doc.Accessors); diff != nil {
+		t.Errorf("TestWriteAttributesInterleaved() = %v", diff)
+	}
+}
+
+func TestWriteAttributesInterleaved_OnlyPosition(t *testing.T) {
+	doc := gltf.NewDocument()
+	_, err := WriteAttributesInterleaved(doc, Attributes{
+		Position:         [][3]float32{{1, 2, 3}, {0, 0, -1}},
+		Tangent:          make([][4]float32, 0),
+		CustomAttributes: []CustomAttribute{{Name: "COLOR_1"}},
+	})
+	if err != nil {
+		t.Fatalf("TestWriteAttributesInterleaved_OnlyPosition() got error = %v", err)
+	}
+	if len(doc.Accessors) != 1 {
+		t.Errorf("TestWriteAttributesInterleaved_OnlyPosition() accessors size = %v, want 1", len(doc.Accessors))
+	}
+}
+
+func TestWriteAttributesInterleaved_Error(t *testing.T) {
+	doc := gltf.NewDocument()
+	_, err := WriteAttributesInterleaved(doc, Attributes{
+		Position: [][3]float32{{1, 2, 3}, {0, 0, -1}},
+		Color:    [][3]float32{{1, 2, 3}},
+	})
+	if err == nil {
+		t.Error("TestWriteAttributesInterleaved_Error() expected an error")
+	}
+}
+
+func TestWriteAccessorsInterleaved(t *testing.T) {
+	doc := gltf.NewDocument()
+	indices, err := WriteAccessorsInterleaved(doc,
+		[][3]float32{{1, 2, 3}, {0, 0, -1}},
+		[][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}},
+		[][3]float32{{3, 1, 2}, {4, 0, 1}},
+	)
+	if err != nil {
+		t.Fatalf("TestWriteAccessorsInterleaved() got error = %v", err)
+	}
+	if len(doc.Buffers) != 1 {
+		t.Errorf("TestWriteAccessorsInterleaved() buffer size = %v, want 1", len(doc.Buffers))
+	}
+	if len(doc.BufferViews) != 1 {
+		t.Errorf("TestWriteAccessorsInterleaved() buffer views size = %v, want 1", len(doc.BufferViews))
+	}
+	if got := doc.Accessors[indices[0]].ByteOffset; got != 0 {
+		t.Errorf("TestWriteAccessorsInterleaved() accessor 0 has ByteOffset = %v, want 0", got)
+	}
+	if got := doc.Accessors[indices[1]].ByteOffset; got != 12 {
+		t.Errorf("TestWriteAccessorsInterleaved() accessor 1 has ByteOffset = %v, want 12", got)
+	}
+	if got := doc.Accessors[indices[2]].ByteOffset; got != 28 {
+		t.Errorf("TestWriteAccessorsInterleaved() accessor 2 has ByteOffset = %v, want 28", got)
+	}
+	buffer := doc.Buffers[0]
+	want := []byte{
+		0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+		0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64,
+		0, 0, 64, 64, 0, 0, 128, 63, 0, 0, 0, 64,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 191,
+		0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64,
+		0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 128, 63,
+	}
+	if diff := deep.Equal(buffer.Data, want); diff != nil {
+		t.Errorf("TestWriteAccessorsInterleaved() = %v", diff)
+		return
+	}
+}
+
+func TestWriteAccessorsInterleaved_Error(t *testing.T) {
+	doc := gltf.NewDocument()
+	_, err := WriteAccessorsInterleaved(doc,
 		[][3]float32{{1, 2, 3}, {0, 0, -1}},
 		[][3]float32{{3, 1, 2}},
 	)
 	if err == nil {
-		t.Error("TestWriteBufferViewInterleaved() expected an error")
+		t.Error("TestWriteAccessorsInterleaved_Error() expected an error")
 	}
 }
 
@@ -47,7 +174,7 @@ func TestWriteBufferViewInterleaved(t *testing.T) {
 		[][3]float32{{3, 1, 2}, {4, 0, 1}},
 	)
 	if err != nil {
-		t.Fatalf("TestWriteBufferViewInterleaved() got error = %V", err)
+		t.Fatalf("TestWriteBufferViewInterleaved() got error = %v", err)
 	}
 	if len(doc.Buffers) != 1 {
 		t.Errorf("TestWriteBufferViewInterleaved() buffer size = %v, want 1", len(doc.Buffers))
@@ -64,6 +191,17 @@ func TestWriteBufferViewInterleaved(t *testing.T) {
 	if diff := deep.Equal(buffer.Data, want); diff != nil {
 		t.Errorf("TestWriteBufferViewInterleaved() = %v", diff)
 		return
+	}
+}
+
+func TestWriteBufferViewInterleaved_Error(t *testing.T) {
+	doc := gltf.NewDocument()
+	_, err := WriteBufferViewInterleaved(doc,
+		[][3]float32{{1, 2, 3}, {0, 0, -1}},
+		[][3]float32{{3, 1, 2}},
+	)
+	if err == nil {
+		t.Error("TestWriteBufferViewInterleaved_Error() expected an error")
 	}
 }
 

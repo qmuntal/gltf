@@ -15,16 +15,20 @@ A Go module for efficient and robust serialization/deserialization of [glTF 2.0]
 
 - [qmuntal/gltf](#qmuntalgltf)
   - [Features](#features)
+    - [Data Model](#data-model)
     - [Optional parameters](#optional-parameters)
     - [Reading a document](#reading-a-document)
     - [Writing a document](#writing-a-document)
     - [Manipulating buffer views and accessors](#manipulating-buffer-views-and-accessors)
+    - [Data interleaving](#data-interleaving)
     - [Manipulating bytes](#manipulating-bytes)
     - [Dealing with extensions](#dealing-with-extensions)
       - [Custom extensions](#custom-extensions)
   - [Project Goals](#project-goals)
 
 ## Features
+
+### Data Model
 
 `qmuntal/gltf` implements the whole glTF 2.0 specification. The top level element is the [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) and it contains all the information to hold a gltf document in memory:
 
@@ -131,6 +135,39 @@ func main() {
               "POSITION": modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}),
               "COLOR_0":  modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}),
             },
+        }},
+    }}
+    doc.Nodes = []*gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
+    doc.Scenes[0].Nodes = append(doc.Scenes[0].Nodes, 0)
+    if err := gltf.SaveBinary(doc, "./example.glb"); err != nil {
+        panic(err)
+    }
+}
+```
+
+### Data interleaving
+
+The data of the attributes that are stored in a single bufferView may be stored as an Array-Of-Structures, which may produce a rendering perfomance boost in static attributes. `qmuntal/gltf/modeler` facilitates the creation of interleaved accessors and buffer views with the methods [WriteAttributesInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAttributesInterleaved), [WriteAccessorsInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAccessorsInterleaved), and [WriteBufferViewInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteBufferViewInterleaved) being the first one the most recommended for creating mesh primitives:
+
+```go
+package main
+
+import (
+    "github.com/qmuntal/gltf"
+    "github.com/qmuntal/gltf/modeler"
+)
+
+func main() {
+    doc := gltf.NewDocument()
+    attrs, _ := modeler.WriteAttributesInterleaved(doc, modeler.Attributes{
+      Position:       [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}},
+      Color:          [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}},
+    })
+    doc.Meshes = []*gltf.Mesh{{
+        Name: "Pyramid",
+        Primitives: []*gltf.Primitive{{
+            Indices: gltf.Index(modeler.WriteIndices(doc, []uint8{0, 1, 2})),
+            Attributes: attrs,
         }},
     }}
     doc.Nodes = []*gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
