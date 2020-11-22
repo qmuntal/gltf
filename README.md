@@ -129,7 +129,6 @@ doc.Meshes = []*gltf.Mesh{{
         },
     }},
 }}
-}
 ```
 
 ### Data interleaving
@@ -149,7 +148,6 @@ doc.Meshes = []*gltf.Mesh{{
         Attributes: attrs,
     }},
 }}
-}
 ```
 
 ### Manipulating bytes
