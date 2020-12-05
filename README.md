@@ -17,8 +17,8 @@
 - [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document): Idiomatic glTF data model
 - [gltf.Open](https://pkg.go.dev/github.com/qmuntal/gltf#Open) / [gltf.Save](https://pkg.go.dev/github.com/qmuntal/gltf#Save): `.glTF` and `.glb` [d]encoding support
 - [qmuntal/gltf/ext](https://pkg.go.dev/github.com/qmuntal/gltf/ext): Built-in extensability mechanism with principal extensions provided out of the box
-- [qmuntal/gltf/modeler](https://pkg.go.dev/github.com/qmuntal/gltf/modeler): Friendly package to read and write accessors and buffer views, with support for interleaved and sparce buffers
-- [qmuntal/gltf/binary](https://pkg.go.dev/github.com/qmuntal/gltf/binary): Friendly and efficient API to read and write bytes from buffers
+- [qmuntal/gltf/modeler](https://pkg.go.dev/github.com/qmuntal/gltf/modeler): Friendly package to read and write accessors and buffer views
+- [qmuntal/gltf/binary](https://pkg.go.dev/github.com/qmuntal/gltf/binary): Friendly and efficient package to read and write bytes from buffers
 
 ## :scroll: Getting started
 
