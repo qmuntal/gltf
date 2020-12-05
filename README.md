@@ -6,13 +6,13 @@
         <a href="#main-features">Main Features</a> ❘
         <a href="#getting-started">Getting Started</a> ❘
         <a href="#about-the-project">About The Project</a> ❘
-        <a href="#contributing">Contributing</a> ❘
+        <a href="#contributing">Contributing</a>
     </p>
 </div>
 
 <p align="center"><img width="640" src="./assets/gopher_high.png" alt="Gopher glTF"></p>
 
-## :start: Main Features
+## :star: Main Features
 
 - [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document): Idiomatic glTF data model
 - [gltf.Open](https://pkg.go.dev/github.com/qmuntal/gltf#Open) / [gltf.Save](https://pkg.go.dev/github.com/qmuntal/gltf#Save): `.glTF` and `.glb` [d]encoding support
@@ -201,7 +201,7 @@ func Unmarshal(data []byte) (interface{}, error) {
 }
 ```
 
-## Contributing
+## :raising_hand: Contributing
 
 PRs, issues, and feedback from ninja gophers are very welcomed.
 
