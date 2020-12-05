@@ -3,10 +3,10 @@
 <div align="center">
     <p>A Go module for efficient and robust serialization/deserialization of glTF 2.0, a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications, also known as "the JPEG of 3D".</p>
     <p align="center">
-        <a href="#main-features">Main Features</a> ❘
-        <a href="#getting-started">Getting Started</a> ❘
-        <a href="#about-the-project">About The Project</a> ❘
-        <a href="#contributing">Contributing</a>
+        <a href="#star-main-features">Main Features</a> ❘
+        <a href="#scroll-getting-started">Getting Started</a> ❘
+        <a href="#raising_hand-contributing">Contributing</a> ❘
+        <a href="#about-the-project">About The Project</a>
     </p>
 </div>
 
