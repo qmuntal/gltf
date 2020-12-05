@@ -1,32 +1,26 @@
+# qmuntal/gltf [![PkgGoDev](https://pkg.go.dev/badge/github.com/qmuntal/gltf)](https://pkg.go.dev/github.com/qmuntal/gltf) [![Build Status](https://travis-ci.com/qmuntal/gltf.svg?branch=master)](https://travis-ci.com/qmuntal/gltf) [![Coverage Status](https://coveralls.io/repos/github/qmuntal/gltf/badge.svg?branch=master)](https://coveralls.io/github/qmuntal/gltf?branch=master) [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause) [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/avelino/awesome-go)
+
+<div align="center">
+    <p>A Go module for efficient and robust serialization/deserialization of glTF 2.0, a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications, also known as "the JPEG of 3D".</p>
+    <p align="center">
+        <a href="#main-features">Main Features</a> ❘
+        <a href="#getting-started">Getting Started</a> ❘
+        <a href="#about-the-project">About The Project</a> ❘
+        <a href="#contributing">Contributing</a> ❘
+    </p>
+</div>
+
 <p align="center"><img width="640" src="./assets/gopher_high.png" alt="Gopher glTF"></p>
 
-<p align="center">
-    <a href="https://pkg.go.dev/github.com/qmuntal/gltf"><img src="https://pkg.go.dev/badge/qmuntal/gltf" alt="go.dev"></a>
-    <a href="https://travis-ci.com/qmuntal/gltf"><img src="https://travis-ci.com/qmuntal/gltf.svg?branch=master" alt="Build Status"></a>
-    <a href="https://coveralls.io/github/qmuntal/gltf"><img src="https://coveralls.io/repos/github/qmuntal/gltf/badge.svg" alt="Code Coverage"></a>
-    <a href="https://goreportcard.com/report/github.com/qmuntal/gltf"><img src="https://goreportcard.com/badge/github.com/qmuntal/gltf" alt="Go Report Card"></a>
-    <a href="https://opensource.org/licenses/BSD-2-Clause"><img src="https://img.shields.io/badge/License-BSD%202--Clause-orange.svg" alt="Licenses"></a>
-    <a href="https://github.com/avelino/awesome-go"><img src="https://awesome.re/mentioned-badge.svg" alt="Mentioned in Awesome Go"></a>
-</p>
+## :start: Main Features
 
-# qmuntal/gltf
+- [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document): Idiomatic glTF data model
+- [gltf.Open](https://pkg.go.dev/github.com/qmuntal/gltf#Open) / [gltf.Save](https://pkg.go.dev/github.com/qmuntal/gltf#Save): `.glTF` and `.glb` [d]encoding support
+- [qmuntal/gltf/ext](https://pkg.go.dev/github.com/qmuntal/gltf/ext): Built-in extensability mechanism with principal extensions provided out of the box
+- [qmuntal/gltf/modeler](https://pkg.go.dev/github.com/qmuntal/gltf/modeler): Friendly package to read and write accessors and buffer views, with support for interleaved and sparce buffers
+- [qmuntal/gltf/binary](https://pkg.go.dev/github.com/qmuntal/gltf/binary): Friendly and efficient API to read and write bytes from buffers
 
-A Go module for efficient and robust serialization/deserialization of [glTF 2.0](https://www.khronos.org/gltf/), a royalty-free specification for the efficient transmission and loading of 3D scenes and models by applications, also known as "the JPEG of 3D".
-
-- [qmuntal/gltf](#qmuntalgltf)
-  - [Features](#features)
-    - [Data Model](#data-model)
-    - [Optional parameters](#optional-parameters)
-    - [Reading a document](#reading-a-document)
-    - [Writing a document](#writing-a-document)
-    - [Manipulating buffer views and accessors](#manipulating-buffer-views-and-accessors)
-    - [Data interleaving](#data-interleaving)
-    - [Manipulating bytes](#manipulating-bytes)
-    - [Dealing with extensions](#dealing-with-extensions)
-      - [Custom extensions](#custom-extensions)
-  - [Project Goals](#project-goals)
-
-## Features
+## :scroll: Getting started
 
 ### Data Model
 
@@ -207,7 +201,11 @@ func Unmarshal(data []byte) (interface{}, error) {
 }
 ```
 
-## Project Goals
+## Contributing
+
+PRs, issues, and feedback from ninja gophers are very welcomed.
+
+## About The Project
 
 This library is a complete implementation of glTF 2.0, and its explicit aim is to provide a production-ready, idiomatic and curated API to perform any kind of glTF manipulation.
 
