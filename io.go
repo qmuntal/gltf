@@ -2,41 +2,30 @@ package gltf
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
-	"path"
-	"path/filepath"
 )
 
-// RelativeFileHandler implements a secure ReadHandler supporting relative paths.
-// If Dir is empty the os.Getws will be used. It comes with directory traversal protection.
-type RelativeFileHandler struct {
-	Dir string
+// An FS provides access to a hierarchical file system.
+// Must follow the same naming convetion as as io/fs.FS.
+type FS interface {
+	Open(name string) (io.ReadCloser, error)
 }
 
-func (h *RelativeFileHandler) fullName(uri string) string {
-	dir := h.Dir
-	if dir == "" {
-		var err error
-		if dir, err = os.Getwd(); err != nil {
-			return ""
-		}
-	}
-	return filepath.Join(dir, filepath.FromSlash(path.Clean("/"+uri)))
+// A CreateFS provides access to a hierarchical file system.
+// Must follow the same naming convetion as as io/fs.FS.
+type CreateFS interface {
+	Create(name string) (io.WriteCloser, error)
 }
 
-// WriteResource writes the resource using io.WriteFile.
-func (h *RelativeFileHandler) WriteResource(uri string, data []byte) error {
-	return ioutil.WriteFile(uri, data, 0664)
+// dirFS implements a file system (an fs.FS) for the tree of files rooted at the directory dir.
+type dirFS string
+
+// Open opens the named file for reading.
+func (dir dirFS) Open(name string) (io.ReadCloser, error) {
+	return os.Open(string(dir) + "/" + name)
 }
 
-// ReadFullResource reads all the resource data using io.ReadFull.
-func (h *RelativeFileHandler) ReadFullResource(uri string, data []byte) error {
-	f, err := os.Open(h.fullName(uri))
-	if err != nil {
-		return err
-	}
-	_, err = io.ReadFull(f, data)
-	f.Close()
-	return err
+// Create creates or truncates the named file.
+func (dir dirFS) Create(name string) (io.WriteCloser, error) {
+	return os.Create(string(dir) + "/" + name)
 }

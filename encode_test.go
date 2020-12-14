@@ -4,36 +4,45 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
 )
 
+type mockFile struct {
+	bytes.Buffer
+}
+
+func (f mockFile) Stat() (os.FileInfo, error) { return nil, nil }
+func (f mockFile) Close() error               { return nil }
+
 type mockChunkReadHandler struct {
-	Chunks map[string][]byte
+	Chunks map[string]*mockFile
 }
 
-func (m mockChunkReadHandler) ReadFullResource(uri string, data []byte) error {
-	copy(data, m.Chunks[uri])
-	return nil
+func (m mockChunkReadHandler) Open(uri string) (io.ReadCloser, error) {
+	f := m.Chunks[uri]
+	return f, nil
 }
 
-func (m mockChunkReadHandler) WriteResource(uri string, data []byte) error {
-	m.Chunks[uri] = data
-	return nil
+func (m mockChunkReadHandler) Create(uri string) (io.WriteCloser, error) {
+	m.Chunks[uri] = &mockFile{}
+	return m.Chunks[uri], nil
 }
 
 func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
-	m := &mockChunkReadHandler{Chunks: make(map[string][]byte)}
-	e := NewEncoder(buff).WithWriteHandler(m)
+	m := &mockChunkReadHandler{Chunks: make(map[string]*mockFile)}
+	e := NewEncoder(buff).WithFS(m)
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		return nil, err
 	}
 
-	return NewDecoder(buff).WithReadHandler(m), nil
+	return NewDecoder(buff).WithFS(m), nil
 }
 
 func TestEncoder_Encode(t *testing.T) {

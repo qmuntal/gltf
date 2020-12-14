@@ -11,13 +11,6 @@ import (
 	"unsafe"
 )
 
-// WriteHandler is the interface that wraps the Write method.
-//
-// WriteResource should behaves as io.Write in terms of reading the writing resource.
-type WriteHandler interface {
-	WriteResource(uri string, data []byte) error
-}
-
 // Save will save a document as a glTF with the specified by name.
 func Save(doc *Document, name string) error {
 	return save(doc, name, false)
@@ -33,7 +26,7 @@ func save(doc *Document, name string, asBinary bool) error {
 	if err != nil {
 		return err
 	}
-	e := NewEncoder(f).WithWriteHandler(&RelativeFileHandler{Dir: filepath.Dir(name)})
+	e := NewEncoder(f).WithFS(dirFS(filepath.Dir(name)))
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		f.Close()
@@ -45,23 +38,22 @@ func save(doc *Document, name string, asBinary bool) error {
 // An Encoder writes a GLTF to an output stream
 // with relative external buffers support.
 type Encoder struct {
-	AsBinary     bool
-	WriteHandler WriteHandler
-	w            io.Writer
+	AsBinary bool
+	FS       CreateFS
+	w        io.Writer
 }
 
 // NewEncoder returns a new encoder that writes to w as a normal glTF file.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		AsBinary:     true,
-		WriteHandler: new(RelativeFileHandler),
-		w:            w,
+		AsBinary: true,
+		w:        w,
 	}
 }
 
-// WithWriteHandler sets the WriteHandler.
-func (e *Encoder) WithWriteHandler(h WriteHandler) *Encoder {
-	e.WriteHandler = h
+// WithFS sets the FS.
+func (e *Encoder) WithFS(h CreateFS) *Encoder {
+	e.FS = h
 	return e
 }
 
@@ -99,8 +91,18 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}
-
-	return e.WriteHandler.WriteResource(buffer.URI, buffer.Data)
+	if e.FS == nil {
+		return errors.New("gltf: external buffer requires Encoder.FS")
+	}
+	w, err := e.FS.Create(sanitizeURI(buffer.URI))
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(buffer.Data)
+	if err1 := w.Close(); err == nil {
+		err = err1
+	}
+	return err
 }
 
 func (e *Encoder) encodeBinary(doc *Document) error {
