@@ -17,11 +17,11 @@ import (
 )
 
 // WriteIndices adds a new INDICES accessor to doc
-// and fills the last buffer with the indices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteIndices(doc *gltf.Document, data interface{}) uint32 {
 	switch data.(type) {
-	case []uint8, []uint16, []uint32:
+	case []uint16, []uint32:
 	default:
 		panic(fmt.Sprintf("modeler.WriteIndices: invalid type %T", data))
 	}
@@ -29,21 +29,21 @@ func WriteIndices(doc *gltf.Document, data interface{}) uint32 {
 }
 
 // WriteNormal adds a new NORMAL accessor to doc
-// and fills the last buffer with the indices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteNormal(doc *gltf.Document, data [][3]float32) uint32 {
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
 // WriteTangent adds a new TANGENT accessor to doc
-// and fills the last buffer with the indices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteTangent(doc *gltf.Document, data [][4]float32) uint32 {
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
 // WriteTextureCoord adds a new TEXTURECOORD accessor to doc
-// and fills the last buffer with the texturecoord data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteTextureCoord(doc *gltf.Document, data interface{}) uint32 {
 	normalized := checkTextureCoord(data)
@@ -65,7 +65,7 @@ func checkTextureCoord(data interface{}) bool {
 }
 
 // WriteWeights adds a new WEIGHTS accessor to doc
-// and fills the last buffer with the weights data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteWeights(doc *gltf.Document, data interface{}) uint32 {
 	normalized := checkWeights(data)
@@ -87,7 +87,7 @@ func checkWeights(data interface{}) bool {
 }
 
 // WriteJoints adds a new JOINTS accessor to doc
-// and fills the last buffer with the joints data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteJoints(doc *gltf.Document, data interface{}) uint32 {
 	checkJoints(data)
@@ -103,7 +103,7 @@ func checkJoints(data interface{}) {
 }
 
 // WritePosition adds a new POSITION accessor to doc
-// and fills the last buffer with the vertices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WritePosition(doc *gltf.Document, data [][3]float32) uint32 {
 	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
@@ -126,7 +126,7 @@ func minMaxFloat32(data [][3]float32) ([3]float32, [3]float32) {
 }
 
 // WriteColor adds a new COLOR accessor to doc
-// and fills the buffer with the color data.
+// and fills the buffer with data.
 // If success it returns the index of the new accessor.
 func WriteColor(doc *gltf.Document, data interface{}) uint32 {
 	normalized := checkColor(data)

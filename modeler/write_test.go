@@ -543,21 +543,6 @@ func TestWriteIndices(t *testing.T) {
 		want    uint32
 		wantDoc *gltf.Document
 	}{
-		{"uint8", &gltf.Document{
-			Accessors: []*gltf.Accessor{{}},
-			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
-		}, args{[]uint8{1, 2}}, 1, &gltf.Document{
-			Accessors: []*gltf.Accessor{
-				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorScalar, ComponentType: gltf.ComponentUbyte},
-			},
-			BufferViews: []*gltf.BufferView{
-				{ByteLength: 2, Target: gltf.TargetElementArrayBuffer},
-			},
-			Buffers: []*gltf.Buffer{
-				{ByteLength: 12, Data: []byte{1, 2}},
-			},
-		}},
 		{"uint16", &gltf.Document{
 			Accessors: []*gltf.Accessor{{}},
 			Buffers:   []*gltf.Buffer{{ByteLength: 10}},
