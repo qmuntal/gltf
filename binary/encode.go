@@ -21,7 +21,7 @@ func Read(b []byte, byteStride uint32, data interface{}) error {
 	e := int(byteStride)
 	high := int(n) * e
 	if byteStride != size {
-		high -= int(size)
+		high -= int(byteStride - size)
 	}
 	if len(b) < high {
 		return io.ErrShortBuffer
