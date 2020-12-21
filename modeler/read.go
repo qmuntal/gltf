@@ -399,11 +399,20 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 	case gltf.ComponentUbyte:
 		if acr.Type == gltf.AccessorVec3 {
 			for i, e := range data.([][3]uint8) {
-				buffer[i] = [4]uint16{uint16(e[0]), uint16(e[1]), uint16(e[2]), 65535}
+				buffer[i] = [4]uint16{
+					uint16(e[0]) | uint16(e[0])<<8,
+					uint16(e[1]) | uint16(e[1])<<8,
+					uint16(e[2]) | uint16(e[2])<<8,
+					65535}
 			}
 		} else {
 			for i, e := range data.([][4]uint8) {
-				buffer[i] = [4]uint16{uint16(e[0]), uint16(e[1]), uint16(e[2]), uint16(e[3])}
+				buffer[i] = [4]uint16{
+					uint16(e[0]) | uint16(e[0])<<8,
+					uint16(e[1]) | uint16(e[1])<<8,
+					uint16(e[2]) | uint16(e[2])<<8,
+					uint16(e[3]) | uint16(e[3])<<8,
+				}
 			}
 		}
 	case gltf.ComponentUshort:

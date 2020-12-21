@@ -539,9 +539,9 @@ func TestReadColor(t *testing.T) {
 		{"[4]uint8", args{[]byte{1, 2, 3, 4}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
 		}, nil}, [][4]uint8{{1, 2, 3, 4}}, false},
-		{"[4]uint16", args{[]byte{0, 0, 255, 255, 0, 0, 255, 255}, &gltf.Accessor{
+		{"[4]uint16", args{[]byte{0, 0, 115, 33, 200, 0, 255, 255}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort,
-		}, nil}, [][4]uint8{{0, 255, 0, 255}}, false},
+		}, nil}, [][4]uint8{{0, 115, 200, 255}}, false},
 		{"[4]float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat,
 		}, nil}, [][4]uint8{{255, 89, 155, 252}}, false},
@@ -595,18 +595,18 @@ func TestReadColor64(t *testing.T) {
 		want    [][4]uint16
 		wantErr bool
 	}{
-		{"[4]uint8", args{[]byte{1, 2, 3, 4}, &gltf.Accessor{
+		{"[4]uint8", args{[]byte{0, 115, 200, 255}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
-		}, nil}, [][4]uint16{{1, 2, 3, 4}}, false},
+		}, nil}, [][4]uint16{{0, 29555, 51400, 65535}}, false},
 		{"[4]uint16", args{[]byte{0, 0, 255, 255, 0, 0, 255, 255}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort,
 		}, nil}, [][4]uint16{{0, 65535, 0, 65535}}, false},
 		{"[4]float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat,
 		}, nil}, [][4]uint16{{65535, 23149, 40135, 65532}}, false},
-		{"[3]uint8", args{[]byte{1, 2, 3, 0}, &gltf.Accessor{
+		{"[3]uint8", args{[]byte{0, 100, 200, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUbyte,
-		}, nil}, [][4]uint16{{1, 2, 3, 65535}}, false},
+		}, nil}, [][4]uint16{{0, 25700, 51400, 65535}}, false},
 		{"[3]uint16", args{[]byte{0, 0, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort,
 		}, nil}, [][4]uint16{{0, 255, 255, 65535}}, false},
