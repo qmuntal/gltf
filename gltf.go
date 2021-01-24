@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"sync"
 )
 
 // Index is an utility function that returns a pointer to a uint32.
@@ -456,11 +457,23 @@ type ChannelTarget struct {
 // If a key does not match with any of the supported extensions the value will be a json.RawMessage so its decoding can be delayed.
 type Extensions map[string]interface{}
 
-var extensions = make(map[string]func([]byte) (interface{}, error))
+var (
+	extMu      sync.RWMutex
+	extensions = make(map[string]func([]byte) (interface{}, error))
+)
 
 // RegisterExtension registers a function that returns a new extension of the given
 // byte array. This is intended to be called from the init function in
 // packages that implement extensions.
 func RegisterExtension(key string, f func([]byte) (interface{}, error)) {
+	extMu.Lock()
+	defer extMu.Unlock()
 	extensions[key] = f
+}
+
+func queryExtension(key string) (func([]byte) (interface{}, error), bool) {
+	extMu.RLock()
+	ext, ok := extensions[key]
+	extMu.RUnlock()
+	return ext, ok
 }

@@ -330,7 +330,7 @@ func (ext *Extensions) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &raw)
 	if err == nil {
 		for key, value := range raw {
-			if extFactory, ok := extensions[key]; ok {
+			if extFactory, ok := queryExtension(key); ok {
 				n, err := extFactory(value)
 				if err != nil {
 					(*ext)[key] = value
