@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -34,6 +35,52 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	}
 
 	return NewDecoder(buff).WithReadHandler(m), nil
+}
+
+func TestEncoder_Encode_AsBinary_WithoutBuffer(t *testing.T) {
+	doc := &Document{}
+	buff := new(bytes.Buffer)
+	e := NewEncoder(buff)
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if strings.Contains(buff.String(), "BIN") {
+		t.Error("Encoder.Encode() as binary without bin buffer should not contain bin chunk")
+	}
+}
+
+func TestEncoder_Encode_AsBinary_WithoutBinChunk(t *testing.T) {
+	doc := &Document{Buffers: []*Buffer{
+		{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
+		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []byte{4, 5, 6, 7}},
+		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
+	}}
+	buff := new(bytes.Buffer)
+	m := &mockChunkReadHandler{Chunks: make(map[string][]byte)}
+	e := NewEncoder(buff).WithWriteHandler(m)
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if strings.Contains(buff.String(), "BIN") {
+		t.Error("Encoder.Encode() as binary without bin buffer should not contain bin chunk")
+	}
+}
+
+func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
+	doc := &Document{Buffers: []*Buffer{
+		{Extras: 8.0, Name: "binary", ByteLength: 3, Data: []byte{1, 2, 3}},
+	}}
+	buff := new(bytes.Buffer)
+	e := NewEncoder(buff)
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if !strings.Contains(buff.String(), "BIN") {
+		t.Error("Encoder.Encode() as binary with bin buffer should contain bin chunk")
+	}
 }
 
 func TestEncoder_Encode(t *testing.T) {
@@ -71,12 +118,6 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "an_3", Samplers: []*AnimationSampler{
 				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: InterpolationCubicSpline},
 			}},
-		}}}, false},
-		{"withBuffer", args{&Document{Buffers: []*Buffer{
-			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []byte{1, 2, 3}},
-			{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
-			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []byte{4, 5, 6, 7}},
-			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
 		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []*BufferView{
 			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: TargetArrayBuffer},

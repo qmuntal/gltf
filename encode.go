@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"unsafe"
 )
 
 // WriteHandler is the interface that wraps the Write method.
@@ -73,8 +72,11 @@ func (e *Encoder) Encode(doc *Document) error {
 	var err error
 	var externalBufferIndex = 0
 	if e.AsBinary {
-		err = e.encodeBinary(doc)
-		externalBufferIndex = 1
+		var hasBinChunk bool
+		hasBinChunk, err = e.encodeBinary(doc)
+		if hasBinChunk {
+			externalBufferIndex = 1
+		}
 	} else {
 		err = json.NewEncoder(e.w).Encode(doc)
 	}
@@ -103,44 +105,54 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	return e.WriteHandler.WriteResource(buffer.URI, buffer.Data)
 }
 
-func (e *Encoder) encodeBinary(doc *Document) error {
+func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	jsonText, err := json.Marshal(doc)
 	if err != nil {
-		return err
+		return false, err
 	}
-	header := glbHeader{Magic: glbHeaderMagic, Version: 2, Length: 0, JSONHeader: chunkHeader{Length: 0, Type: glbChunkJSON}}
-	binHeader := chunkHeader{Length: 0, Type: glbChunkBIN}
-	var binBufferLength uint32
-	var binBuffer *Buffer
-	if len(doc.Buffers) > 0 {
-		binBuffer = doc.Buffers[0]
-		binBufferLength = binBuffer.ByteLength
+	jsonHeader := chunkHeader{
+		Length: uint32(((len(jsonText) + 3) / 4) * 4),
+		Type:   glbChunkJSON,
 	}
-	binPaddedLength := ((binBufferLength + 3) / 4) * 4
-	binPadding := make([]byte, binPaddedLength-binBufferLength)
-	binHeader.Length = binPaddedLength
-
-	header.JSONHeader.Length = uint32(((len(jsonText) + 3) / 4) * 4)
-	header.Length = uint32(unsafe.Sizeof(header)+unsafe.Sizeof(binHeader)) + header.JSONHeader.Length + binHeader.Length
+	header := glbHeader{
+		Magic:      glbHeaderMagic,
+		Version:    2,
+		Length:     12 + 8 + jsonHeader.Length, // 12-byte glb header + 8-byte json chunk header
+		JSONHeader: jsonHeader,
+	}
 	headerPadding := make([]byte, header.JSONHeader.Length-uint32(len(jsonText)))
 	for i := range headerPadding {
 		headerPadding[i] = ' '
 	}
-	for i := range binPadding {
-		binPadding[i] = 0
-	}
 	err = binary.Write(e.w, binary.LittleEndian, &header)
 	if err != nil {
-		return err
+		return false, err
 	}
 	e.w.Write(jsonText)
 	e.w.Write(headerPadding)
-	binary.Write(e.w, binary.LittleEndian, &binHeader)
-	if binBuffer != nil {
+
+	hasBinChunk := len(doc.Buffers) > 0 && doc.Buffers[0].URI == ""
+	if hasBinChunk {
+		var binBufferLength uint32
+		var binBuffer *Buffer
+		if len(doc.Buffers) > 0 {
+			binBuffer = doc.Buffers[0]
+			binBufferLength = binBuffer.ByteLength
+		}
+		binPaddedLength := ((binBufferLength + 3) / 4) * 4
+		binPadding := make([]byte, binPaddedLength-binBufferLength)
+		binHeader := chunkHeader{Length: 0, Type: glbChunkBIN}
+		binHeader.Length = binPaddedLength
+		header.Length = uint32(8) + binHeader.Length
+		for i := range binPadding {
+			binPadding[i] = 0
+		}
+		binary.Write(e.w, binary.LittleEndian, &binHeader)
 		e.w.Write(binBuffer.Data)
+		_, err = e.w.Write(binPadding)
 	}
-	_, err = e.w.Write(binPadding)
-	return err
+
+	return hasBinChunk, err
 }
 
 // UnmarshalJSON unmarshal the node with the correct default values.
