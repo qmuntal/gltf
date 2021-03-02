@@ -48,6 +48,24 @@ func TestReadBufferView(t *testing.T) {
 	}
 }
 
+func TestReadAccessor_Buffered(t *testing.T) {
+	doc := &gltf.Document{Buffers: []*gltf.Buffer{
+		{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+	}, BufferViews: []*gltf.BufferView{{
+		Buffer: 0, ByteLength: 6, ByteOffset: 3,
+	}}}
+	acr := &gltf.Accessor{
+		BufferView: gltf.Index(0), ByteOffset: 3, ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 3,
+	}
+	data, err := ReadAccessor(doc, acr, make([]byte, 100))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data.([]byte)) != int(acr.Count) {
+		t.Errorf("ReadAccessor expecting length %v, got %v", len(data.([]byte)), acr.Count)
+	}
+}
+
 func TestReadAccessor(t *testing.T) {
 	type args struct {
 		doc *gltf.Document

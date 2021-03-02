@@ -32,6 +32,8 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, data interface{}) (int
 			if uint32(count) < acr.Count {
 				tmpSlice := binary.MakeSlice(acr.ComponentType, acr.Type, acr.Count-uint32(count))
 				data = reflect.AppendSlice(reflect.ValueOf(data), reflect.ValueOf(tmpSlice)).Interface()
+			} else if uint32(count) > acr.Count {
+				data = reflect.ValueOf(data).Slice(0, int(acr.Count)).Interface()
 			}
 		} else {
 			data = binary.MakeSlice(acr.ComponentType, acr.Type, acr.Count)
@@ -144,7 +146,7 @@ func ReadIndices(doc *gltf.Document, acr *gltf.Accessor, buffer []uint32) ([]uin
 	case gltf.ComponentUint:
 		buffer = data.([]uint32)
 	}
-	return buffer[:acr.Count], nil
+	return buffer, nil
 }
 
 // ReadNormal returns the data referenced by acr.
@@ -161,7 +163,7 @@ func ReadNormal(doc *gltf.Document, acr *gltf.Accessor, buffer [][3]float32) ([]
 	if err != nil {
 		return nil, err
 	}
-	return data.([][3]float32)[:acr.Count], nil
+	return data.([][3]float32), nil
 }
 
 // ReadTangent returns the data referenced by acr.
@@ -178,7 +180,7 @@ func ReadTangent(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	if err != nil {
 		return nil, err
 	}
-	return data.([][4]float32)[:acr.Count], nil
+	return data.([][4]float32), nil
 }
 
 // ReadTextureCoord returns the data referenced by acr.
@@ -218,7 +220,7 @@ func ReadTextureCoord(doc *gltf.Document, acr *gltf.Accessor, buffer [][2]float3
 	case gltf.ComponentFloat:
 		buffer = data.([][2]float32)
 	}
-	return buffer[:acr.Count], nil
+	return buffer, nil
 }
 
 // ReadWeights returns the data referenced by acr.
@@ -260,7 +262,7 @@ func ReadWeights(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	case gltf.ComponentFloat:
 		buffer = data.([][4]float32)
 	}
-	return buffer[:acr.Count], nil
+	return buffer, nil
 }
 
 // ReadJoints returns the data referenced by acr.
@@ -295,7 +297,7 @@ func ReadJoints(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([][
 	case gltf.ComponentUshort:
 		buffer = data.([][4]uint16)
 	}
-	return buffer[:acr.Count], nil
+	return buffer, nil
 }
 
 // ReadPosition returns the data referenced by acr.
@@ -312,7 +314,7 @@ func ReadPosition(doc *gltf.Document, acr *gltf.Accessor, buffer [][3]float32) (
 	if err != nil {
 		return nil, err
 	}
-	return data.([][3]float32)[:acr.Count], nil
+	return data.([][3]float32), nil
 }
 
 // ReadColor returns the data referenced by acr.
@@ -369,7 +371,7 @@ func ReadColor(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint8) ([][4]
 			}
 		}
 	}
-	return buffer[:acr.Count], nil
+	return buffer, nil
 }
 
 // ReadColor returns the data referenced by acr.
@@ -435,7 +437,7 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 			}
 		}
 	}
-	return buffer[:acr.Count], nil
+	return buffer, nil
 }
 
 func errAccessorType(tp gltf.AccessorType) error {
