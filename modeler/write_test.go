@@ -66,8 +66,8 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 		gltf.WEIGHTS_0:  5,
 		gltf.JOINTS_0:   6,
 		gltf.COLOR_0:    7,
-		"gltf.COLOR_1":  8,
-		"gltf.COLOR_2":  9,
+		"COLOR_1":       8,
+		"COLOR_2":       9,
 	}
 	if diff := deep.Equal(attrs, want); diff != nil {
 		t.Errorf("TestWriteAttributesInterleaved() = %v", diff)
