@@ -211,7 +211,7 @@ func WriteAccessorsInterleaved(doc *gltf.Document, data ...interface{}) ([]uint3
 			Type:          t,
 			Count:         l,
 		})
-		byteOffset += binary.SizeOfElement(c, t)
+		byteOffset += gltf.SizeOfElement(c, t)
 		indices[i] = uint32(len(doc.Accessors) - 1)
 	}
 	return indices, nil
@@ -340,7 +340,7 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...interface{
 		} else if refLength != l {
 			return 0, errors.New("go3mf: interleaved data shall have the same number of elements in all chunks")
 		}
-		sizeOfElement := binary.SizeOfElement(c, a)
+		sizeOfElement := gltf.SizeOfElement(c, a)
 		size += l * sizeOfElement
 		if len(data) > 1 {
 			stride += sizeOfElement
@@ -357,7 +357,7 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...interface{
 		// Cannot return error as the buffer has enough size and the data type is controlled.
 		_ = binary.Write(buffer.Data[dataOffset:], stride, d)
 		c, a, _ := binary.Type(d)
-		dataOffset += binary.SizeOfElement(c, a)
+		dataOffset += gltf.SizeOfElement(c, a)
 	}
 	bufferView := &gltf.BufferView{
 		Buffer:     uint32(len(doc.Buffers)) - 1,

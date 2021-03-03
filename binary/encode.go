@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"image/color"
 	"io"
+
+	"github.com/qmuntal/gltf"
 )
 
 // Read reads structured binary data from b into data.
@@ -14,7 +16,7 @@ import (
 // If data length is greater than the length of b, Read returns io.ErrShortBuffer.
 func Read(b []byte, byteStride uint32, data interface{}) error {
 	c, t, n := Type(data)
-	size := SizeOfElement(c, t)
+	size := gltf.SizeOfElement(c, t)
 	if byteStride == 0 {
 		byteStride = size
 	}
@@ -226,7 +228,7 @@ func Write(b []byte, stride uint32, data interface{}) error {
 		return binary.Write(bytes.NewBuffer(b), binary.LittleEndian, data)
 	}
 	e := int(stride)
-	sizeOfElement := int(SizeOfElement(c, t))
+	sizeOfElement := int(gltf.SizeOfElement(c, t))
 	if stride == 0 {
 		e = sizeOfElement
 	}

@@ -22,32 +22,18 @@ import (
 //
 // ReadAccessor is safe to use even with malformed documents.
 // If that happens it will return an error instead of panic.
-func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, data interface{}) (interface{}, error) {
+func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer interface{}) (interface{}, error) {
 	if acr.BufferView == nil && acr.Sparse == nil {
 		return nil, nil
 	}
-	if data != nil {
-		c, t, count := binary.Type(data)
-		if count > 0 && c == acr.ComponentType && t == acr.Type {
-			if uint32(count) < acr.Count {
-				tmpSlice := binary.MakeSlice(acr.ComponentType, acr.Type, acr.Count-uint32(count))
-				data = reflect.AppendSlice(reflect.ValueOf(data), reflect.ValueOf(tmpSlice)).Interface()
-			} else if uint32(count) > acr.Count {
-				data = reflect.ValueOf(data).Slice(0, int(acr.Count)).Interface()
-			}
-		} else {
-			data = binary.MakeSlice(acr.ComponentType, acr.Type, acr.Count)
-		}
-	} else {
-		data = binary.MakeSlice(acr.ComponentType, acr.Type, acr.Count)
-	}
+	buffer = binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
 	if acr.BufferView != nil {
-		buffer, err := readBufferView(doc, *acr.BufferView)
+		buf, err := readBufferView(doc, *acr.BufferView)
 		if err != nil {
 			return nil, err
 		}
 		byteStride := doc.BufferViews[*acr.BufferView].ByteStride
-		err = binary.Read(buffer[acr.ByteOffset:], byteStride, data)
+		err = binary.Read(buf[acr.ByteOffset:], byteStride, buffer)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +63,7 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, data interface{}) (int
 			return nil, err
 		}
 
-		s := reflect.ValueOf(data)
+		s := reflect.ValueOf(buffer)
 		ind := reflect.ValueOf(indices)
 		vals := reflect.ValueOf(values)
 		tp := reflect.TypeOf((*int)(nil)).Elem()
@@ -86,7 +72,7 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, data interface{}) (int
 			s.Index(id).Set(vals.Index(i))
 		}
 	}
-	return data, nil
+	return buffer, nil
 }
 
 func readBufferView(doc *gltf.Document, bufferViewIndex uint32) ([]byte, error) {
