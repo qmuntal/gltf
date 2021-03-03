@@ -254,40 +254,40 @@ func WriteAttributesInterleaved(doc *gltf.Document, v Attributes) (map[string]ui
 		data  []interface{}
 	)
 	if len(v.Position) != 0 {
-		props = append(props, attrProps{Name: "POSITION"})
+		props = append(props, attrProps{Name: gltf.POSITION})
 		data = append(data, v.Position)
 	}
 	if len(v.Normal) != 0 {
-		props = append(props, attrProps{Name: "NORMAL"})
+		props = append(props, attrProps{Name: gltf.NORMAL})
 		data = append(data, v.Normal)
 	}
 	if len(v.Tangent) != 0 {
-		props = append(props, attrProps{Name: "TANGENT"})
+		props = append(props, attrProps{Name: gltf.TANGENT})
 		data = append(data, v.Tangent)
 	}
 	if sliceLength(v.TextureCoord_0) != 0 {
 		normalized := checkTextureCoord(v.TextureCoord_0)
-		props = append(props, attrProps{Name: "TEXCOORD_0", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.TEXCOORD_0, Normalized: normalized})
 		data = append(data, v.TextureCoord_0)
 	}
 	if sliceLength(v.TextureCoord_1) != 0 {
 		normalized := checkTextureCoord(v.TextureCoord_1)
-		props = append(props, attrProps{Name: "TEXCOORD_1", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.TEXCOORD_1, Normalized: normalized})
 		data = append(data, v.TextureCoord_1)
 	}
 	if sliceLength(v.Weights) != 0 {
 		normalized := checkWeights(v.Weights)
-		props = append(props, attrProps{Name: "WEIGHTS_0", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.WEIGHTS_0, Normalized: normalized})
 		data = append(data, v.Weights)
 	}
 	if sliceLength(v.Joints) != 0 {
 		checkJoints(v.Joints)
-		props = append(props, attrProps{Name: "JOINTS_0"})
+		props = append(props, attrProps{Name: gltf.JOINTS_0})
 		data = append(data, v.Joints)
 	}
 	if sliceLength(v.Color) != 0 {
 		normalized := checkColor(v.Color)
-		props = append(props, attrProps{Name: "COLOR_0", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.COLOR_0, Normalized: normalized})
 		data = append(data, v.Color)
 	}
 	for _, c := range v.CustomAttributes {
@@ -306,7 +306,7 @@ func WriteAttributesInterleaved(doc *gltf.Document, v Attributes) (map[string]ui
 		attrs[prop.Name] = index
 		doc.Accessors[index].Normalized = prop.Normalized
 	}
-	if pos, ok := attrs["POSITION"]; ok {
+	if pos, ok := attrs[gltf.POSITION]; ok {
 		min, max := minMaxFloat32(v.Position)
 		doc.Accessors[pos].Min = min[:]
 		doc.Accessors[pos].Max = max[:]

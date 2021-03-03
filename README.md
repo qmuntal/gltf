@@ -118,8 +118,8 @@ doc.Meshes = []*gltf.Mesh{{
     Primitives: []*gltf.Primitive{{
         Indices: gltf.Index(modeler.WriteIndices(doc, []uint16{0, 1, 2})),
         Attributes: map[string]uint32{
-          "POSITION": modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}),
-          "COLOR_0":  modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}),
+          gltf.POSITION: modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}),
+          gltf.COLOR_0:  modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}),
         },
     }},
 }}

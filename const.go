@@ -13,6 +13,18 @@ var (
 	DefaultTranslation = [3]float32{0, 0, 0}
 )
 
+// Attribute names defined in the spec.
+const (
+	POSITION   = "POSITION"
+	NORMAL     = "NORMAL"
+	TANGENT    = "TANGENT"
+	TEXCOORD_0 = "TEXCOORD_0"
+	TEXCOORD_1 = "TEXCOORD_1"
+	WEIGHTS_0  = "WEIGHTS_0"
+	JOINTS_0   = "JOINTS_0"
+	COLOR_0    = "COLOR_0"
+)
+
 var (
 	emptyMatrix   = [16]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	emptyRotation = [4]float32{0, 0, 0, 0}

@@ -58,16 +58,16 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 		t.Errorf("TestWriteAttributesInterleaved() accessors size = %v, want 10", len(doc.Accessors))
 	}
 	want := map[string]uint32{
-		"POSITION":   0,
-		"NORMAL":     1,
-		"TANGENT":    2,
-		"TEXCOORD_0": 3,
-		"TEXCOORD_1": 4,
-		"WEIGHTS_0":  5,
-		"JOINTS_0":   6,
-		"COLOR_0":    7,
-		"COLOR_1":    8,
-		"COLOR_2":    9,
+		gltf.POSITION:   0,
+		gltf.NORMAL:     1,
+		gltf.TANGENT:    2,
+		gltf.TEXCOORD_0: 3,
+		gltf.TEXCOORD_1: 4,
+		gltf.WEIGHTS_0:  5,
+		gltf.JOINTS_0:   6,
+		gltf.COLOR_0:    7,
+		"gltf.COLOR_1":  8,
+		"gltf.COLOR_2":  9,
 	}
 	if diff := deep.Equal(attrs, want); diff != nil {
 		t.Errorf("TestWriteAttributesInterleaved() = %v", diff)

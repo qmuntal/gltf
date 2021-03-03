@@ -16,8 +16,8 @@ func Example() {
 			{
 				Indices: gltf.Index(indicesAccessor),
 				Attributes: map[string]uint32{
-					"POSITION": positionAccessor,
-					"COLOR_0":  colorIndices,
+					gltf.POSITION: positionAccessor,
+					gltf.COLOR_0:  colorIndices,
 				},
 			},
 		},
@@ -42,8 +42,8 @@ func ExampleWriteAccessorsInterleaved() {
 			{
 				Indices: gltf.Index(indicesAccessor),
 				Attributes: map[string]uint32{
-					"POSITION": indices[0],
-					"COLOR_0":  indices[1],
+					gltf.POSITION: indices[0],
+					gltf.COLOR_0:  indices[1],
 				},
 			},
 		},
