@@ -176,6 +176,12 @@ func main() {
 
 It is not necessary to call `gltf.RegisterExtension` for built-in extensions, as these auto-register themselves when the package is initialized.
 
+#### External extension
+
+This list is the list of known extensions implemented in other modules:
+
+- [draco-go/gltf/draco](https://github.com/qmuntal/draco-go)
+
 #### Custom extensions
 
 To implement a custom extension encoding, provide a `struct` that can be encoded as a JSON object as dictated by the spec.
