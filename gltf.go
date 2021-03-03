@@ -477,3 +477,24 @@ func queryExtension(key string) (func([]byte) (interface{}, error), bool) {
 	extMu.RUnlock()
 	return ext, ok
 }
+
+// SizeOfElement returns the size, in bytes, of an element.
+// The element size may not be (component size) * (number of components),
+// as some of the elements are tightly packed in order to ensure
+// that they are aligned to 4-byte boundaries.
+func SizeOfElement(c ComponentType, t AccessorType) uint32 {
+	// special cases
+	switch {
+	case (t == AccessorVec3 || t == AccessorVec2) && (c == ComponentByte || c == ComponentUbyte):
+		return 4
+	case t == AccessorVec3 && (c == ComponentShort || c == ComponentUshort):
+		return 8
+	case t == AccessorMat2 && (c == ComponentByte || c == ComponentUbyte):
+		return 8
+	case t == AccessorMat3 && (c == ComponentByte || c == ComponentUbyte):
+		return 12
+	case t == AccessorMat3 && (c == ComponentShort || c == ComponentUshort):
+		return 24
+	}
+	return c.ByteSize() * t.Components()
+}
