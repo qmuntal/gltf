@@ -577,7 +577,7 @@ func TestSampler_Encode(t *testing.T) {
 		{"empty", &Sampler{}, []byte(`{}`), false},
 		{"nondefault",
 			&Sampler{MagFilter: MagLinear, MinFilter: MinNearest, WrapS: WrapRepeat, WrapT: WrapClampToEdge},
-			[]byte(`{"minFilter":9728,"wrapT":33071}`), false},
+			[]byte(`{"magFilter":9729,"minFilter":9728,"wrapT":33071}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

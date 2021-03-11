@@ -260,8 +260,10 @@ func (a *AlphaMode) MarshalJSON() ([]byte, error) {
 type MagFilter uint16
 
 const (
+	// MagUndefined indicates to not specified any magnification filters.
+	MagUndefined MagFilter = iota
 	// MagLinear corresponds to a linear magnification filter.
-	MagLinear MagFilter = iota
+	MagLinear
 	// MagNearest corresponds to a nearest magnification filter.
 	MagNearest
 )
@@ -291,8 +293,10 @@ func (m *MagFilter) MarshalJSON() ([]byte, error) {
 type MinFilter uint16
 
 const (
+	// MinUndefined indicates to not specified any minification filters.
+	MinUndefined MinFilter = iota
 	// MinLinear corresponds to a linear minification filter.
-	MinLinear MinFilter = iota
+	MinLinear
 	// MinNearestMipMapLinear corresponds to a nearest mipmap linear minification filter.
 	MinNearestMipMapLinear
 	// MinNearest corresponds to a nearest minification filter.

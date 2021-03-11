@@ -298,7 +298,7 @@ func TestSampler_Decode(t *testing.T) {
 		{"empty", []byte(`{}`), &Sampler{}, false},
 		{"nondefault",
 			[]byte(`{"minFilter":9728,"wrapT":33071}`),
-			&Sampler{MagFilter: MagLinear, MinFilter: MinNearest, WrapS: WrapRepeat, WrapT: WrapClampToEdge},
+			&Sampler{MagFilter: MagUndefined, MinFilter: MinNearest, WrapS: WrapRepeat, WrapT: WrapClampToEdge},
 			false},
 	}
 	for _, tt := range tests {
