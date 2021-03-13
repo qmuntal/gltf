@@ -2,6 +2,7 @@ package gltf
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"reflect"
@@ -281,6 +282,35 @@ func TestDecoder_validateDocumentQuotas(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.d.validateDocumentQuotas(tt.args.doc, tt.args.isBinary); (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.validateDocumentQuotas() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestSampler_Decode(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		s       []byte
+		want    *Sampler
+		wantErr bool
+	}{
+		{"empty", []byte(`{}`), &Sampler{}, false},
+		{"nondefault",
+			[]byte(`{"minFilter":9728,"wrapT":33071}`),
+			&Sampler{MagFilter: MagUndefined, MinFilter: MinNearest, WrapS: WrapRepeat, WrapT: WrapClampToEdge},
+			false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got Sampler
+			err := json.Unmarshal(tt.s, &got)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Unmarshaling Sampler error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(&got, tt.want) {
+				t.Errorf("Unmarshaling Sampler = %v, want %v", string(tt.s), tt.want)
 			}
 		})
 	}

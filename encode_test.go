@@ -566,6 +566,33 @@ func TestCamera_MarshalJSON(t *testing.T) {
 	}
 }
 
+func TestSampler_Encode(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       *Sampler
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Sampler{MagFilter: 0, MinFilter: 0, WrapS: 0, WrapT: 0}, []byte(`{}`), false},
+		{"empty", &Sampler{}, []byte(`{}`), false},
+		{"nondefault",
+			&Sampler{MagFilter: MagLinear, MinFilter: MinNearest, WrapS: WrapRepeat, WrapT: WrapClampToEdge},
+			[]byte(`{"magFilter":9729,"minFilter":9728,"wrapT":33071}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := json.Marshal(tt.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Material.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Material.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
 type fakeExt struct {
 	A int `json:"a"`
 }
