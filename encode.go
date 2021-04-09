@@ -124,6 +124,14 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	for i := range headerPadding {
 		headerPadding[i] = ' '
 	}
+
+	hasBinChunk := len(doc.Buffers) > 0 && doc.Buffers[0].URI == ""
+	var binPaddedLength uint32
+	if hasBinChunk {
+		binPaddedLength = ((doc.Buffers[0].ByteLength + 3) / 4) * 4
+		header.Length += uint32(8) + binPaddedLength
+	}
+
 	err = binary.Write(e.w, binary.LittleEndian, &header)
 	if err != nil {
 		return false, err
@@ -131,22 +139,13 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	e.w.Write(jsonText)
 	e.w.Write(headerPadding)
 
-	hasBinChunk := len(doc.Buffers) > 0 && doc.Buffers[0].URI == ""
 	if hasBinChunk {
-		var binBufferLength uint32
-		var binBuffer *Buffer
-		if len(doc.Buffers) > 0 {
-			binBuffer = doc.Buffers[0]
-			binBufferLength = binBuffer.ByteLength
-		}
-		binPaddedLength := ((binBufferLength + 3) / 4) * 4
-		binPadding := make([]byte, binPaddedLength-binBufferLength)
-		binHeader := chunkHeader{Length: 0, Type: glbChunkBIN}
-		binHeader.Length = binPaddedLength
-		header.Length = uint32(8) + binHeader.Length
+		binBuffer := doc.Buffers[0]
+		binPadding := make([]byte, binPaddedLength-binBuffer.ByteLength)
 		for i := range binPadding {
 			binPadding[i] = 0
 		}
+		binHeader := chunkHeader{Length: binPaddedLength, Type: glbChunkBIN}
 		binary.Write(e.w, binary.LittleEndian, &binHeader)
 		e.w.Write(binBuffer.Data)
 		_, err = e.w.Write(binPadding)
