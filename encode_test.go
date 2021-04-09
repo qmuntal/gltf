@@ -2,6 +2,7 @@ package gltf
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -80,6 +81,13 @@ func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
 	}
 	if !strings.Contains(buff.String(), "BIN") {
 		t.Error("Encoder.Encode() as binary with bin buffer should contain bin chunk")
+	}
+	var header glbHeader
+	if err := binary.Read(buff, binary.LittleEndian, &header); err != nil {
+		t.Fatal(err)
+	}
+	if got := header.Length; got != 116 {
+		t.Errorf("Encoder.Encode() incorrect length. want = %v, got = %v", 116, got)
 	}
 }
 
