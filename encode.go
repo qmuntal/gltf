@@ -1,7 +1,6 @@
 package gltf
 
 import (
-	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -172,32 +171,28 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the node with the correct default values.
 func (n *Node) MarshalJSON() ([]byte, error) {
 	type alias Node
-	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
-	if err == nil {
-		if n.Matrix == DefaultMatrix {
-			out = removeProperty([]byte(`"matrix":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]`), out)
-		} else if n.Matrix == emptyMatrix {
-			out = removeProperty([]byte(`"matrix":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]`), out)
-		}
-
-		if n.Rotation == DefaultRotation {
-			out = removeProperty([]byte(`"rotation":[0,0,0,1]`), out)
-		} else if n.Rotation == emptyRotation {
-			out = removeProperty([]byte(`"rotation":[0,0,0,0]`), out)
-		}
-
-		if n.Scale == DefaultScale {
-			out = removeProperty([]byte(`"scale":[1,1,1]`), out)
-		} else if n.Scale == emptyScale {
-			out = removeProperty([]byte(`"scale":[0,0,0]`), out)
-		}
-
-		if n.Translation == DefaultTranslation {
-			out = removeProperty([]byte(`"translation":[0,0,0]`), out)
-		}
-		out = sanitizeJSON(out)
+	tmp := &struct {
+		Matrix      *[16]float32 `json:"matrix,omitempty"`                                          // A 4x4 transformation matrix stored in column-major order.
+		Rotation    *[4]float32  `json:"rotation,omitempty" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+		Scale       *[3]float32  `json:"scale,omitempty"`
+		Translation *[3]float32  `json:"translation,omitempty"`
+		*alias
+	}{
+		alias: (*alias)(n),
 	}
-	return out, err
+	if n.Matrix != DefaultMatrix && n.Matrix != emptyMatrix {
+		tmp.Matrix = &n.Matrix
+	}
+	if n.Rotation != DefaultRotation && n.Rotation != emptyRotation {
+		tmp.Rotation = &n.Rotation
+	}
+	if n.Scale != DefaultScale && n.Scale != emptyScale {
+		tmp.Scale = &n.Scale
+	}
+	if n.Translation != DefaultTranslation {
+		tmp.Translation = &n.Translation
+	}
+	return json.Marshal(tmp)
 }
 
 // MarshalJSON marshal the camera with the correct default values.
@@ -237,17 +232,20 @@ func (m *Material) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the material with the correct default values.
 func (m *Material) MarshalJSON() ([]byte, error) {
 	type alias Material
-	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(m)})
-	if err == nil {
-		if m.AlphaCutoff != nil && *m.AlphaCutoff == 0.5 {
-			out = removeProperty([]byte(`"alphaCutoff":0.5`), out)
-		}
-		if m.EmissiveFactor == [3]float32{0, 0, 0} {
-			out = removeProperty([]byte(`"emissiveFactor":[0,0,0]`), out)
-		}
-		out = sanitizeJSON(out)
+	tmp := &struct {
+		EmissiveFactor *[3]float32 `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
+		AlphaCutoff    *float32    `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
+		*alias
+	}{
+		alias: (*alias)(m),
 	}
-	return out, err
+	if m.AlphaCutoff != nil && *m.AlphaCutoff != 0.5 {
+		tmp.AlphaCutoff = m.AlphaCutoff
+	}
+	if m.EmissiveFactor != [3]float32{0, 0, 0} {
+		tmp.EmissiveFactor = &m.EmissiveFactor
+	}
+	return json.Marshal(tmp)
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
@@ -316,20 +314,21 @@ func (p *PBRMetallicRoughness) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the pbr with the correct default values.
 func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 	type alias PBRMetallicRoughness
-	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(p)})
-	if err == nil {
-		if p.MetallicFactor != nil && *p.MetallicFactor == 1 {
-			out = removeProperty([]byte(`"metallicFactor":1`), out)
-		}
-		if p.RoughnessFactor != nil && *p.RoughnessFactor == 1 {
-			out = removeProperty([]byte(`"roughnessFactor":1`), out)
-		}
-		if p.BaseColorFactor != nil && *p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
-			out = removeProperty([]byte(`"baseColorFactor":[1,1,1,1]`), out)
-		}
-		out = sanitizeJSON(out)
+	tmp := &struct {
+		alias
+	}{
+		alias: (alias)(*p),
 	}
-	return out, err
+	if p.MetallicFactor != nil && *p.MetallicFactor == 1 {
+		tmp.MetallicFactor = nil
+	}
+	if p.RoughnessFactor != nil && *p.RoughnessFactor == 1 {
+		tmp.RoughnessFactor = nil
+	}
+	if p.BaseColorFactor != nil && *p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
+		tmp.BaseColorFactor = nil
+	}
+	return json.Marshal(tmp)
 }
 
 // UnmarshalJSON unmarshal the extensions with the supported extensions initialized.
@@ -355,14 +354,4 @@ func (ext *Extensions) UnmarshalJSON(data []byte) error {
 	}
 
 	return err
-}
-
-func removeProperty(str []byte, b []byte) []byte {
-	b = bytes.Replace(b, str, []byte(""), 1)
-	return bytes.Replace(b, []byte(`,,`), []byte(","), 1)
-}
-
-func sanitizeJSON(b []byte) []byte {
-	b = bytes.Replace(b, []byte(`{,`), []byte("{"), 1)
-	return bytes.Replace(b, []byte(`,}`), []byte("}"), 1)
 }

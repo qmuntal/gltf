@@ -435,7 +435,7 @@ func TestNode_MarshalJSON(t *testing.T) {
 			Camera:      Index(1),
 			Skin:        Index(1),
 			Mesh:        Index(1),
-		}, []byte(`{"camera":1,"skin":1,"matrix":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"mesh":1,"rotation":[1,0,0,0],"scale":[1,0,0],"translation":[1,0,0]}`), false},
+		}, []byte(`{"matrix":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rotation":[1,0,0,0],"scale":[1,0,0],"translation":[1,0,0],"camera":1,"skin":1,"mesh":1}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -460,7 +460,7 @@ func TestMaterial_MarshalJSON(t *testing.T) {
 	}{
 		{"default", &Material{AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque}, []byte(`{}`), false},
 		{"empty", &Material{AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND"}`), false},
-		{"nodefault", &Material{AlphaCutoff: Float(1), AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
+		{"nodefault", &Material{AlphaCutoff: Float(1), AlphaMode: AlphaBlend}, []byte(`{"alphaCutoff":1,"alphaMode":"BLEND"}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
