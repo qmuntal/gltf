@@ -1,6 +1,9 @@
 package modeler_test
 
 import (
+	"bytes"
+	"os"
+
 	"github.com/qmuntal/gltf"
 	"github.com/qmuntal/gltf/modeler"
 )
@@ -19,6 +22,49 @@ func Example() {
 					gltf.POSITION: positionAccessor,
 					gltf.COLOR_0:  colorIndices,
 				},
+			},
+		},
+	}}
+	doc.Nodes = []*gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
+	doc.Scenes[0].Nodes = append(doc.Scenes[0].Nodes, 0)
+	if err := gltf.SaveBinary(doc, "./example.glb"); err != nil {
+		panic(err)
+	}
+}
+
+func ExampleWriteImage() {
+	img, err := os.ReadFile("../assets/gopher_high.png")
+	if err != nil {
+		panic(err)
+	}
+	doc := gltf.NewDocument()
+	indicesAccessor := modeler.WriteIndices(doc, []uint16{0, 1, 2, 3, 1, 0, 0, 2, 3, 1, 4, 2, 4, 3, 2, 4, 1, 3})
+	positionAccessor := modeler.WritePosition(doc, [][3]float32{{43, 43, 0}, {83, 43, 0}, {63, 63, 40}, {43, 83, 0}, {83, 83, 0}})
+	textureAccessor := modeler.WriteTextureCoord(doc, [][2]float32{{0, 1}, {0.4, 1}, {0.4, 0}, {0.4, 1}, {0, 1}})
+	imageIdx, err := modeler.WriteImage(doc, "gopher", "image/png", bytes.NewReader(img))
+	if err != nil {
+		panic(err)
+	}
+	doc.Textures = append(doc.Textures, &gltf.Texture{Source: gltf.Index(imageIdx)})
+	doc.Materials = append(doc.Materials, &gltf.Material{
+		Name: "Texture",
+		PBRMetallicRoughness: &gltf.PBRMetallicRoughness{
+			BaseColorTexture: &gltf.TextureInfo{
+				Index: uint32(len(doc.Textures) - 1),
+			},
+			MetallicFactor: gltf.Float(0),
+		},
+	})
+	doc.Meshes = []*gltf.Mesh{{
+		Name: "Pyramid",
+		Primitives: []*gltf.Primitive{
+			{
+				Indices: gltf.Index(indicesAccessor),
+				Attributes: map[string]uint32{
+					gltf.POSITION:   positionAccessor,
+					gltf.TEXCOORD_0: textureAccessor,
+				},
+				Material: gltf.Index(uint32(len(doc.Materials) - 1)),
 			},
 		},
 	}}
