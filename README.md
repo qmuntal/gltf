@@ -116,10 +116,10 @@ doc := gltf.NewDocument()
 doc.Meshes = []*gltf.Mesh{{
     Name: "Pyramid",
     Primitives: []*gltf.Primitive{{
-        Indices: gltf.Index(modeler.WriteIndices(doc, []uint8{0, 1, 2})),
+        Indices: gltf.Index(modeler.WriteIndices(doc, []uint16{0, 1, 2})),
         Attributes: map[string]uint32{
-          "POSITION": modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}),
-          "COLOR_0":  modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}),
+          gltf.POSITION: modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}),
+          gltf.COLOR_0:  modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}),
         },
     }},
 }}
@@ -138,7 +138,7 @@ attrs, _ := modeler.WriteAttributesInterleaved(doc, modeler.Attributes{
 doc.Meshes = []*gltf.Mesh{{
     Name: "Pyramid",
     Primitives: []*gltf.Primitive{{
-        Indices: gltf.Index(modeler.WriteIndices(doc, []uint8{0, 1, 2})),
+        Indices: gltf.Index(modeler.WriteIndices(doc, []uint16{0, 1, 2})),
         Attributes: attrs,
     }},
 }}
@@ -175,6 +175,12 @@ func main() {
 ```
 
 It is not necessary to call `gltf.RegisterExtension` for built-in extensions, as these auto-register themselves when the package is initialized.
+
+#### External extension
+
+This list is the list of known extensions implemented in other modules:
+
+- [draco-go/gltf/draco](https://github.com/qmuntal/draco-go)
 
 #### Custom extensions
 

@@ -8,25 +8,25 @@ import (
 	"github.com/qmuntal/gltf"
 )
 
-// SizeOfElement returns the size, in bytes, of an element.
-// The element size may not be (component size) * (number of components),
-// as some of the elements are tightly packed in order to ensure
-// that they are aligned to 4-byte boundaries.
-func SizeOfElement(c gltf.ComponentType, t gltf.AccessorType) uint32 {
-	// special cases
-	switch {
-	case (t == gltf.AccessorVec3 || t == gltf.AccessorVec2) && (c == gltf.ComponentByte || c == gltf.ComponentUbyte):
-		return 4
-	case t == gltf.AccessorVec3 && (c == gltf.ComponentShort || c == gltf.ComponentUshort):
-		return 8
-	case t == gltf.AccessorMat2 && (c == gltf.ComponentByte || c == gltf.ComponentUbyte):
-		return 8
-	case t == gltf.AccessorMat3 && (c == gltf.ComponentByte || c == gltf.ComponentUbyte):
-		return 12
-	case t == gltf.AccessorMat3 && (c == gltf.ComponentShort || c == gltf.ComponentUshort):
-		return 24
+// MakeSliceBuffer returns the slice type associated with c and t and with the given element count.
+// If the buffer is an slice which type matches with the expected by the acr then it will
+// be used as backing slice.
+func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count uint32, buffer interface{}) interface{} {
+	if buffer == nil {
+		return MakeSlice(c, t, count)
 	}
-	return c.ByteSize() * t.Components()
+	c1, t1, count1 := Type(buffer)
+	if count1 == 0 || c1 != c || t1 != t {
+		return MakeSlice(c, t, count)
+	}
+	if count1 < count {
+		tmpSlice := MakeSlice(c, t, count-count1)
+		return reflect.AppendSlice(reflect.ValueOf(buffer), reflect.ValueOf(tmpSlice)).Interface()
+	}
+	if count1 > count {
+		return reflect.ValueOf(buffer).Slice(0, int(count)).Interface()
+	}
+	return buffer
 }
 
 // MakeSlice returns the slice type associated with c and t and with the given element count.

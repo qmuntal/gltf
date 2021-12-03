@@ -36,7 +36,7 @@ func ExampleSave() {
 			Name: "Default", AlphaMode: gltf.AlphaOpaque, AlphaCutoff: gltf.Float(0.5),
 			PBRMetallicRoughness: &gltf.PBRMetallicRoughness{BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 1}, MetallicFactor: gltf.Float(0.1), RoughnessFactor: gltf.Float(0.99)},
 		}},
-		Meshes: []*gltf.Mesh{{Name: "Cube", Primitives: []*gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.PrimitiveTriangles, Attributes: map[string]uint32{"POSITION": 1, "COLOR_0": 3, "NORMAL": 2, "TEXCOORD_0": 4}}}}},
+		Meshes: []*gltf.Mesh{{Name: "Cube", Primitives: []*gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.PrimitiveTriangles, Attributes: map[string]uint32{gltf.POSITION: 1, gltf.COLOR_0: 3, gltf.NORMAL: 2, gltf.TEXCOORD_0: 4}}}}},
 		Nodes: []*gltf.Node{
 			{Name: "RootNode", Children: []uint32{1, 2, 3}},
 			{Name: "Mesh"},

@@ -2,11 +2,13 @@ package gltf
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/go-test/deep"
@@ -45,6 +47,59 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	return NewDecoder(buff).WithFS(m), nil
 }
 
+func TestEncoder_Encode_AsBinary_WithoutBuffer(t *testing.T) {
+	doc := &Document{}
+	buff := new(bytes.Buffer)
+	e := NewEncoder(buff)
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if strings.Contains(buff.String(), "BIN") {
+		t.Error("Encoder.Encode() as binary without bin buffer should not contain bin chunk")
+	}
+}
+
+func TestEncoder_Encode_AsBinary_WithoutBinChunk(t *testing.T) {
+	doc := &Document{Buffers: []*Buffer{
+		{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
+		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []byte{4, 5, 6, 7}},
+		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
+	}}
+	buff := new(bytes.Buffer)
+	m := &mockChunkReadHandler{Chunks: make(map[string][]byte)}
+	e := NewEncoder(buff).WithWriteHandler(m)
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if strings.Contains(buff.String(), "BIN") {
+		t.Error("Encoder.Encode() as binary without bin buffer should not contain bin chunk")
+	}
+}
+
+func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
+	doc := &Document{Buffers: []*Buffer{
+		{Extras: 8.0, Name: "binary", ByteLength: 3, Data: []byte{1, 2, 3}},
+	}}
+	buff := new(bytes.Buffer)
+	e := NewEncoder(buff)
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if !strings.Contains(buff.String(), "BIN") {
+		t.Error("Encoder.Encode() as binary with bin buffer should contain bin chunk")
+	}
+	var header glbHeader
+	if err := binary.Read(buff, binary.LittleEndian, &header); err != nil {
+		t.Fatal(err)
+	}
+	if got := header.Length; got != 116 {
+		t.Errorf("Encoder.Encode() incorrect length. want = %v, got = %v", 116, got)
+	}
+}
+
 func TestEncoder_Encode(t *testing.T) {
 	type args struct {
 		doc *Document
@@ -81,12 +136,6 @@ func TestEncoder_Encode(t *testing.T) {
 				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: InterpolationCubicSpline},
 			}},
 		}}}, false},
-		{"withBuffer", args{&Document{Buffers: []*Buffer{
-			{Extras: 8.0, Name: "binary", ByteLength: 3, URI: "a.bin", Data: []byte{1, 2, 3}},
-			{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
-			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []byte{4, 5, 6, 7}},
-			{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
-		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []*BufferView{
 			{Extras: 8.0, Buffer: 0, ByteOffset: 1, ByteLength: 2, ByteStride: 5, Target: TargetArrayBuffer},
 			{Buffer: 10, ByteOffset: 10, ByteLength: 20, ByteStride: 50, Target: TargetElementArrayBuffer},
@@ -120,8 +169,8 @@ func TestEncoder_Encode(t *testing.T) {
 		{"withMeshes", args{&Document{Meshes: []*Mesh{
 			{Extras: 8.0, Name: "mesh_1", Weights: []float32{1.2, 2}},
 			{Extras: 8.0, Name: "mesh_2", Primitives: []*Primitive{
-				{Extras: 8.0, Attributes: Attribute{"POSITION": 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
-				{Extras: 8.0, Targets: []Attribute{{"POSITION": 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
+				{Extras: 8.0, Attributes: Attribute{POSITION: 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
+				{Extras: 8.0, Targets: []Attribute{{POSITION: 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 			}},
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []*Node{
@@ -395,7 +444,7 @@ func TestNode_MarshalJSON(t *testing.T) {
 			Camera:      Index(1),
 			Skin:        Index(1),
 			Mesh:        Index(1),
-		}, []byte(`{"camera":1,"skin":1,"matrix":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"mesh":1,"rotation":[1,0,0,0],"scale":[1,0,0],"translation":[1,0,0]}`), false},
+		}, []byte(`{"matrix":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rotation":[1,0,0,0],"scale":[1,0,0],"translation":[1,0,0],"camera":1,"skin":1,"mesh":1}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -420,7 +469,7 @@ func TestMaterial_MarshalJSON(t *testing.T) {
 	}{
 		{"default", &Material{AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque}, []byte(`{}`), false},
 		{"empty", &Material{AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND"}`), false},
-		{"nodefault", &Material{AlphaCutoff: Float(1), AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND","alphaCutoff":1}`), false},
+		{"nodefault", &Material{AlphaCutoff: Float(1), AlphaMode: AlphaBlend}, []byte(`{"alphaCutoff":1,"alphaMode":"BLEND"}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -529,6 +578,33 @@ func TestCamera_MarshalJSON(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Camera.MarshalJSON() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSampler_Encode(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       *Sampler
+		want    []byte
+		wantErr bool
+	}{
+		{"default", &Sampler{MagFilter: 0, MinFilter: 0, WrapS: 0, WrapT: 0}, []byte(`{}`), false},
+		{"empty", &Sampler{}, []byte(`{}`), false},
+		{"nondefault",
+			&Sampler{MagFilter: MagLinear, MinFilter: MinNearest, WrapS: WrapRepeat, WrapT: WrapClampToEdge},
+			[]byte(`{"magFilter":9729,"minFilter":9728,"wrapT":33071}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := json.Marshal(tt.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Material.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Material.MarshalJSON() = %v, want %v", string(got), string(tt.want))
 			}
 		})
 	}

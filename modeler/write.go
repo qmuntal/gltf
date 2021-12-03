@@ -17,11 +17,11 @@ import (
 )
 
 // WriteIndices adds a new INDICES accessor to doc
-// and fills the last buffer with the indices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteIndices(doc *gltf.Document, data interface{}) uint32 {
 	switch data.(type) {
-	case []uint8, []uint16, []uint32:
+	case []uint16, []uint32:
 	default:
 		panic(fmt.Sprintf("modeler.WriteIndices: invalid type %T", data))
 	}
@@ -29,21 +29,21 @@ func WriteIndices(doc *gltf.Document, data interface{}) uint32 {
 }
 
 // WriteNormal adds a new NORMAL accessor to doc
-// and fills the last buffer with the indices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteNormal(doc *gltf.Document, data [][3]float32) uint32 {
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
 // WriteTangent adds a new TANGENT accessor to doc
-// and fills the last buffer with the indices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteTangent(doc *gltf.Document, data [][4]float32) uint32 {
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
 // WriteTextureCoord adds a new TEXTURECOORD accessor to doc
-// and fills the last buffer with the texturecoord data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteTextureCoord(doc *gltf.Document, data interface{}) uint32 {
 	normalized := checkTextureCoord(data)
@@ -65,7 +65,7 @@ func checkTextureCoord(data interface{}) bool {
 }
 
 // WriteWeights adds a new WEIGHTS accessor to doc
-// and fills the last buffer with the weights data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteWeights(doc *gltf.Document, data interface{}) uint32 {
 	normalized := checkWeights(data)
@@ -87,7 +87,7 @@ func checkWeights(data interface{}) bool {
 }
 
 // WriteJoints adds a new JOINTS accessor to doc
-// and fills the last buffer with the joints data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteJoints(doc *gltf.Document, data interface{}) uint32 {
 	checkJoints(data)
@@ -103,7 +103,7 @@ func checkJoints(data interface{}) {
 }
 
 // WritePosition adds a new POSITION accessor to doc
-// and fills the last buffer with the vertices data.
+// and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WritePosition(doc *gltf.Document, data [][3]float32) uint32 {
 	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
@@ -126,7 +126,7 @@ func minMaxFloat32(data [][3]float32) ([3]float32, [3]float32) {
 }
 
 // WriteColor adds a new COLOR accessor to doc
-// and fills the buffer with the color data.
+// and fills the buffer with data.
 // If success it returns the index of the new accessor.
 func WriteColor(doc *gltf.Document, data interface{}) uint32 {
 	normalized := checkColor(data)
@@ -211,7 +211,7 @@ func WriteAccessorsInterleaved(doc *gltf.Document, data ...interface{}) ([]uint3
 			Type:          t,
 			Count:         l,
 		})
-		byteOffset += binary.SizeOfElement(c, t)
+		byteOffset += gltf.SizeOfElement(c, t)
 		indices[i] = uint32(len(doc.Accessors) - 1)
 	}
 	return indices, nil
@@ -254,40 +254,40 @@ func WriteAttributesInterleaved(doc *gltf.Document, v Attributes) (map[string]ui
 		data  []interface{}
 	)
 	if len(v.Position) != 0 {
-		props = append(props, attrProps{Name: "POSITION"})
+		props = append(props, attrProps{Name: gltf.POSITION})
 		data = append(data, v.Position)
 	}
 	if len(v.Normal) != 0 {
-		props = append(props, attrProps{Name: "NORMAL"})
+		props = append(props, attrProps{Name: gltf.NORMAL})
 		data = append(data, v.Normal)
 	}
 	if len(v.Tangent) != 0 {
-		props = append(props, attrProps{Name: "TANGENT"})
+		props = append(props, attrProps{Name: gltf.TANGENT})
 		data = append(data, v.Tangent)
 	}
 	if sliceLength(v.TextureCoord_0) != 0 {
 		normalized := checkTextureCoord(v.TextureCoord_0)
-		props = append(props, attrProps{Name: "TEXCOORD_0", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.TEXCOORD_0, Normalized: normalized})
 		data = append(data, v.TextureCoord_0)
 	}
 	if sliceLength(v.TextureCoord_1) != 0 {
 		normalized := checkTextureCoord(v.TextureCoord_1)
-		props = append(props, attrProps{Name: "TEXCOORD_1", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.TEXCOORD_1, Normalized: normalized})
 		data = append(data, v.TextureCoord_1)
 	}
 	if sliceLength(v.Weights) != 0 {
 		normalized := checkWeights(v.Weights)
-		props = append(props, attrProps{Name: "WEIGHTS_0", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.WEIGHTS_0, Normalized: normalized})
 		data = append(data, v.Weights)
 	}
 	if sliceLength(v.Joints) != 0 {
 		checkJoints(v.Joints)
-		props = append(props, attrProps{Name: "JOINTS_0"})
+		props = append(props, attrProps{Name: gltf.JOINTS_0})
 		data = append(data, v.Joints)
 	}
 	if sliceLength(v.Color) != 0 {
 		normalized := checkColor(v.Color)
-		props = append(props, attrProps{Name: "COLOR_0", Normalized: normalized})
+		props = append(props, attrProps{Name: gltf.COLOR_0, Normalized: normalized})
 		data = append(data, v.Color)
 	}
 	for _, c := range v.CustomAttributes {
@@ -306,7 +306,7 @@ func WriteAttributesInterleaved(doc *gltf.Document, v Attributes) (map[string]ui
 		attrs[prop.Name] = index
 		doc.Accessors[index].Normalized = prop.Normalized
 	}
-	if pos, ok := attrs["POSITION"]; ok {
+	if pos, ok := attrs[gltf.POSITION]; ok {
 		min, max := minMaxFloat32(v.Position)
 		doc.Accessors[pos].Min = min[:]
 		doc.Accessors[pos].Max = max[:]
@@ -340,7 +340,7 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...interface{
 		} else if refLength != l {
 			return 0, errors.New("go3mf: interleaved data shall have the same number of elements in all chunks")
 		}
-		sizeOfElement := binary.SizeOfElement(c, a)
+		sizeOfElement := gltf.SizeOfElement(c, a)
 		size += l * sizeOfElement
 		if len(data) > 1 {
 			stride += sizeOfElement
@@ -357,7 +357,7 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...interface{
 		// Cannot return error as the buffer has enough size and the data type is controlled.
 		_ = binary.Write(buffer.Data[dataOffset:], stride, d)
 		c, a, _ := binary.Type(d)
-		dataOffset += binary.SizeOfElement(c, a)
+		dataOffset += gltf.SizeOfElement(c, a)
 	}
 	bufferView := &gltf.BufferView{
 		Buffer:     uint32(len(doc.Buffers)) - 1,

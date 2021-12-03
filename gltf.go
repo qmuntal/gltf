@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"sync"
 )
 
 // Index is an utility function that returns a pointer to a uint32.
@@ -456,11 +457,44 @@ type ChannelTarget struct {
 // If a key does not match with any of the supported extensions the value will be a json.RawMessage so its decoding can be delayed.
 type Extensions map[string]interface{}
 
-var extensions = make(map[string]func([]byte) (interface{}, error))
+var (
+	extMu      sync.RWMutex
+	extensions = make(map[string]func([]byte) (interface{}, error))
+)
 
 // RegisterExtension registers a function that returns a new extension of the given
 // byte array. This is intended to be called from the init function in
 // packages that implement extensions.
 func RegisterExtension(key string, f func([]byte) (interface{}, error)) {
+	extMu.Lock()
+	defer extMu.Unlock()
 	extensions[key] = f
+}
+
+func queryExtension(key string) (func([]byte) (interface{}, error), bool) {
+	extMu.RLock()
+	ext, ok := extensions[key]
+	extMu.RUnlock()
+	return ext, ok
+}
+
+// SizeOfElement returns the size, in bytes, of an element.
+// The element size may not be (component size) * (number of components),
+// as some of the elements are tightly packed in order to ensure
+// that they are aligned to 4-byte boundaries.
+func SizeOfElement(c ComponentType, t AccessorType) uint32 {
+	// special cases
+	switch {
+	case (t == AccessorVec3 || t == AccessorVec2) && (c == ComponentByte || c == ComponentUbyte):
+		return 4
+	case t == AccessorVec3 && (c == ComponentShort || c == ComponentUshort):
+		return 8
+	case t == AccessorMat2 && (c == ComponentByte || c == ComponentUbyte):
+		return 8
+	case t == AccessorMat3 && (c == ComponentByte || c == ComponentUbyte):
+		return 12
+	case t == AccessorMat3 && (c == ComponentShort || c == ComponentUshort):
+		return 24
+	}
+	return c.ByteSize() * t.Components()
 }

@@ -76,3 +76,31 @@ func TestMakeSlice(t *testing.T) {
 		})
 	}
 }
+
+func TestMakeSliceBuffer(t *testing.T) {
+	type args struct {
+		c      gltf.ComponentType
+		t      gltf.AccessorType
+		count  uint32
+		buffer interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want interface{}
+	}{
+		{"nil buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, nil}, make([][2]uint8, 2)},
+		{"empty buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 0)}, make([][2]uint8, 2)},
+		{"different buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][3]int8, 3)}, make([][2]uint8, 2)},
+		{"small buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 1)}, make([][2]uint8, 2)},
+		{"large buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 3)}, make([][2]uint8, 2)},
+		{"same buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 2)}, make([][2]uint8, 2)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MakeSliceBuffer(tt.args.c, tt.args.t, tt.args.count, tt.args.buffer); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MakeSliceBuffer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

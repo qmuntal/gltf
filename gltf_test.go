@@ -292,3 +292,36 @@ func TestPBRMetallicRoughness_RoughnessFactorOrDefault(t *testing.T) {
 		})
 	}
 }
+
+func TestSizeOfElement(t *testing.T) {
+	type args struct {
+		c ComponentType
+		t AccessorType
+	}
+	tests := []struct {
+		name string
+		args args
+		want uint32
+	}{
+		{"byte-vec2", args{ComponentByte, AccessorVec2}, 4},
+		{"ubyte-vec2", args{ComponentUbyte, AccessorVec2}, 4},
+		{"byte-vec3", args{ComponentByte, AccessorVec3}, 4},
+		{"ubyte-vec3", args{ComponentUbyte, AccessorVec3}, 4},
+		{"short-vec3", args{ComponentShort, AccessorVec3}, 8},
+		{"ushort-vec3", args{ComponentUshort, AccessorVec3}, 8},
+		{"byte-mat2", args{ComponentByte, AccessorMat2}, 8},
+		{"ubyte-mat2", args{ComponentUbyte, AccessorMat2}, 8},
+		{"byte-mat3", args{ComponentByte, AccessorMat3}, 12},
+		{"ubyte-mat3", args{ComponentUbyte, AccessorMat3}, 12},
+		{"short-mat3", args{ComponentShort, AccessorMat3}, 24},
+		{"ushort-mat3", args{ComponentUshort, AccessorMat3}, 24},
+		{"other", args{ComponentUshort, AccessorMat4}, 32},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SizeOfElement(tt.args.c, tt.args.t); got != tt.want {
+				t.Errorf("SizeOfElement() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

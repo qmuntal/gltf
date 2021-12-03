@@ -1,14 +1,12 @@
 package gltf
 
 import (
-	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"io"
 	"os"
 	"path/filepath"
-	"unsafe"
 )
 
 // Save will save a document as a glTF with the specified by name.
@@ -65,8 +63,11 @@ func (e *Encoder) Encode(doc *Document) error {
 	var err error
 	var externalBufferIndex = 0
 	if e.AsBinary {
-		err = e.encodeBinary(doc)
-		externalBufferIndex = 1
+		var hasBinChunk bool
+		hasBinChunk, err = e.encodeBinary(doc)
+		if hasBinChunk {
+			externalBufferIndex = 1
+		}
 	} else {
 		err = json.NewEncoder(e.w).Encode(doc)
 	}
@@ -105,44 +106,53 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	return err
 }
 
-func (e *Encoder) encodeBinary(doc *Document) error {
+func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	jsonText, err := json.Marshal(doc)
 	if err != nil {
-		return err
+		return false, err
 	}
-	header := glbHeader{Magic: glbHeaderMagic, Version: 2, Length: 0, JSONHeader: chunkHeader{Length: 0, Type: glbChunkJSON}}
-	binHeader := chunkHeader{Length: 0, Type: glbChunkBIN}
-	var binBufferLength uint32
-	var binBuffer *Buffer
-	if len(doc.Buffers) > 0 {
-		binBuffer = doc.Buffers[0]
-		binBufferLength = binBuffer.ByteLength
+	jsonHeader := chunkHeader{
+		Length: uint32(((len(jsonText) + 3) / 4) * 4),
+		Type:   glbChunkJSON,
 	}
-	binPaddedLength := ((binBufferLength + 3) / 4) * 4
-	binPadding := make([]byte, binPaddedLength-binBufferLength)
-	binHeader.Length = binPaddedLength
-
-	header.JSONHeader.Length = uint32(((len(jsonText) + 3) / 4) * 4)
-	header.Length = uint32(unsafe.Sizeof(header)+unsafe.Sizeof(binHeader)) + header.JSONHeader.Length + binHeader.Length
+	header := glbHeader{
+		Magic:      glbHeaderMagic,
+		Version:    2,
+		Length:     12 + 8 + jsonHeader.Length, // 12-byte glb header + 8-byte json chunk header
+		JSONHeader: jsonHeader,
+	}
 	headerPadding := make([]byte, header.JSONHeader.Length-uint32(len(jsonText)))
 	for i := range headerPadding {
 		headerPadding[i] = ' '
 	}
-	for i := range binPadding {
-		binPadding[i] = 0
+
+	hasBinChunk := len(doc.Buffers) > 0 && doc.Buffers[0].URI == ""
+	var binPaddedLength uint32
+	if hasBinChunk {
+		binPaddedLength = ((doc.Buffers[0].ByteLength + 3) / 4) * 4
+		header.Length += uint32(8) + binPaddedLength
 	}
+
 	err = binary.Write(e.w, binary.LittleEndian, &header)
 	if err != nil {
-		return err
+		return false, err
 	}
 	e.w.Write(jsonText)
 	e.w.Write(headerPadding)
-	binary.Write(e.w, binary.LittleEndian, &binHeader)
-	if binBuffer != nil {
+
+	if hasBinChunk {
+		binBuffer := doc.Buffers[0]
+		binPadding := make([]byte, binPaddedLength-binBuffer.ByteLength)
+		for i := range binPadding {
+			binPadding[i] = 0
+		}
+		binHeader := chunkHeader{Length: binPaddedLength, Type: glbChunkBIN}
+		binary.Write(e.w, binary.LittleEndian, &binHeader)
 		e.w.Write(binBuffer.Data)
+		_, err = e.w.Write(binPadding)
 	}
-	_, err = e.w.Write(binPadding)
-	return err
+
+	return hasBinChunk, err
 }
 
 // UnmarshalJSON unmarshal the node with the correct default values.
@@ -163,32 +173,28 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the node with the correct default values.
 func (n *Node) MarshalJSON() ([]byte, error) {
 	type alias Node
-	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
-	if err == nil {
-		if n.Matrix == DefaultMatrix {
-			out = removeProperty([]byte(`"matrix":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]`), out)
-		} else if n.Matrix == emptyMatrix {
-			out = removeProperty([]byte(`"matrix":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]`), out)
-		}
-
-		if n.Rotation == DefaultRotation {
-			out = removeProperty([]byte(`"rotation":[0,0,0,1]`), out)
-		} else if n.Rotation == emptyRotation {
-			out = removeProperty([]byte(`"rotation":[0,0,0,0]`), out)
-		}
-
-		if n.Scale == DefaultScale {
-			out = removeProperty([]byte(`"scale":[1,1,1]`), out)
-		} else if n.Scale == emptyScale {
-			out = removeProperty([]byte(`"scale":[0,0,0]`), out)
-		}
-
-		if n.Translation == DefaultTranslation {
-			out = removeProperty([]byte(`"translation":[0,0,0]`), out)
-		}
-		out = sanitizeJSON(out)
+	tmp := &struct {
+		Matrix      *[16]float32 `json:"matrix,omitempty"`                                          // A 4x4 transformation matrix stored in column-major order.
+		Rotation    *[4]float32  `json:"rotation,omitempty" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+		Scale       *[3]float32  `json:"scale,omitempty"`
+		Translation *[3]float32  `json:"translation,omitempty"`
+		*alias
+	}{
+		alias: (*alias)(n),
 	}
-	return out, err
+	if n.Matrix != DefaultMatrix && n.Matrix != emptyMatrix {
+		tmp.Matrix = &n.Matrix
+	}
+	if n.Rotation != DefaultRotation && n.Rotation != emptyRotation {
+		tmp.Rotation = &n.Rotation
+	}
+	if n.Scale != DefaultScale && n.Scale != emptyScale {
+		tmp.Scale = &n.Scale
+	}
+	if n.Translation != DefaultTranslation {
+		tmp.Translation = &n.Translation
+	}
+	return json.Marshal(tmp)
 }
 
 // MarshalJSON marshal the camera with the correct default values.
@@ -228,17 +234,20 @@ func (m *Material) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the material with the correct default values.
 func (m *Material) MarshalJSON() ([]byte, error) {
 	type alias Material
-	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(m)})
-	if err == nil {
-		if m.AlphaCutoff != nil && *m.AlphaCutoff == 0.5 {
-			out = removeProperty([]byte(`"alphaCutoff":0.5`), out)
-		}
-		if m.EmissiveFactor == [3]float32{0, 0, 0} {
-			out = removeProperty([]byte(`"emissiveFactor":[0,0,0]`), out)
-		}
-		out = sanitizeJSON(out)
+	tmp := &struct {
+		EmissiveFactor *[3]float32 `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
+		AlphaCutoff    *float32    `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
+		*alias
+	}{
+		alias: (*alias)(m),
 	}
-	return out, err
+	if m.AlphaCutoff != nil && *m.AlphaCutoff != 0.5 {
+		tmp.AlphaCutoff = m.AlphaCutoff
+	}
+	if m.EmissiveFactor != [3]float32{0, 0, 0} {
+		tmp.EmissiveFactor = &m.EmissiveFactor
+	}
+	return json.Marshal(tmp)
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
@@ -307,20 +316,21 @@ func (p *PBRMetallicRoughness) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the pbr with the correct default values.
 func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 	type alias PBRMetallicRoughness
-	out, err := json.Marshal(&struct{ *alias }{alias: (*alias)(p)})
-	if err == nil {
-		if p.MetallicFactor != nil && *p.MetallicFactor == 1 {
-			out = removeProperty([]byte(`"metallicFactor":1`), out)
-		}
-		if p.RoughnessFactor != nil && *p.RoughnessFactor == 1 {
-			out = removeProperty([]byte(`"roughnessFactor":1`), out)
-		}
-		if p.BaseColorFactor != nil && *p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
-			out = removeProperty([]byte(`"baseColorFactor":[1,1,1,1]`), out)
-		}
-		out = sanitizeJSON(out)
+	tmp := &struct {
+		alias
+	}{
+		alias: (alias)(*p),
 	}
-	return out, err
+	if p.MetallicFactor != nil && *p.MetallicFactor == 1 {
+		tmp.MetallicFactor = nil
+	}
+	if p.RoughnessFactor != nil && *p.RoughnessFactor == 1 {
+		tmp.RoughnessFactor = nil
+	}
+	if p.BaseColorFactor != nil && *p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
+		tmp.BaseColorFactor = nil
+	}
+	return json.Marshal(tmp)
 }
 
 // UnmarshalJSON unmarshal the extensions with the supported extensions initialized.
@@ -332,7 +342,7 @@ func (ext *Extensions) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &raw)
 	if err == nil {
 		for key, value := range raw {
-			if extFactory, ok := extensions[key]; ok {
+			if extFactory, ok := queryExtension(key); ok {
 				n, err := extFactory(value)
 				if err != nil {
 					(*ext)[key] = value
@@ -346,14 +356,4 @@ func (ext *Extensions) UnmarshalJSON(data []byte) error {
 	}
 
 	return err
-}
-
-func removeProperty(str []byte, b []byte) []byte {
-	b = bytes.Replace(b, str, []byte(""), 1)
-	return bytes.Replace(b, []byte(`,,`), []byte(","), 1)
-}
-
-func sanitizeJSON(b []byte) []byte {
-	b = bytes.Replace(b, []byte(`{,`), []byte("{"), 1)
-	return bytes.Replace(b, []byte(`,}`), []byte("}"), 1)
 }

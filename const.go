@@ -13,6 +13,18 @@ var (
 	DefaultTranslation = [3]float32{0, 0, 0}
 )
 
+// Attribute names defined in the spec.
+const (
+	POSITION   = "POSITION"
+	NORMAL     = "NORMAL"
+	TANGENT    = "TANGENT"
+	TEXCOORD_0 = "TEXCOORD_0"
+	TEXCOORD_1 = "TEXCOORD_1"
+	WEIGHTS_0  = "WEIGHTS_0"
+	JOINTS_0   = "JOINTS_0"
+	COLOR_0    = "COLOR_0"
+)
+
 var (
 	emptyMatrix   = [16]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	emptyRotation = [4]float32{0, 0, 0, 0}
@@ -248,8 +260,10 @@ func (a *AlphaMode) MarshalJSON() ([]byte, error) {
 type MagFilter uint16
 
 const (
+	// MagUndefined indicates to not specified any magnification filters.
+	MagUndefined MagFilter = iota
 	// MagLinear corresponds to a linear magnification filter.
-	MagLinear MagFilter = iota
+	MagLinear
 	// MagNearest corresponds to a nearest magnification filter.
 	MagNearest
 )
@@ -279,8 +293,10 @@ func (m *MagFilter) MarshalJSON() ([]byte, error) {
 type MinFilter uint16
 
 const (
+	// MinUndefined indicates to not specified any minification filters.
+	MinUndefined MinFilter = iota
 	// MinLinear corresponds to a linear minification filter.
-	MinLinear MinFilter = iota
+	MinLinear
 	// MinNearestMipMapLinear corresponds to a nearest mipmap linear minification filter.
 	MinNearestMipMapLinear
 	// MinNearest corresponds to a nearest minification filter.
