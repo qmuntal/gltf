@@ -1,6 +1,10 @@
 package gltf
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+)
 
 var (
 	// DefaultMatrix defines an identity matrix.
@@ -129,7 +133,7 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 	var tmp string
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*a = map[string]AccessorType{
+		accType, ok := map[string]AccessorType{
 			"SCALAR": AccessorScalar,
 			"VEC2":   AccessorVec2,
 			"VEC3":   AccessorVec3,
@@ -138,6 +142,10 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 			"MAT3":   AccessorMat3,
 			"MAT4":   AccessorMat4,
 		}[tmp]
+		if !ok {
+			return errors.New(fmt.Sprintf("unknown accessor's type: %s", tmp))
+		}
+		*a = accType
 	}
 	return err
 }
