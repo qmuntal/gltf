@@ -2,7 +2,6 @@ package gltf
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -143,7 +142,7 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 			"MAT4":   AccessorMat4,
 		}[tmp]
 		if !ok {
-			return errors.New(fmt.Sprintf("gltf: unknown accessor's type: %s", tmp))
+			return fmt.Errorf("gltf: unknown accessor's type: %s", tmp)
 		}
 		*a = accType
 	}
