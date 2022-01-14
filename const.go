@@ -1,3 +1,5 @@
+//go:generate stringer -linecomment -type ComponentType,AccessorType,PrimitiveMode,AlphaMode,MagFilter,MinFilter,WrappingMode,Interpolation,Target,TRSProperty -output const_strings.go
+
 package gltf
 
 import (
@@ -39,18 +41,12 @@ var (
 type ComponentType uint16
 
 const (
-	// ComponentFloat corresponds to a Float32Array.
-	ComponentFloat ComponentType = iota
-	// ComponentByte corresponds to a Int8Array.
-	ComponentByte
-	// ComponentUbyte corresponds to a Uint8Array.
-	ComponentUbyte
-	// ComponentShort corresponds to a Int16Array.
-	ComponentShort
-	// ComponentUshort corresponds to a Uint16Array.
-	ComponentUshort
-	// ComponentUint corresponds to a Uint32Array.
-	ComponentUint
+	ComponentFloat  ComponentType = iota // FLOAT
+	ComponentByte                        // BYTE
+	ComponentUbyte                       // UNSIGNED_BYTE
+	ComponentShort                       // SHORT
+	ComponentUshort                      // UNSIGNED_SHORT
+	ComponentUint                        // UNSIGNED_INT
 )
 
 // ByteSize returns the size of a component in bytes.
@@ -98,20 +94,13 @@ func (c *ComponentType) MarshalJSON() ([]byte, error) {
 type AccessorType uint8
 
 const (
-	// AccessorScalar corresponds to a single dimension value.
-	AccessorScalar AccessorType = iota
-	// AccessorVec2 corresponds to a two dimensions array.
-	AccessorVec2
-	// AccessorVec3 corresponds to a three dimensions array.
-	AccessorVec3
-	// AccessorVec4 corresponds to a four dimensions array.
-	AccessorVec4
-	// AccessorMat2 corresponds to a 2x2 matrix.
-	AccessorMat2
-	// AccessorMat3 corresponds to a 3x3 matrix.
-	AccessorMat3
-	// AccessorMat4 corresponds to a 4x4 matrix.
-	AccessorMat4
+	AccessorScalar AccessorType = iota // SCALAR
+	AccessorVec2                       // VEC2
+	AccessorVec3                       // VEC3
+	AccessorVec4                       // VEC4
+	AccessorMat2                       // MAT2
+	AccessorMat3                       // MAT3
+	AccessorMat4                       // MAT4
 )
 
 // Components returns the number of components of an accessor type.
@@ -166,12 +155,9 @@ func (a *AccessorType) MarshalJSON() ([]byte, error) {
 type Target uint16
 
 const (
-	// TargetNone is used when the buffer should not bound to a target, for example when referenced by an sparce indices.
-	TargetNone = 0
-	// TargetArrayBuffer corresponds to an array buffer.
-	TargetArrayBuffer Target = 34962
-	// TargetElementArrayBuffer corresponds to an element array buffer.
-	TargetElementArrayBuffer = 34963
+	TargetNone               Target = 0     // NONE
+	TargetArrayBuffer        Target = 34962 // ARRAY_BUFFER
+	TargetElementArrayBuffer Target = 34963 // ELEMENT_ARRAY_BUFFER
 )
 
 // Attribute is a map that each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
@@ -181,20 +167,13 @@ type Attribute = map[string]uint32
 type PrimitiveMode uint8
 
 const (
-	// PrimitiveTriangles corresponds to a Triangle primitive.
-	PrimitiveTriangles PrimitiveMode = iota
-	// PrimitivePoints corresponds to a Point primitive.
-	PrimitivePoints
-	// PrimitiveLines corresponds to a Line primitive.
-	PrimitiveLines
-	// PrimitiveLineLoop corresponds to a Line Loop primitive.
-	PrimitiveLineLoop
-	// PrimitiveLineStrip corresponds to a Line Strip primitive.
-	PrimitiveLineStrip
-	// PrimitiveTriangleStrip corresponds to a Triangle Strip primitive.
-	PrimitiveTriangleStrip
-	// PrimitiveTriangleFan corresponds to a Triangle Fan primitive.
-	PrimitiveTriangleFan
+	PrimitiveTriangles     PrimitiveMode = iota // TRIANGLES
+	PrimitivePoints                             // POINTS
+	PrimitiveLines                              // LINES
+	PrimitiveLineLoop                           // LINE_LOOP
+	PrimitiveLineStrip                          // LINE_STRIP
+	PrimitiveTriangleStrip                      // TRIANGLE_STRIP
+	PrimitiveTriangleFan                        // TRIANGLE_FAN
 )
 
 // UnmarshalJSON unmarshal the primitive mode with the correct default values.
@@ -232,12 +211,9 @@ func (p *PrimitiveMode) MarshalJSON() ([]byte, error) {
 type AlphaMode uint8
 
 const (
-	// AlphaOpaque corresponds to an AlphaOpaque material.
-	AlphaOpaque AlphaMode = iota
-	// AlphaMask corresponds to a masked material.
-	AlphaMask
-	// AlphaBlend corresponds to a AlphaBlend material.
-	AlphaBlend
+	AlphaOpaque AlphaMode = iota // OPAQUE
+	AlphaMask                    // MASK
+	AlphaBlend                   // BLEND
 )
 
 // UnmarshalJSON unmarshal the alpha mode with the correct default values.
@@ -267,12 +243,9 @@ func (a *AlphaMode) MarshalJSON() ([]byte, error) {
 type MagFilter uint16
 
 const (
-	// MagUndefined indicates to not specified any magnification filters.
-	MagUndefined MagFilter = iota
-	// MagLinear corresponds to a linear magnification filter.
-	MagLinear
-	// MagNearest corresponds to a nearest magnification filter.
-	MagNearest
+	MagUndefined MagFilter = iota // UNDEFINED
+	MagLinear                     // LINEAR
+	MagNearest                    // NEAREST
 )
 
 // UnmarshalJSON unmarshal the mag filter with the correct default values.
@@ -300,20 +273,13 @@ func (m *MagFilter) MarshalJSON() ([]byte, error) {
 type MinFilter uint16
 
 const (
-	// MinUndefined indicates to not specified any minification filters.
-	MinUndefined MinFilter = iota
-	// MinLinear corresponds to a linear minification filter.
-	MinLinear
-	// MinNearestMipMapLinear corresponds to a nearest mipmap linear minification filter.
-	MinNearestMipMapLinear
-	// MinNearest corresponds to a nearest minification filter.
-	MinNearest
-	// MinNearestMipMapNearest corresponds to a nearest mipmap nearest minification filter.
-	MinNearestMipMapNearest
-	// MinLinearMipMapNearest corresponds to a linear mipmap nearest minification filter.
-	MinLinearMipMapNearest
-	// MinLinearMipMapLinear corresponds to a linear mipmap linear minification filter.
-	MinLinearMipMapLinear
+	MinUndefined            MinFilter = iota // UNDEFINED
+	MinLinear                                // LINEAR
+	MinNearestMipMapLinear                   // NEAREST_MIPMAP_LINEAR
+	MinNearest                               // NEAREST
+	MinNearestMipMapNearest                  // NEAREST_MIPMAP_NEAREST
+	MinLinearMipMapNearest                   // LINEAR_MIPMAP_NEAREST
+	MinLinearMipMapLinear                    // LINEAR_MIPMAP_LINEAR
 )
 
 // UnmarshalJSON unmarshal the min filter with the correct default values.
@@ -349,12 +315,9 @@ func (m *MinFilter) MarshalJSON() ([]byte, error) {
 type WrappingMode uint16
 
 const (
-	// WrapRepeat corresponds to a repeat wrapping.
-	WrapRepeat WrappingMode = iota
-	// WrapClampToEdge corresponds to a clamp to edge wrapping.
-	WrapClampToEdge
-	// WrapMirroredRepeat corresponds to a mirrored repeat wrapping.
-	WrapMirroredRepeat
+	WrapRepeat         WrappingMode = iota // REPEAT
+	WrapClampToEdge                        // CLAMP_TO_EDGE
+	WrapMirroredRepeat                     // MIRRORED_REPEAT
 )
 
 // UnmarshalJSON unmarshal the wrapping mode with the correct default values.
@@ -384,12 +347,9 @@ func (w *WrappingMode) MarshalJSON() ([]byte, error) {
 type Interpolation uint8
 
 const (
-	// InterpolationLinear corresponds to a linear interpolation.
-	InterpolationLinear Interpolation = iota
-	// InterpolationStep corresponds to a step interpolation.
-	InterpolationStep
-	// InterpolationCubicSpline corresponds to a cubic spline interpolation.
-	InterpolationCubicSpline
+	InterpolationLinear      Interpolation = iota // LINEAR
+	InterpolationStep                             // STEP
+	InterpolationCubicSpline                      // CUBICSPLINE
 )
 
 // UnmarshalJSON unmarshal the interpolation with the correct default values.
@@ -420,14 +380,10 @@ func (i *Interpolation) MarshalJSON() ([]byte, error) {
 type TRSProperty uint8
 
 const (
-	// TRSTranslation corresponds to a translation transform.
-	TRSTranslation TRSProperty = iota
-	// TRSRotation corresponds to a rotation transform.
-	TRSRotation
-	// TRSScale corresponds to a scale transform.
-	TRSScale
-	// TRSWeights corresponds to a weights transform.
-	TRSWeights
+	TRSTranslation TRSProperty = iota // translation
+	TRSRotation                       // rotation
+	TRSScale                          // scale
+	TRSWeights                        // weights
 )
 
 // UnmarshalJSON unmarshal the TRSProperty with the correct default values.
