@@ -24,7 +24,8 @@ func save(doc *Document, name string, asBinary bool) error {
 	if err != nil {
 		return err
 	}
-	e := NewEncoder(f).WithFS(dirFS(filepath.Dir(name)))
+	dir := filepath.Dir(name)
+	e := NewEncoder(f).WithFS(dirFS{os.DirFS(dir), dir})
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		f.Close()

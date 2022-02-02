@@ -6,38 +6,39 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/go-test/deep"
 )
 
 type mockFile struct {
-	bytes.Buffer
+	data *[]byte
 }
 
-func (f mockFile) Stat() (os.FileInfo, error) { return nil, nil }
-func (f mockFile) Close() error               { return nil }
+func (f mockFile) Write(p []byte) (n int, err error) {
+	*f.data = append(*f.data, p...)
+	return len(p), nil
+}
+
+func (f mockFile) Close() error {
+	return nil
+}
 
 type mockChunkReadHandler struct {
-	Chunks map[string]*mockFile
-}
-
-func (m mockChunkReadHandler) Open(uri string) (io.ReadCloser, error) {
-	f := m.Chunks[uri]
-	return f, nil
+	fstest.MapFS
 }
 
 func (m mockChunkReadHandler) Create(uri string) (io.WriteCloser, error) {
-	m.Chunks[uri] = &mockFile{}
-	return m.Chunks[uri], nil
+	m.MapFS[uri] = &fstest.MapFile{}
+	return mockFile{&m.MapFS[uri].Data}, nil
 }
 
 func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
-	m := &mockChunkReadHandler{Chunks: make(map[string]*mockFile)}
+	m := mockChunkReadHandler{fstest.MapFS{}}
 	e := NewEncoder(buff).WithFS(m)
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
@@ -67,8 +68,8 @@ func TestEncoder_Encode_AsBinary_WithoutBinChunk(t *testing.T) {
 		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
 	}}
 	buff := new(bytes.Buffer)
-	m := &mockChunkReadHandler{Chunks: make(map[string][]byte)}
-	e := NewEncoder(buff).WithWriteHandler(m)
+	m := mockChunkReadHandler{fstest.MapFS{}}
+	e := NewEncoder(buff).WithFS(m)
 	e.AsBinary = true
 	if err := e.Encode(doc); err != nil {
 		t.Errorf("Encoder.Encode() error = %v", err)

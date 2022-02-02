@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"reflect"
 	"testing"
+	"testing/fstest"
 
 	"github.com/go-test/deep"
 )
@@ -154,14 +155,6 @@ func (c *chunkedReader) Read(p []byte) (n int, err error) {
 	return 1, nil
 }
 
-type mockReadHandler struct {
-	Payload string
-}
-
-func (m mockReadHandler) Open(uri string) (io.ReadCloser, error) {
-	return &mockFile{*bytes.NewBuffer([]byte(m.Payload))}, nil
-}
-
 func TestDecoder_decodeBuffer(t *testing.T) {
 	type args struct {
 		buffer *Buffer
@@ -177,7 +170,7 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		{"noURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: ""}}, nil, true},
 		{"invalidURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
 		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, true},
-		{"base", NewDecoder(nil).WithFS(&mockReadHandler{"abcdfg"}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
+		{"base", NewDecoder(nil).WithFS(fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -236,9 +229,9 @@ func TestDecoder_Decode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}")).WithFS(&mockReadHandler{"abcdfg"}), args{new(Document)}, false},
-		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e})).WithFS(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
-		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e})).WithFS(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
+		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}")).WithFS(fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, false},
+		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e})).WithFS(fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
+		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e})).WithFS(fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
 		{"empty", NewDecoder(bytes.NewBufferString("")), args{new(Document)}, true},
 		{"invalidJSON", NewDecoder(bytes.NewBufferString("{asset: {}}")), args{new(Document)}, true},
 		{"invalidBuffer", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 0}]}")), args{new(Document)}, true},

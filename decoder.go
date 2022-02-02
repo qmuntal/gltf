@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"math"
 	"net/url"
 	"os"
@@ -27,7 +28,7 @@ func Open(name string) (*Document, error) {
 		return nil, err
 	}
 	defer f.Close()
-	dec := NewDecoder(f).WithFS(dirFS(filepath.Dir(name)))
+	dec := NewDecoder(f).WithFS(os.DirFS(filepath.Dir(name)))
 	doc := new(Document)
 	if err = dec.Decode(doc); err != nil {
 		doc = nil
@@ -38,7 +39,7 @@ func Open(name string) (*Document, error) {
 // A Decoder reads and decodes glTF and GLB values from an input stream.
 // FS is called to read external resources.
 type Decoder struct {
-	FS                  FS
+	Fsys                fs.FS
 	MaxMemoryAllocation uint64
 	r                   *bufio.Reader
 }
@@ -51,9 +52,17 @@ func NewDecoder(r io.Reader) *Decoder {
 	}
 }
 
+// NewDecoder returns a new decoder that reads from r.
+func NewDecoderFS(r io.Reader, fsys fs.FS) *Decoder {
+	return &Decoder{
+		MaxMemoryAllocation: defaultMaxMemoryAllocation,
+		r:                   bufio.NewReader(r),
+	}
+}
+
 // WithFS sets the FS.
-func (d *Decoder) WithFS(h FS) *Decoder {
-	d.FS = h
+func (d *Decoder) WithFS(h fs.FS) *Decoder {
+	d.Fsys = h
 	return d
 }
 
@@ -155,12 +164,12 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	var err error
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
-	} else if d.FS == nil {
+	} else if d.Fsys == nil {
 		err = errors.New("gltf: external buffer requires Decoder.FS")
 	} else if err = validateBufferURI(buffer.URI); err == nil {
 		buffer.Data = make([]byte, buffer.ByteLength)
 		var f io.ReadCloser
-		if f, err = d.FS.Open(sanitizeURI(buffer.URI)); err == nil {
+		if f, err = d.Fsys.Open(sanitizeURI(buffer.URI)); err == nil {
 			_, err = io.ReadFull(f, buffer.Data)
 			f.Close()
 		}
