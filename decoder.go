@@ -28,7 +28,7 @@ func Open(name string) (*Document, error) {
 		return nil, err
 	}
 	defer f.Close()
-	dec := NewDecoder(f).WithFS(os.DirFS(filepath.Dir(name)))
+	dec := NewDecoderFS(f, os.DirFS(filepath.Dir(name)))
 	doc := new(Document)
 	if err = dec.Decode(doc); err != nil {
 		doc = nil
@@ -56,14 +56,9 @@ func NewDecoder(r io.Reader) *Decoder {
 func NewDecoderFS(r io.Reader, fsys fs.FS) *Decoder {
 	return &Decoder{
 		MaxMemoryAllocation: defaultMaxMemoryAllocation,
+		Fsys:                fsys,
 		r:                   bufio.NewReader(r),
 	}
-}
-
-// WithFS sets the FS.
-func (d *Decoder) WithFS(h fs.FS) *Decoder {
-	d.Fsys = h
-	return d
 }
 
 // Decode reads the next JSON-encoded value from its

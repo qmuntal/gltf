@@ -39,13 +39,13 @@ func (m mockChunkReadHandler) Create(uri string) (io.WriteCloser, error) {
 func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
 	m := mockChunkReadHandler{fstest.MapFS{}}
-	e := NewEncoder(buff).WithFS(m)
+	e := NewEncoderFS(buff, m)
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		return nil, err
 	}
 
-	return NewDecoder(buff).WithFS(m), nil
+	return NewDecoderFS(buff, m), nil
 }
 
 func TestEncoder_Encode_AsBinary_WithoutBuffer(t *testing.T) {
@@ -69,7 +69,7 @@ func TestEncoder_Encode_AsBinary_WithoutBinChunk(t *testing.T) {
 	}}
 	buff := new(bytes.Buffer)
 	m := mockChunkReadHandler{fstest.MapFS{}}
-	e := NewEncoder(buff).WithFS(m)
+	e := NewEncoderFS(buff, m)
 	e.AsBinary = true
 	if err := e.Encode(doc); err != nil {
 		t.Errorf("Encoder.Encode() error = %v", err)

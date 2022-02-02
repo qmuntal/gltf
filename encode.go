@@ -25,7 +25,7 @@ func save(doc *Document, name string, asBinary bool) error {
 		return err
 	}
 	dir := filepath.Dir(name)
-	e := NewEncoder(f).WithFS(dirFS{os.DirFS(dir), dir})
+	e := NewEncoderFS(f, dirFS{os.DirFS(dir), dir})
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		f.Close()
@@ -38,7 +38,7 @@ func save(doc *Document, name string, asBinary bool) error {
 // with relative external buffers support.
 type Encoder struct {
 	AsBinary bool
-	FS       CreateFS
+	Fsys     CreateFS
 	w        io.Writer
 }
 
@@ -50,10 +50,13 @@ func NewEncoder(w io.Writer) *Encoder {
 	}
 }
 
-// WithFS sets the FS.
-func (e *Encoder) WithFS(h CreateFS) *Encoder {
-	e.FS = h
-	return e
+// NewEncoder returns a new encoder that writes to w as a normal glTF file.
+func NewEncoderFS(w io.Writer, fsys CreateFS) *Encoder {
+	return &Encoder{
+		AsBinary: true,
+		Fsys:     fsys,
+		w:        w,
+	}
 }
 
 // Encode writes the encoding of doc to the stream.
@@ -93,10 +96,10 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}
-	if e.FS == nil {
+	if e.Fsys == nil {
 		return errors.New("gltf: external buffer requires Encoder.FS")
 	}
-	w, err := e.FS.Create(sanitizeURI(buffer.URI))
+	w, err := e.Fsys.Create(sanitizeURI(buffer.URI))
 	if err != nil {
 		return err
 	}
