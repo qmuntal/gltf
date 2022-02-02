@@ -9,16 +9,11 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"math"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"unsafe"
-)
-
-const (
-	defaultMaxMemoryAllocation = math.MaxUint32 // 4GB
 )
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -39,25 +34,22 @@ func Open(name string) (*Document, error) {
 // A Decoder reads and decodes glTF and GLB values from an input stream.
 // FS is called to read external resources.
 type Decoder struct {
-	Fsys                fs.FS
-	MaxMemoryAllocation uint64
-	r                   *bufio.Reader
+	Fsys fs.FS
+	r    *bufio.Reader
 }
 
 // NewDecoder returns a new decoder that reads from r.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
-		MaxMemoryAllocation: defaultMaxMemoryAllocation,
-		r:                   bufio.NewReader(r),
+		r: bufio.NewReader(r),
 	}
 }
 
 // NewDecoder returns a new decoder that reads from r.
 func NewDecoderFS(r io.Reader, fsys fs.FS) *Decoder {
 	return &Decoder{
-		MaxMemoryAllocation: defaultMaxMemoryAllocation,
-		Fsys:                fsys,
-		r:                   bufio.NewReader(r),
+		Fsys: fsys,
+		r:    bufio.NewReader(r),
 	}
 }
 
@@ -84,17 +76,6 @@ func (d *Decoder) Decode(doc *Document) error {
 	return nil
 }
 
-func (d *Decoder) validateDocumentQuotas(doc *Document) error {
-	var allocs uint64
-	for _, b := range doc.Buffers {
-		allocs += uint64(b.ByteLength)
-	}
-	if allocs > d.MaxMemoryAllocation {
-		return errors.New("gltf: Memory allocation count quota exceeded")
-	}
-	return nil
-}
-
 func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 	glbHeader, err := d.readGLBHeader()
 	if err != nil {
@@ -113,9 +94,6 @@ func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 	}
 
 	err = jd.Decode(doc)
-	if err == nil {
-		err = d.validateDocumentQuotas(doc)
-	}
 	return isBinary, err
 }
 

@@ -230,31 +230,6 @@ func TestDecoder_Decode(t *testing.T) {
 	}
 }
 
-func TestDecoder_validateDocumentQuotas(t *testing.T) {
-	type args struct {
-		doc *Document
-	}
-	tests := []struct {
-		name    string
-		d       *Decoder
-		args    args
-		wantErr bool
-	}{{
-		"exceedAllocs", &Decoder{MaxMemoryAllocation: 10},
-		args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}}, true,
-	}, {
-		"noExceedAllocs", &Decoder{MaxMemoryAllocation: 11},
-		args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}}, false,
-	}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.validateDocumentQuotas(tt.args.doc); (err != nil) != tt.wantErr {
-				t.Errorf("Decoder.validateDocumentQuotas() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestSampler_Decode(t *testing.T) {
 
 	tests := []struct {
