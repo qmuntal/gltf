@@ -167,11 +167,9 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	} else if d.Fsys == nil {
 		err = errors.New("gltf: external buffer requires Decoder.FS")
 	} else if err = validateBufferURI(buffer.URI); err == nil {
-		buffer.Data = make([]byte, buffer.ByteLength)
-		var f io.ReadCloser
-		if f, err = d.Fsys.Open(sanitizeURI(buffer.URI)); err == nil {
-			_, err = io.ReadFull(f, buffer.Data)
-			f.Close()
+		buffer.Data, err = fs.ReadFile(d.Fsys, sanitizeURI(buffer.URI))
+		if len(buffer.Data) > int(buffer.ByteLength) {
+			buffer.Data = buffer.Data[:buffer.ByteLength:buffer.ByteLength]
 		}
 	}
 	if err != nil {

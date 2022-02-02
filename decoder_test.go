@@ -3,7 +3,6 @@ package gltf
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -139,20 +138,6 @@ func TestOpen(t *testing.T) {
 			}
 		})
 	}
-}
-
-type chunkedReader struct {
-	s []byte
-	n int
-}
-
-func (c *chunkedReader) Read(p []byte) (n int, err error) {
-	c.n++
-	if c.n == len(c.s)+1 {
-		return 0, io.EOF
-	}
-	p[0] = c.s[c.n-1 : c.n][0]
-	return 1, nil
 }
 
 func TestDecoder_decodeBuffer(t *testing.T) {
