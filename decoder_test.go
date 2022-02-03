@@ -3,10 +3,10 @@ package gltf
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"reflect"
 	"testing"
+	"testing/fstest"
 
 	"github.com/go-test/deep"
 )
@@ -140,29 +140,6 @@ func TestOpen(t *testing.T) {
 	}
 }
 
-type chunkedReader struct {
-	s []byte
-	n int
-}
-
-func (c *chunkedReader) Read(p []byte) (n int, err error) {
-	c.n++
-	if c.n == len(c.s)+1 {
-		return 0, io.EOF
-	}
-	p[0] = c.s[c.n-1 : c.n][0]
-	return 1, nil
-}
-
-type mockReadHandler struct {
-	Payload string
-}
-
-func (m mockReadHandler) ReadFullResource(uri string, data []byte) error {
-	copy(data, []byte(m.Payload))
-	return nil
-}
-
 func TestDecoder_decodeBuffer(t *testing.T) {
 	type args struct {
 		buffer *Buffer
@@ -177,8 +154,8 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		{"byteLength_0", &Decoder{}, args{&Buffer{ByteLength: 0, URI: "a.bin"}}, nil, true},
 		{"noURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: ""}}, nil, true},
 		{"invalidURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
-		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, true},
-		{"base", NewDecoder(nil).WithReadHandler(&mockReadHandler{"abcdfg"}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
+		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, false},
+		{"base", NewDecoderFS(nil, fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -237,9 +214,9 @@ func TestDecoder_Decode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}")).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, false},
-		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e})).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
-		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e})).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
+		{"baseJSON", NewDecoderFS(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}"), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, false},
+		{"onlyGLBHeader", NewDecoderFS(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e}), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
+		{"glbNoJSONChunk", NewDecoderFS(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e}), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
 		{"empty", NewDecoder(bytes.NewBufferString("")), args{new(Document)}, true},
 		{"invalidJSON", NewDecoder(bytes.NewBufferString("{asset: {}}")), args{new(Document)}, true},
 		{"invalidBuffer", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 0}]}")), args{new(Document)}, true},
@@ -248,40 +225,6 @@ func TestDecoder_Decode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.d.Decode(tt.args.doc); (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestDecoder_validateDocumentQuotas(t *testing.T) {
-	type args struct {
-		doc      *Document
-		isBinary bool
-	}
-	tests := []struct {
-		name    string
-		d       *Decoder
-		args    args
-		wantErr bool
-	}{
-		{
-			"exceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
-			args{&Document{Buffers: []*Buffer{{}, {}}}, false}, true,
-		}, {
-			"noExceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
-			args{&Document{Buffers: []*Buffer{{}, {}}}, true}, false,
-		}, {
-			"exceedAllocs", &Decoder{MaxMemoryAllocation: 10, MaxExternalBufferCount: 100},
-			args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}, false}, true,
-		}, {
-			"noExceedAllocs", &Decoder{MaxMemoryAllocation: 11, MaxExternalBufferCount: 100},
-			args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}, true}, false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.validateDocumentQuotas(tt.args.doc, tt.args.isBinary); (err != nil) != tt.wantErr {
-				t.Errorf("Decoder.validateDocumentQuotas() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

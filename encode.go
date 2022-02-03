@@ -5,15 +5,27 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
 
-// WriteHandler is the interface that wraps the Write method.
-//
-// WriteResource should behaves as io.Write in terms of reading the writing resource.
-type WriteHandler interface {
-	WriteResource(uri string, data []byte) error
+// A CreateFS provides access to a hierarchical file system.
+// Must follow the same naming convention as io/fs.FS.
+type CreateFS interface {
+	fs.FS
+	Create(name string) (io.WriteCloser, error)
+}
+
+// dirFS implements a file system (an fs.FS) for the tree of files rooted at the directory dir.
+type dirFS struct {
+	fs.FS
+	dir string
+}
+
+// Create creates or truncates the named file.
+func (d dirFS) Create(name string) (io.WriteCloser, error) {
+	return os.Create(d.dir + "/" + name)
 }
 
 // Save will save a document as a glTF with the specified by name.
@@ -31,7 +43,8 @@ func save(doc *Document, name string, asBinary bool) error {
 	if err != nil {
 		return err
 	}
-	e := NewEncoder(f).WithWriteHandler(&RelativeFileHandler{Dir: filepath.Dir(name)})
+	dir := filepath.Dir(name)
+	e := NewEncoderFS(f, dirFS{os.DirFS(dir), dir})
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		f.Close()
@@ -40,27 +53,30 @@ func save(doc *Document, name string, asBinary bool) error {
 	return f.Close()
 }
 
-// An Encoder writes a GLTF to an output stream
-// with relative external buffers support.
+// An Encoder writes a glTF to an output stream.
+//
+// Only buffers with relative URIs will be written to Fsys.
 type Encoder struct {
-	AsBinary     bool
-	WriteHandler WriteHandler
-	w            io.Writer
+	AsBinary bool
+	Fsys     CreateFS
+	w        io.Writer
 }
 
 // NewEncoder returns a new encoder that writes to w as a normal glTF file.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		AsBinary:     true,
-		WriteHandler: new(RelativeFileHandler),
-		w:            w,
+		AsBinary: true,
+		w:        w,
 	}
 }
 
-// WithWriteHandler sets the WriteHandler.
-func (e *Encoder) WithWriteHandler(h WriteHandler) *Encoder {
-	e.WriteHandler = h
-	return e
+// NewEncoder returns a new encoder that writes to w as a normal glTF file.
+func NewEncoderFS(w io.Writer, fsys CreateFS) *Encoder {
+	return &Encoder{
+		AsBinary: true,
+		Fsys:     fsys,
+		w:        w,
+	}
 }
 
 // Encode writes the encoding of doc to the stream.
@@ -100,8 +116,22 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}
-
-	return e.WriteHandler.WriteResource(buffer.URI, buffer.Data)
+	if e.Fsys == nil {
+		return nil
+	}
+	uri, ok := sanitizeURI(buffer.URI)
+	if !ok {
+		return nil
+	}
+	w, err := e.Fsys.Create(uri)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(buffer.Data)
+	if err1 := w.Close(); err == nil {
+		err = err1
+	}
+	return err
 }
 
 func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
