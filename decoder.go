@@ -32,7 +32,9 @@ func Open(name string) (*Document, error) {
 }
 
 // A Decoder reads and decodes glTF and GLB values from an input stream.
-// FS is called to read external resources.
+//
+// Only buffers with relative URIs will be read from Fsys.
+// Fsys is called to read external resources.
 type Decoder struct {
 	Fsys fs.FS
 	r    *bufio.Reader
@@ -137,12 +139,16 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	var err error
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
-	} else if d.Fsys == nil {
-		err = errors.New("gltf: external buffer requires Decoder.FS")
-	} else if err = validateBufferURI(buffer.URI); err == nil {
-		buffer.Data, err = fs.ReadFile(d.Fsys, sanitizeURI(buffer.URI))
-		if len(buffer.Data) > int(buffer.ByteLength) {
-			buffer.Data = buffer.Data[:buffer.ByteLength:buffer.ByteLength]
+	} else {
+		err = validateBufferURI(buffer.URI)
+		if err == nil && d.Fsys != nil {
+			uri, ok := sanitizeURI(buffer.URI)
+			if ok {
+				buffer.Data, err = fs.ReadFile(d.Fsys, uri)
+				if len(buffer.Data) > int(buffer.ByteLength) {
+					buffer.Data = buffer.Data[:buffer.ByteLength:buffer.ByteLength]
+				}
+			}
 		}
 	}
 	if err != nil {
@@ -181,14 +187,14 @@ func validateBufferURI(uri string) error {
 	return nil
 }
 
-func sanitizeURI(uri string) string {
+func sanitizeURI(uri string) (string, bool) {
+	uri = strings.Replace(uri, "\\", "/", -1)
+	uri = strings.Replace(uri, "/./", "/", -1)
+	uri = strings.TrimPrefix(uri, "./")
 	u, err := url.Parse(uri)
-	if err == nil {
-		uri = strings.TrimPrefix(u.RequestURI(), "/")
-	} else {
-		uri = strings.Replace(uri, "\\", "/", -1)
-		uri = strings.Replace(uri, "/./", "/", -1)
-		uri = strings.TrimPrefix(uri, "./")
+	if err != nil || u.IsAbs() {
+		// Only relative paths supported.
+		return "", false
 	}
-	return uri
+	return strings.TrimPrefix(u.RequestURI(), "/"), true
 }

@@ -34,8 +34,9 @@ func save(doc *Document, name string, asBinary bool) error {
 	return f.Close()
 }
 
-// An Encoder writes a GLTF to an output stream
-// with relative external buffers support.
+// An Encoder writes a glTF to an output stream.
+//
+// Only buffers with relative URIs will be written to Fsys.
 type Encoder struct {
 	AsBinary bool
 	Fsys     CreateFS
@@ -97,9 +98,13 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 		return err
 	}
 	if e.Fsys == nil {
-		return errors.New("gltf: external buffer requires Encoder.FS")
+		return nil
 	}
-	w, err := e.Fsys.Create(sanitizeURI(buffer.URI))
+	uri, ok := sanitizeURI(buffer.URI)
+	if !ok {
+		return nil
+	}
+	w, err := e.Fsys.Create(uri)
 	if err != nil {
 		return err
 	}
