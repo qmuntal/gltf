@@ -119,6 +119,8 @@ func ReadIndices(doc *gltf.Document, acr *gltf.Accessor, buffer []uint32) ([]uin
 	}
 	if uint32(len(buffer)) < acr.Count {
 		buffer = append(buffer, make([]uint32, acr.Count-uint32(len(buffer)))...)
+	} else {
+		buffer = buffer[:acr.Count]
 	}
 	switch acr.ComponentType {
 	case gltf.ComponentUbyte:
@@ -189,6 +191,8 @@ func ReadTextureCoord(doc *gltf.Document, acr *gltf.Accessor, buffer [][2]float3
 	}
 	if uint32(len(buffer)) < acr.Count {
 		buffer = append(buffer, make([][2]float32, acr.Count-uint32(len(buffer)))...)
+	} else {
+		buffer = buffer[:acr.Count]
 	}
 	switch acr.ComponentType {
 	case gltf.ComponentUbyte:
@@ -229,6 +233,8 @@ func ReadWeights(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	}
 	if uint32(len(buffer)) < acr.Count {
 		buffer = append(buffer, make([][4]float32, acr.Count-uint32(len(buffer)))...)
+	} else {
+		buffer = buffer[:acr.Count]
 	}
 	switch acr.ComponentType {
 	case gltf.ComponentUbyte:
@@ -271,6 +277,8 @@ func ReadJoints(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([][
 	}
 	if uint32(len(buffer)) < acr.Count {
 		buffer = append(buffer, make([][4]uint16, acr.Count-uint32(len(buffer)))...)
+	} else {
+		buffer = buffer[:acr.Count]
 	}
 	switch acr.ComponentType {
 	case gltf.ComponentUbyte:
@@ -325,6 +333,8 @@ func ReadColor(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint8) ([][4]
 	}
 	if uint32(len(buffer)) < acr.Count {
 		buffer = append(buffer, make([][4]uint8, acr.Count-uint32(len(buffer)))...)
+	} else {
+		buffer = buffer[:acr.Count]
 	}
 	switch acr.ComponentType {
 	case gltf.ComponentUbyte:
@@ -382,6 +392,8 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 	}
 	if uint32(len(buffer)) < acr.Count {
 		buffer = append(buffer, make([][4]uint16, acr.Count-uint32(len(buffer)))...)
+	} else {
+		buffer = buffer[:acr.Count]
 	}
 	switch acr.ComponentType {
 	case gltf.ComponentUbyte:

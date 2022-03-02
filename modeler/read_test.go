@@ -7,6 +7,40 @@ import (
 	"github.com/qmuntal/gltf"
 )
 
+func TestReadColor64_ReuseBuffer(t *testing.T) {
+	data := []byte{1, 2, 3, 4, 1, 2, 3, 4}
+	acc1 := &gltf.Accessor{
+		BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
+	}
+	acc2 := &gltf.Accessor{
+		BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
+	}
+	doc := &gltf.Document{
+		BufferViews: []*gltf.BufferView{
+			{Buffer: 0, ByteLength: uint32(len(data))},
+		},
+		Buffers: []*gltf.Buffer{
+			{Data: data, ByteLength: uint32(len(data))},
+		},
+	}
+	var buf [][4]uint16
+	var err error
+	buf, err = ReadColor64(doc, acc2, buf)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(buf) != int(acc2.Count) {
+		t.Errorf("ReadColor() len = %d, want %d", len(buf), acc2.Count)
+	}
+	buf, err = ReadColor64(doc, acc1, buf)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(buf) != int(acc1.Count) {
+		t.Errorf("ReadColor() len = %d, want %d", len(buf), acc1.Count)
+	}
+}
+
 func TestReadBufferView(t *testing.T) {
 	type args struct {
 		doc *gltf.Document
