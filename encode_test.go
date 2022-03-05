@@ -101,6 +101,34 @@ func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
 	}
 }
 
+func TestEncoder_Encode_Buffers_Without_URI(t *testing.T) {
+	doc := &Document{Buffers: []*Buffer{
+		{Name: "binary", ByteLength: 3, Data: []byte{1, 2, 3}},
+		{Name: "binary2", ByteLength: 3, Data: []byte{4, 5, 6}},
+	}}
+	buf := new(bytes.Buffer)
+	e := NewEncoder(buf)
+	e.AsBinary = false
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if !strings.Contains(buf.String(), mimetypeApplicationOctet+",AQID") ||
+		!strings.Contains(buf.String(), mimetypeApplicationOctet+",BAUG") {
+		t.Error("Encoder.Encode() should auto embed buffers without URI")
+	}
+	buf.Reset()
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if strings.Contains(buf.String(), mimetypeApplicationOctet+",AQID") {
+		t.Error("Encoder.Encode() as binary should not embed fur buffer")
+	}
+	if !strings.Contains(buf.String(), mimetypeApplicationOctet+",BAUG") {
+		t.Error("Encoder.Encode() should auto embed buffers without URI")
+	}
+}
+
 func TestEncoder_Encode(t *testing.T) {
 	type args struct {
 		doc *Document
@@ -199,16 +227,10 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 	}
 	for _, tt := range tests {
+		tt.args.doc.Asset.Version = "2.0"
 		for _, method := range []string{"json", "binary"} {
 			t.Run(fmt.Sprintf("%s_%s", tt.name, method), func(t *testing.T) {
-				var asBinary bool
-				if method == "binary" && !tt.wantErr {
-					asBinary = true
-					for i := 1; i < len(tt.args.doc.Buffers); i++ {
-						tt.args.doc.Buffers[i].EmbeddedResource()
-					}
-				}
-				d, err := saveMemory(tt.args.doc, asBinary)
+				d, err := saveMemory(tt.args.doc, method == "binary")
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Encoder.Encode() error = %v, wantErr %v", err, tt.wantErr)
 					return

@@ -81,9 +81,6 @@ func NewEncoderFS(w io.Writer, fsys CreateFS) *Encoder {
 
 // Encode writes the encoding of doc to the stream.
 func (e *Encoder) Encode(doc *Document) error {
-	if doc.Asset.Version == "" {
-		doc.Asset.Version = "2.0"
-	}
 	var err error
 	var externalBufferIndex = 0
 	if e.AsBinary {
@@ -93,18 +90,23 @@ func (e *Encoder) Encode(doc *Document) error {
 			externalBufferIndex = 1
 		}
 	} else {
-		err = json.NewEncoder(e.w).Encode(doc)
+		var jsonData []byte
+		jsonData, err = e.marshalJSONDoc(doc)
+		if err != nil {
+			return err
+		}
+		_, err = e.w.Write(jsonData)
 	}
 	if err != nil {
 		return err
 	}
 
 	for i := externalBufferIndex; i < len(doc.Buffers); i++ {
-		buffer := doc.Buffers[i]
-		if len(buffer.Data) == 0 || buffer.IsEmbeddedResource() {
+		buf := doc.Buffers[i]
+		if len(buf.Data) == 0 || buf.URI == "" {
 			continue
 		}
-		if err = e.encodeBuffer(buffer); err != nil {
+		if err = e.encodeBuffer(buf); err != nil {
 			return err
 		}
 	}
@@ -135,7 +137,7 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 }
 
 func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
-	jsonText, err := json.Marshal(doc)
+	jsonText, err := e.marshalJSONDoc(doc)
 	if err != nil {
 		return false, err
 	}
@@ -181,6 +183,69 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	}
 
 	return hasBinChunk, err
+}
+
+// MarshalJSON marshal the document with the correct default values.
+func (e *Encoder) marshalJSONDoc(doc *Document) ([]byte, error) {
+	type alias Document
+	tmp := &struct {
+		CustomBuffers []*Buffer `json:"buffers,omitempty"`
+		Buffers       []*Buffer `json:"-"`
+		*alias
+	}{
+		CustomBuffers: make([]*Buffer, len(doc.Buffers)),
+		alias:         (*alias)(doc),
+	}
+	// Embed buffers without URI.
+	for i, buf := range doc.Buffers {
+		if i == 0 && e.AsBinary && buf.URI == "" {
+			// First buffer will be encoded in the binary chunk.
+			tmp.CustomBuffers[i] = buf
+			continue
+		}
+		if len(buf.Data) > 0 && buf.URI == "" && !buf.IsEmbeddedResource() {
+			tmpBuf := &Buffer{
+				Extensions: buf.Extensions,
+				Extras:     buf.Extras,
+				Name:       buf.Name,
+				ByteLength: buf.ByteLength,
+				Data:       buf.Data,
+			}
+			tmpBuf.EmbeddedResource()
+			tmp.CustomBuffers[i] = tmpBuf
+		} else {
+			tmp.CustomBuffers[i] = buf
+		}
+	}
+	return json.Marshal(tmp)
+}
+
+// UnmarshalJSON unmarshal the asset with the correct default values.
+func (as *Asset) UnmarshalJSON(data []byte) error {
+	type alias Asset
+	tmp := alias(Asset{
+		Version: "2.0",
+	})
+	err := json.Unmarshal(data, &tmp)
+	if err == nil {
+		*as = Asset(tmp)
+	}
+	return err
+}
+
+// MarshalJSON marshal the asset with the correct default values.
+func (as *Asset) MarshalJSON() ([]byte, error) {
+	type alias Asset
+	if as.Version == "" {
+		return json.Marshal(&struct {
+			Version string `json:"version,omitempty"`
+			*alias
+		}{
+			Version: "2.0",
+			alias:   (*alias)(as),
+		})
+	}
+	return json.Marshal((*alias)(as))
 }
 
 // UnmarshalJSON unmarshal the node with the correct default values.
@@ -301,7 +366,7 @@ func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 			alias: (*alias)(n),
 		})
 	}
-	return json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
+	return json.Marshal((*alias)(n))
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
@@ -327,7 +392,7 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 			alias:    (*alias)(o),
 		})
 	}
-	return json.Marshal(&struct{ *alias }{alias: (*alias)(o)})
+	return json.Marshal((*alias)(o))
 }
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.
