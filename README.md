@@ -123,6 +123,9 @@ doc.Meshes = []*gltf.Mesh{{
         },
     }},
 }}
+doc.Nodes = []*gltf.Node{{Name: "Pyramid", Mesh: gltf.Index(0)}}
+doc.Scenes[0].Nodes = append(doc.Scenes[0].Nodes, 0)
+gltf.Save(doc, "./test.gltf")
 ```
 
 ### Data interleaving
@@ -142,6 +145,9 @@ doc.Meshes = []*gltf.Mesh{{
         Attributes: attrs,
     }},
 }}
+doc.Nodes = []*gltf.Node{{Name: "Pyramid", Mesh: gltf.Index(0)}}
+doc.Scenes[0].Nodes = append(doc.Scenes[0].Nodes, 0)
+gltf.Save(doc, "./test.gltf")
 ```
 
 ### Manipulating bytes

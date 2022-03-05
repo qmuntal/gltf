@@ -2,7 +2,6 @@ package gltf
 
 import (
 	"encoding/base64"
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -125,7 +124,7 @@ func (b *Buffer) IsEmbeddedResource() bool {
 
 // EmbeddedResource defines the buffer as an embedded resource and encodes the URI so it points to the the resource.
 func (b *Buffer) EmbeddedResource() {
-	b.URI = fmt.Sprintf("%s,%s", mimetypeApplicationOctet, base64.StdEncoding.EncodeToString(b.Data))
+	b.URI = mimetypeApplicationOctet + "," + base64.StdEncoding.EncodeToString(b.Data)
 }
 
 // marshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
