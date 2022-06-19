@@ -13,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unsafe"
 )
 
 // Open will open a glTF or GLB file specified by name and return the Document.
@@ -101,7 +100,7 @@ func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 
 func (d *Decoder) readGLBHeader() (*glbHeader, error) {
 	var header glbHeader
-	chunk, err := d.r.Peek(int(unsafe.Sizeof(header)))
+	chunk, err := d.r.Peek(binary.Size(header))
 	if err != nil {
 		return nil, nil
 	}
@@ -115,7 +114,7 @@ func (d *Decoder) readGLBHeader() (*glbHeader, error) {
 }
 
 func (d *Decoder) validateGLBHeader(header *glbHeader) error {
-	if header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(unsafe.Sizeof(header))) > header.Length {
+	if header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(binary.Size(header))) > header.Length {
 		return errors.New("gltf: Invalid GLB JSON header")
 	}
 	return nil
