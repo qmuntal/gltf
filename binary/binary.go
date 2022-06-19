@@ -27,8 +27,8 @@
 // }
 //
 // This package favors simplicity and compliance over efficiency,
-// but it is still an order of magnitude more performant than using the built-int `binary` package,
-// as it implements fast paths for basic glTF types and slices.
+// but it is still an order of magnitude more performant than using the built-in
+// `binary` package, as it implements fast paths for basic glTF types and slices.
 package binary
 
 import "encoding/binary"
