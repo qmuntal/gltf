@@ -81,8 +81,8 @@ func NewEncoderFS(w io.Writer, fsys CreateFS) *Encoder {
 	}
 }
 
-// SetIndent sets json encoded data to have provided prefix and indent settings
-func (e *Encoder) SetIndent(prefix string, indent string) {
+// SetJSONIndent sets json encoded data to have provided prefix and indent settings
+func (e *Encoder) SetJSONIndent(prefix string, indent string) {
 	e.prefix = prefix
 	e.indent = indent
 }
