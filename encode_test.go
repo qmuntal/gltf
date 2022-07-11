@@ -48,6 +48,19 @@ func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	return NewDecoderFS(buff, m), nil
 }
 
+func saveMemoryIndent(doc *Document, asBinary bool) (*Decoder, error) {
+	buff := new(bytes.Buffer)
+	m := mockChunkReadHandler{fstest.MapFS{}}
+	e := NewEncoderFS(buff, m)
+	e.AsBinary = asBinary
+	e.SetJSONIndent("", "\t")
+	if err := e.Encode(doc); err != nil {
+		return nil, err
+	}
+
+	return NewDecoderFS(buff, m), nil
+}
+
 func TestEncoder_Encode_AsBinary_WithoutBuffer(t *testing.T) {
 	doc := &Document{}
 	buff := new(bytes.Buffer)
@@ -240,6 +253,20 @@ func TestEncoder_Encode(t *testing.T) {
 					d.Decode(doc)
 					if diff := deep.Equal(doc, tt.args.doc); diff != nil {
 						t.Errorf("Encoder.Encode() = %v", diff)
+						return
+					}
+				}
+
+				d, err = saveMemoryIndent(tt.args.doc, method == "binary")
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Encoder.Encode() withIndent error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if !tt.wantErr {
+					doc := new(Document)
+					d.Decode(doc)
+					if diff := deep.Equal(doc, tt.args.doc); diff != nil {
+						t.Errorf("Encoder.Encode() withIndent = %v", diff)
 						return
 					}
 				}
