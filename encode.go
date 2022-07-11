@@ -60,6 +60,8 @@ type Encoder struct {
 	AsBinary bool
 	Fsys     CreateFS
 	w        io.Writer
+	indent   string
+	prefix   string
 }
 
 // NewEncoder returns a new encoder that writes to w as a normal glTF file.
@@ -77,6 +79,12 @@ func NewEncoderFS(w io.Writer, fsys CreateFS) *Encoder {
 		Fsys:     fsys,
 		w:        w,
 	}
+}
+
+// SetJSONIndent sets json encoded data to have provided prefix and indent settings
+func (e *Encoder) SetJSONIndent(prefix string, indent string) {
+	e.prefix = prefix
+	e.indent = indent
 }
 
 // Encode writes the encoding of doc to the stream.
@@ -216,6 +224,9 @@ func (e *Encoder) marshalJSONDoc(doc *Document) ([]byte, error) {
 		} else {
 			tmp.CustomBuffers[i] = buf
 		}
+	}
+	if len(e.prefix) > 0 || len(e.indent) > 0 {
+		return json.MarshalIndent(tmp, e.prefix, e.indent)
 	}
 	return json.Marshal(tmp)
 }
