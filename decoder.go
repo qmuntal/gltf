@@ -25,7 +25,11 @@ func Open(name string) (*Document, error) {
 	dec := NewDecoderFS(f, os.DirFS(filepath.Dir(name)))
 	doc := new(Document)
 	if err = dec.Decode(doc); err != nil {
-		doc = nil
+		if err == io.EOF {
+			err = nil
+		} else {
+			doc = nil
+		}
 	}
 	return doc, err
 }
