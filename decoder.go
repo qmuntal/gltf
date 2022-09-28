@@ -62,6 +62,21 @@ func (d *Decoder) Decode(doc *Document) error {
 		return err
 	}
 
+	for _, b := range doc.Buffers {
+		if !b.IsEmbeddedResource() {
+			if uri, ok := sanitizeURI(b.URI); ok {
+				b.URI = uri
+			}
+		}
+	}
+	for _, im := range doc.Images {
+		if !im.IsEmbeddedResource() {
+			if uri, ok := sanitizeURI(im.URI); ok {
+				im.URI = uri
+			}
+		}
+	}
+
 	var externalBufferIndex = 0
 	if isBinary && len(doc.Buffers) > 0 {
 		externalBufferIndex = 1
@@ -141,12 +156,9 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	} else {
 		err = validateBufferURI(buffer.URI)
 		if err == nil && d.Fsys != nil {
-			uri, ok := sanitizeURI(buffer.URI)
-			if ok {
-				buffer.Data, err = fs.ReadFile(d.Fsys, uri)
-				if len(buffer.Data) > int(buffer.ByteLength) {
-					buffer.Data = buffer.Data[:buffer.ByteLength:buffer.ByteLength]
-				}
+			buffer.Data, err = fs.ReadFile(d.Fsys, buffer.URI)
+			if len(buffer.Data) > int(buffer.ByteLength) {
+				buffer.Data = buffer.Data[:buffer.ByteLength:buffer.ByteLength]
 			}
 		}
 	}
@@ -191,9 +203,17 @@ func sanitizeURI(uri string) (string, bool) {
 	uri = strings.Replace(uri, "/./", "/", -1)
 	uri = strings.TrimPrefix(uri, "./")
 	u, err := url.Parse(uri)
-	if err != nil || u.IsAbs() {
-		// Only relative paths supported.
+	if err != nil {
 		return "", false
 	}
-	return strings.TrimPrefix(u.RequestURI(), "/"), true
+	if u.Scheme == "" {
+		// URI should always be decoded before using it in a file path.
+		uri, err = url.PathUnescape(uri)
+		if err != nil {
+			return "", false
+		}
+	} else {
+		uri = u.String()
+	}
+	return uri, true
 }
