@@ -426,9 +426,9 @@ type Animation struct {
 type AnimationSampler struct {
 	Extensions    Extensions    `json:"extensions,omitempty"`
 	Extras        interface{}   `json:"extras,omitempty"`
-	Input         *uint32       `json:"input,omitempty"` // The index of an accessor containing keyframe input values.
+	Input         uint32        `json:"input"` // The index of an accessor containing keyframe input values.
 	Interpolation Interpolation `json:"interpolation,omitempty" validate:"lte=2"`
-	Output        *uint32       `json:"output,omitempty"` // The index of an accessor containing keyframe output values.
+	Output        uint32        `json:"output"` // The index of an accessor containing keyframe output values.
 }
 
 // The Channel targets an animation's sampler at a node's property.

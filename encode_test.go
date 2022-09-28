@@ -175,7 +175,7 @@ func TestEncoder_Encode(t *testing.T) {
 				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: TRSTranslation}},
 			}},
 			{Extras: 8.0, Name: "an_3", Samplers: []*AnimationSampler{
-				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: InterpolationCubicSpline},
+				{Extras: 8.0, Input: 1, Output: 1, Interpolation: InterpolationCubicSpline},
 			}},
 		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []*BufferView{
