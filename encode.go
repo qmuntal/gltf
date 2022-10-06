@@ -111,7 +111,7 @@ func (e *Encoder) Encode(doc *Document) error {
 
 	for i := externalBufferIndex; i < len(doc.Buffers); i++ {
 		buf := doc.Buffers[i]
-		if len(buf.Data) == 0 || buf.URI == "" {
+		if len(buf.Data) == 0 || buf.URI == "" || buf.IsEmbeddedResource() {
 			continue
 		}
 		if err = e.encodeBuffer(buf); err != nil {
