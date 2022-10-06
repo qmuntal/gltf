@@ -78,7 +78,7 @@ func (d *Decoder) Decode(doc *Document) error {
 	}
 
 	var externalBufferIndex = 0
-	if isBinary && len(doc.Buffers) > 0 {
+	if isBinary && len(doc.Buffers) > 0 && doc.Buffers[0].URI == "" {
 		externalBufferIndex = 1
 		if err := d.decodeBinaryBuffer(doc.Buffers[0]); err != nil {
 			return err
