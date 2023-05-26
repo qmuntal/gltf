@@ -1,6 +1,7 @@
 package gltf
 
 import (
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -323,5 +324,21 @@ func TestSizeOfElement(t *testing.T) {
 				t.Errorf("SizeOfElement() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestIssue63(t *testing.T) {
+	srcDoc, err := Open("testdata/issue63/simple.gltf")
+	if nil != err {
+		t.Fatal(err)
+	}
+	outputGlb := filepath.Join(t.TempDir(), "out.glb")
+	err = SaveBinary(srcDoc, outputGlb)
+	if nil != err {
+		t.Fatal(err)
+	}
+	_, err = Open(outputGlb)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

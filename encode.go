@@ -5,15 +5,27 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
 
-// WriteHandler is the interface that wraps the Write method.
-//
-// WriteResource should behaves as io.Write in terms of reading the writing resource.
-type WriteHandler interface {
-	WriteResource(uri string, data []byte) error
+// A CreateFS provides access to a hierarchical file system.
+// Must follow the same naming convention as io/fs.FS.
+type CreateFS interface {
+	fs.FS
+	Create(name string) (io.WriteCloser, error)
+}
+
+// dirFS implements a file system (an fs.FS) for the tree of files rooted at the directory dir.
+type dirFS struct {
+	fs.FS
+	dir string
+}
+
+// Create creates or truncates the named file.
+func (d dirFS) Create(name string) (io.WriteCloser, error) {
+	return os.Create(d.dir + "/" + name)
 }
 
 // Save will save a document as a glTF with the specified by name.
@@ -31,7 +43,8 @@ func save(doc *Document, name string, asBinary bool) error {
 	if err != nil {
 		return err
 	}
-	e := NewEncoder(f).WithWriteHandler(&RelativeFileHandler{Dir: filepath.Dir(name)})
+	dir := filepath.Dir(name)
+	e := NewEncoderFS(f, dirFS{os.DirFS(dir), dir})
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		f.Close()
@@ -40,34 +53,42 @@ func save(doc *Document, name string, asBinary bool) error {
 	return f.Close()
 }
 
-// An Encoder writes a GLTF to an output stream
-// with relative external buffers support.
+// An Encoder writes a glTF to an output stream.
+//
+// Only buffers with relative URIs will be written to Fsys.
 type Encoder struct {
-	AsBinary     bool
-	WriteHandler WriteHandler
-	w            io.Writer
+	AsBinary bool
+	Fsys     CreateFS
+	w        io.Writer
+	indent   string
+	prefix   string
 }
 
 // NewEncoder returns a new encoder that writes to w as a normal glTF file.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
-		AsBinary:     true,
-		WriteHandler: new(RelativeFileHandler),
-		w:            w,
+		AsBinary: true,
+		w:        w,
 	}
 }
 
-// WithWriteHandler sets the WriteHandler.
-func (e *Encoder) WithWriteHandler(h WriteHandler) *Encoder {
-	e.WriteHandler = h
-	return e
+// NewEncoder returns a new encoder that writes to w as a normal glTF file.
+func NewEncoderFS(w io.Writer, fsys CreateFS) *Encoder {
+	return &Encoder{
+		AsBinary: true,
+		Fsys:     fsys,
+		w:        w,
+	}
+}
+
+// SetJSONIndent sets json encoded data to have provided prefix and indent settings
+func (e *Encoder) SetJSONIndent(prefix string, indent string) {
+	e.prefix = prefix
+	e.indent = indent
 }
 
 // Encode writes the encoding of doc to the stream.
 func (e *Encoder) Encode(doc *Document) error {
-	if doc.Asset.Version == "" {
-		doc.Asset.Version = "2.0"
-	}
 	var err error
 	var externalBufferIndex = 0
 	if e.AsBinary {
@@ -77,18 +98,23 @@ func (e *Encoder) Encode(doc *Document) error {
 			externalBufferIndex = 1
 		}
 	} else {
-		err = json.NewEncoder(e.w).Encode(doc)
+		var jsonData []byte
+		jsonData, err = e.marshalJSONDoc(doc)
+		if err != nil {
+			return err
+		}
+		_, err = e.w.Write(jsonData)
 	}
 	if err != nil {
 		return err
 	}
 
 	for i := externalBufferIndex; i < len(doc.Buffers); i++ {
-		buffer := doc.Buffers[i]
-		if len(buffer.Data) == 0 || buffer.IsEmbeddedResource() {
+		buf := doc.Buffers[i]
+		if len(buf.Data) == 0 || buf.URI == "" || buf.IsEmbeddedResource() {
 			continue
 		}
-		if err = e.encodeBuffer(buffer); err != nil {
+		if err = e.encodeBuffer(buf); err != nil {
 			return err
 		}
 	}
@@ -100,12 +126,26 @@ func (e *Encoder) encodeBuffer(buffer *Buffer) error {
 	if err := validateBufferURI(buffer.URI); err != nil {
 		return err
 	}
-
-	return e.WriteHandler.WriteResource(buffer.URI, buffer.Data)
+	if e.Fsys == nil {
+		return nil
+	}
+	uri, ok := sanitizeURI(buffer.URI)
+	if !ok {
+		return nil
+	}
+	w, err := e.Fsys.Create(uri)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(buffer.Data)
+	if err1 := w.Close(); err == nil {
+		err = err1
+	}
+	return err
 }
 
 func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
-	jsonText, err := json.Marshal(doc)
+	jsonText, err := e.marshalJSONDoc(doc)
 	if err != nil {
 		return false, err
 	}
@@ -151,6 +191,72 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	}
 
 	return hasBinChunk, err
+}
+
+// MarshalJSON marshal the document with the correct default values.
+func (e *Encoder) marshalJSONDoc(doc *Document) ([]byte, error) {
+	type alias Document
+	tmp := &struct {
+		CustomBuffers []*Buffer `json:"buffers,omitempty"`
+		Buffers       []*Buffer `json:"-"`
+		*alias
+	}{
+		CustomBuffers: make([]*Buffer, len(doc.Buffers)),
+		alias:         (*alias)(doc),
+	}
+	// Embed buffers without URI.
+	for i, buf := range doc.Buffers {
+		if i == 0 && e.AsBinary && buf.URI == "" {
+			// First buffer will be encoded in the binary chunk.
+			tmp.CustomBuffers[i] = buf
+			continue
+		}
+		if len(buf.Data) > 0 && buf.URI == "" && !buf.IsEmbeddedResource() {
+			tmpBuf := &Buffer{
+				Extensions: buf.Extensions,
+				Extras:     buf.Extras,
+				Name:       buf.Name,
+				ByteLength: buf.ByteLength,
+				Data:       buf.Data,
+			}
+			tmpBuf.EmbeddedResource()
+			tmp.CustomBuffers[i] = tmpBuf
+		} else {
+			tmp.CustomBuffers[i] = buf
+		}
+	}
+	if len(e.prefix) > 0 || len(e.indent) > 0 {
+		return json.MarshalIndent(tmp, e.prefix, e.indent)
+	}
+	return json.Marshal(tmp)
+}
+
+// UnmarshalJSON unmarshal the asset with the correct default values.
+func (as *Asset) UnmarshalJSON(data []byte) error {
+	type alias Asset
+	tmp := alias(Asset{
+		Version: "2.0",
+	})
+	err := json.Unmarshal(data, &tmp)
+	if err == nil {
+		*as = Asset(tmp)
+	}
+	return err
+}
+
+// MarshalJSON marshal the asset with the correct default values.
+func (as *Asset) MarshalJSON() ([]byte, error) {
+	type alias Asset
+	if as.Version == "" {
+		return json.Marshal(&struct {
+			Version string `json:"version,omitempty"`
+			*alias
+		}{
+			Version: "2.0",
+			alias:   (*alias)(as),
+		})
+	}
+	return json.Marshal((*alias)(as))
 }
 
 // UnmarshalJSON unmarshal the node with the correct default values.
@@ -271,7 +377,7 @@ func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 			alias: (*alias)(n),
 		})
 	}
-	return json.Marshal(&struct{ *alias }{alias: (*alias)(n)})
+	return json.Marshal((*alias)(n))
 }
 
 // UnmarshalJSON unmarshal the texture info with the correct default values.
@@ -297,7 +403,7 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 			alias:    (*alias)(o),
 		})
 	}
-	return json.Marshal(&struct{ *alias }{alias: (*alias)(o)})
+	return json.Marshal((*alias)(o))
 }
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.

@@ -735,9 +735,7 @@ func TestWriteImage(t *testing.T) {
 	}
 }
 
-type errReader struct {
-	r io.Reader
-}
+type errReader struct{}
 
 func (r *errReader) Read(p []byte) (int, error) {
 	return 0, errors.New("")

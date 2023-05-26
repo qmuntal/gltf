@@ -2,7 +2,6 @@ package gltf
 
 import (
 	"encoding/base64"
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -125,7 +124,7 @@ func (b *Buffer) IsEmbeddedResource() bool {
 
 // EmbeddedResource defines the buffer as an embedded resource and encodes the URI so it points to the the resource.
 func (b *Buffer) EmbeddedResource() {
-	b.URI = fmt.Sprintf("%s,%s", mimetypeApplicationOctet, base64.StdEncoding.EncodeToString(b.Data))
+	b.URI = mimetypeApplicationOctet + "," + base64.StdEncoding.EncodeToString(b.Data)
 }
 
 // marshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
@@ -427,9 +426,9 @@ type Animation struct {
 type AnimationSampler struct {
 	Extensions    Extensions    `json:"extensions,omitempty"`
 	Extras        interface{}   `json:"extras,omitempty"`
-	Input         *uint32       `json:"input,omitempty"` // The index of an accessor containing keyframe input values.
+	Input         uint32        `json:"input"` // The index of an accessor containing keyframe input values.
 	Interpolation Interpolation `json:"interpolation,omitempty" validate:"lte=2"`
-	Output        *uint32       `json:"output,omitempty"` // The index of an accessor containing keyframe output values.
+	Output        uint32        `json:"output"` // The index of an accessor containing keyframe output values.
 }
 
 // The Channel targets an animation's sampler at a node's property.

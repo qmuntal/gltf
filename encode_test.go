@@ -5,37 +5,60 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/go-test/deep"
 )
 
+type mockFile struct {
+	data *[]byte
+}
+
+func (f mockFile) Write(p []byte) (n int, err error) {
+	*f.data = append(*f.data, p...)
+	return len(p), nil
+}
+
+func (f mockFile) Close() error {
+	return nil
+}
+
 type mockChunkReadHandler struct {
-	Chunks map[string][]byte
+	fstest.MapFS
 }
 
-func (m mockChunkReadHandler) ReadFullResource(uri string, data []byte) error {
-	copy(data, m.Chunks[uri])
-	return nil
-}
-
-func (m mockChunkReadHandler) WriteResource(uri string, data []byte) error {
-	m.Chunks[uri] = data
-	return nil
+func (m mockChunkReadHandler) Create(uri string) (io.WriteCloser, error) {
+	m.MapFS[uri] = &fstest.MapFile{}
+	return mockFile{&m.MapFS[uri].Data}, nil
 }
 
 func saveMemory(doc *Document, asBinary bool) (*Decoder, error) {
 	buff := new(bytes.Buffer)
-	m := &mockChunkReadHandler{Chunks: make(map[string][]byte)}
-	e := NewEncoder(buff).WithWriteHandler(m)
+	m := mockChunkReadHandler{fstest.MapFS{}}
+	e := NewEncoderFS(buff, m)
 	e.AsBinary = asBinary
 	if err := e.Encode(doc); err != nil {
 		return nil, err
 	}
 
-	return NewDecoder(buff).WithReadHandler(m), nil
+	return NewDecoderFS(buff, m), nil
+}
+
+func saveMemoryIndent(doc *Document, asBinary bool) (*Decoder, error) {
+	buff := new(bytes.Buffer)
+	m := mockChunkReadHandler{fstest.MapFS{}}
+	e := NewEncoderFS(buff, m)
+	e.AsBinary = asBinary
+	e.SetJSONIndent("", "\t")
+	if err := e.Encode(doc); err != nil {
+		return nil, err
+	}
+
+	return NewDecoderFS(buff, m), nil
 }
 
 func TestEncoder_Encode_AsBinary_WithoutBuffer(t *testing.T) {
@@ -58,8 +81,8 @@ func TestEncoder_Encode_AsBinary_WithoutBinChunk(t *testing.T) {
 		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
 	}}
 	buff := new(bytes.Buffer)
-	m := &mockChunkReadHandler{Chunks: make(map[string][]byte)}
-	e := NewEncoder(buff).WithWriteHandler(m)
+	m := mockChunkReadHandler{fstest.MapFS{}}
+	e := NewEncoderFS(buff, m)
 	e.AsBinary = true
 	if err := e.Encode(doc); err != nil {
 		t.Errorf("Encoder.Encode() error = %v", err)
@@ -88,6 +111,34 @@ func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
 	}
 	if got := header.Length; got != 116 {
 		t.Errorf("Encoder.Encode() incorrect length. want = %v, got = %v", 116, got)
+	}
+}
+
+func TestEncoder_Encode_Buffers_Without_URI(t *testing.T) {
+	doc := &Document{Buffers: []*Buffer{
+		{Name: "binary", ByteLength: 3, Data: []byte{1, 2, 3}},
+		{Name: "binary2", ByteLength: 3, Data: []byte{4, 5, 6}},
+	}}
+	buf := new(bytes.Buffer)
+	e := NewEncoder(buf)
+	e.AsBinary = false
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if !strings.Contains(buf.String(), mimetypeApplicationOctet+",AQID") ||
+		!strings.Contains(buf.String(), mimetypeApplicationOctet+",BAUG") {
+		t.Error("Encoder.Encode() should auto embed buffers without URI")
+	}
+	buf.Reset()
+	e.AsBinary = true
+	if err := e.Encode(doc); err != nil {
+		t.Errorf("Encoder.Encode() error = %v", err)
+	}
+	if strings.Contains(buf.String(), mimetypeApplicationOctet+",AQID") {
+		t.Error("Encoder.Encode() as binary should not embed fur buffer")
+	}
+	if !strings.Contains(buf.String(), mimetypeApplicationOctet+",BAUG") {
+		t.Error("Encoder.Encode() should auto embed buffers without URI")
 	}
 }
 
@@ -124,7 +175,7 @@ func TestEncoder_Encode(t *testing.T) {
 				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: TRSTranslation}},
 			}},
 			{Extras: 8.0, Name: "an_3", Samplers: []*AnimationSampler{
-				{Extras: 8.0, Input: Index(1), Output: Index(1), Interpolation: InterpolationCubicSpline},
+				{Extras: 8.0, Input: 1, Output: 1, Interpolation: InterpolationCubicSpline},
 			}},
 		}}}, false},
 		{"withBufView", args{&Document{BufferViews: []*BufferView{
@@ -189,16 +240,10 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 	}
 	for _, tt := range tests {
+		tt.args.doc.Asset.Version = "2.0"
 		for _, method := range []string{"json", "binary"} {
 			t.Run(fmt.Sprintf("%s_%s", tt.name, method), func(t *testing.T) {
-				var asBinary bool
-				if method == "binary" && !tt.wantErr {
-					asBinary = true
-					for i := 1; i < len(tt.args.doc.Buffers); i++ {
-						tt.args.doc.Buffers[i].EmbeddedResource()
-					}
-				}
-				d, err := saveMemory(tt.args.doc, asBinary)
+				d, err := saveMemory(tt.args.doc, method == "binary")
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Encoder.Encode() error = %v, wantErr %v", err, tt.wantErr)
 					return
@@ -208,6 +253,20 @@ func TestEncoder_Encode(t *testing.T) {
 					d.Decode(doc)
 					if diff := deep.Equal(doc, tt.args.doc); diff != nil {
 						t.Errorf("Encoder.Encode() = %v", diff)
+						return
+					}
+				}
+
+				d, err = saveMemoryIndent(tt.args.doc, method == "binary")
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Encoder.Encode() withIndent error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if !tt.wantErr {
+					doc := new(Document)
+					d.Decode(doc)
+					if diff := deep.Equal(doc, tt.args.doc); diff != nil {
+						t.Errorf("Encoder.Encode() withIndent = %v", diff)
 						return
 					}
 				}

@@ -3,10 +3,10 @@ package gltf
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"reflect"
 	"testing"
+	"testing/fstest"
 
 	"github.com/go-test/deep"
 )
@@ -108,6 +108,36 @@ func TestOpen(t *testing.T) {
 			Scene:    Index(0),
 			Scenes:   []*Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
 		}, false},
+		{args{"testdata/Box With Spaces/glTF/Box With Spaces.gltf", ""}, &Document{
+			Accessors: []*Accessor{
+				{BufferView: Index(0), ComponentType: ComponentFloat, Count: 24, Max: []float32{1, 1, 1}, Min: []float32{-1, -1, -1}, Type: AccessorVec3},
+				{BufferView: Index(1), ComponentType: ComponentFloat, Count: 24, Type: AccessorVec3},
+				{BufferView: Index(2), ComponentType: ComponentFloat, Count: 24, Type: AccessorVec2},
+				{BufferView: Index(3), ComponentType: ComponentUshort, Count: 36, Type: AccessorScalar},
+			},
+			Asset: Asset{Generator: "Khronos glTF Blender I/O v1.3.48", Version: "2.0", Copyright: "CC0 by Ed Mackey, AGI"},
+			BufferViews: []*BufferView{
+				{ByteLength: 288, ByteOffset: 0},
+				{ByteLength: 288, ByteOffset: 288},
+				{ByteLength: 192, ByteOffset: 576},
+				{ByteLength: 72, ByteOffset: 768},
+			},
+			Buffers: []*Buffer{{ByteLength: 840, URI: "Box With Spaces.bin", Data: readFile("testdata/Box With Spaces/glTF/Box With Spaces.bin")}},
+			Images: []*Image{
+				{Name: "Normal Map", MimeType: "image/png", URI: "Normal Map.png"},
+				{Name: "glTF Logo With Spaces", MimeType: "image/png", URI: "glTF Logo With Spaces.png"},
+				{Name: "Roughness Metallic", MimeType: "image/png", URI: "Roughness Metallic.png"},
+			},
+			Materials: []*Material{{
+				Name: "Material", AlphaMode: AlphaOpaque, AlphaCutoff: Float(0.5), NormalTexture: &NormalTexture{Index: Index(0), Scale: Float(1)}, PBRMetallicRoughness: &PBRMetallicRoughness{
+					BaseColorFactor: &[4]float32{1, 1, 1, 1}, MetallicFactor: Float(1), RoughnessFactor: Float(1), BaseColorTexture: &TextureInfo{Index: 1}, MetallicRoughnessTexture: &TextureInfo{Index: 2},
+				}}},
+			Meshes:   []*Mesh{{Name: "Cube", Primitives: []*Primitive{{Indices: Index(3), Material: Index(0), Mode: PrimitiveTriangles, Attributes: map[string]uint32{NORMAL: 1, POSITION: 0, TEXCOORD_0: 2}}}}},
+			Nodes:    []*Node{{Mesh: Index(0), Name: "Cube", Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}}},
+			Scene:    Index(0),
+			Scenes:   []*Scene{{Name: "Scene", Nodes: []uint32{0}}},
+			Textures: []*Texture{{Source: Index(0)}, {Source: Index(1)}, {Source: Index(2)}},
+		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.args.name, func(t *testing.T) {
@@ -122,14 +152,14 @@ func TestOpen(t *testing.T) {
 			}
 			if tt.args.embedded != "" {
 				got, err = Open(tt.args.embedded)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Open() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
 				for i, b := range got.Buffers {
 					if b.IsEmbeddedResource() {
 						tt.want.Buffers[i].EmbeddedResource()
 					}
-				}
-				if (err != nil) != tt.wantErr {
-					t.Errorf("Open() error = %v, wantErr %v", err, tt.wantErr)
-					return
 				}
 				if diff := deep.Equal(got, tt.want); diff != nil {
 					t.Errorf("Open() = %v", diff)
@@ -138,29 +168,6 @@ func TestOpen(t *testing.T) {
 			}
 		})
 	}
-}
-
-type chunkedReader struct {
-	s []byte
-	n int
-}
-
-func (c *chunkedReader) Read(p []byte) (n int, err error) {
-	c.n++
-	if c.n == len(c.s)+1 {
-		return 0, io.EOF
-	}
-	p[0] = c.s[c.n-1 : c.n][0]
-	return 1, nil
-}
-
-type mockReadHandler struct {
-	Payload string
-}
-
-func (m mockReadHandler) ReadFullResource(uri string, data []byte) error {
-	copy(data, []byte(m.Payload))
-	return nil
 }
 
 func TestDecoder_decodeBuffer(t *testing.T) {
@@ -177,8 +184,8 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		{"byteLength_0", &Decoder{}, args{&Buffer{ByteLength: 0, URI: "a.bin"}}, nil, true},
 		{"noURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: ""}}, nil, true},
 		{"invalidURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
-		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, true},
-		{"base", NewDecoder(nil).WithReadHandler(&mockReadHandler{"abcdfg"}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
+		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, false},
+		{"base", NewDecoderFS(nil, fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -237,9 +244,9 @@ func TestDecoder_Decode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"baseJSON", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}")).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, false},
-		{"onlyGLBHeader", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e})).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
-		{"glbNoJSONChunk", NewDecoder(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e})).WithReadHandler(&mockReadHandler{"abcdfg"}), args{new(Document)}, true},
+		{"baseJSON", NewDecoderFS(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}"), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, false},
+		{"onlyGLBHeader", NewDecoderFS(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e}), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
+		{"glbNoJSONChunk", NewDecoderFS(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e}), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
 		{"empty", NewDecoder(bytes.NewBufferString("")), args{new(Document)}, true},
 		{"invalidJSON", NewDecoder(bytes.NewBufferString("{asset: {}}")), args{new(Document)}, true},
 		{"invalidBuffer", NewDecoder(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 0}]}")), args{new(Document)}, true},
@@ -248,40 +255,6 @@ func TestDecoder_Decode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.d.Decode(tt.args.doc); (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.Decode() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestDecoder_validateDocumentQuotas(t *testing.T) {
-	type args struct {
-		doc      *Document
-		isBinary bool
-	}
-	tests := []struct {
-		name    string
-		d       *Decoder
-		args    args
-		wantErr bool
-	}{
-		{
-			"exceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
-			args{&Document{Buffers: []*Buffer{{}, {}}}, false}, true,
-		}, {
-			"noExceedBuffers", &Decoder{MaxMemoryAllocation: 100000, MaxExternalBufferCount: 1},
-			args{&Document{Buffers: []*Buffer{{}, {}}}, true}, false,
-		}, {
-			"exceedAllocs", &Decoder{MaxMemoryAllocation: 10, MaxExternalBufferCount: 100},
-			args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}, false}, true,
-		}, {
-			"noExceedAllocs", &Decoder{MaxMemoryAllocation: 11, MaxExternalBufferCount: 100},
-			args{&Document{Buffers: []*Buffer{{ByteLength: 11}}}, true}, false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.d.validateDocumentQuotas(tt.args.doc, tt.args.isBinary); (err != nil) != tt.wantErr {
-				t.Errorf("Decoder.validateDocumentQuotas() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
