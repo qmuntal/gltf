@@ -149,6 +149,7 @@ type BufferView struct {
 	ByteLength uint32      `json:"byteLength" validate:"required"`
 	ByteStride uint32      `json:"byteStride,omitempty" validate:"omitempty,gte=4,lte=252"`
 	Target     Target      `json:"target,omitempty" validate:"omitempty,oneof=34962 34963"`
+	Name       string      `json:"name,omitempty"`
 }
 
 // The Scene contains a list of root nodes.
