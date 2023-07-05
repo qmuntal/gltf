@@ -2,6 +2,7 @@ package gltf
 
 import (
 	"encoding/base64"
+	"errors"
 	"strings"
 	"sync"
 )
@@ -133,6 +134,9 @@ func (b *Buffer) marshalData() ([]byte, error) {
 		return nil, nil
 	}
 	startPos := len(mimetypeApplicationOctet) + 1
+	if len(b.URI) < startPos {
+		return nil, errors.New("gltf: Invalid base64 content")
+	}
 	sl, err := base64.StdEncoding.DecodeString(b.URI[startPos:])
 	if len(sl) == 0 || err != nil {
 		return nil, err
