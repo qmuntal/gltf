@@ -96,6 +96,7 @@ func TestBuffer_marshalData(t *testing.T) {
 		{"empty", &Buffer{URI: "data:application/octet-stream;base64,"}, nil, false},
 		{"test", &Buffer{URI: "data:application/octet-stream;base64,TEST"}, []byte{76, 68, 147}, false},
 		{"complex", &Buffer{URI: "data:application/octet-stream;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []byte{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
+		{"invalid", &Buffer{URI: "data:application/octet-stream;base64"}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
