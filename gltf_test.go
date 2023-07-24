@@ -72,7 +72,7 @@ func TestImage_IsEmbeddedResource(t *testing.T) {
 		want bool
 	}{
 		{"png", &Image{URI: "data:image/png;base64,dsjdsaGGUDXGA"}, true},
-		{"jpg", &Image{URI: "data:image/png;base64,dsjdsaGGUDXGA"}, true},
+		{"jpg", &Image{URI: "data:image/jpeg;base64,dsjdsaGGUDXGA"}, true},
 		{"external", &Image{URI: "https://web.com/a"}, false},
 	}
 	for _, tt := range tests {

@@ -415,6 +415,9 @@ func (im *Image) MarshalData() ([]byte, error) {
 		mimetype = mimetypeImageJPG
 	}
 	startPos := len(mimetype) + 1
+	if len(im.URI) < startPos {
+		return []byte{}, errors.New("gltf: Invalid base64 content")
+	}
 	return base64.StdEncoding.DecodeString(im.URI[startPos:])
 }
 
