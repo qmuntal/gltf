@@ -167,13 +167,13 @@ To decode one of the supported extensions the only required action is to import 
 ```go
 import (
   "github.com/qmuntal/gltf"
-  "github.com/qmuntal/gltf/ext/lightspuntual"
+  "github.com/qmuntal/gltf/ext/lightspunctual"
 )
 
 func main() {
   doc, _ := gltf.Open("./foo.gltf")
-    if v, ok := doc.Extensions[lightspuntual.ExtensionName]; ok {
-        for _, l := range v.(lightspuntual.Lights) {
+    if v, ok := doc.Extensions[lightspunctual.ExtensionName]; ok {
+        for _, l := range v.(lightspunctual.Lights) {
             fmt.Print(l.Type)
         }
     }

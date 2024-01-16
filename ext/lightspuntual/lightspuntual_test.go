@@ -1,4 +1,4 @@
-package lightspuntual
+package lightspunctual
 
 import (
 	"math"

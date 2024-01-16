@@ -1,7 +1,7 @@
-// Package lightspuntual defines three "punctual" light types: directional, point and spot.
+// Package lightspunctual defines three "punctual" light types: directional, point and spot.
 // Punctual lights are defined as parameterized, infinitely small points
 // that emit light in well-defined directions and intensities.
-package lightspuntual
+package lightspunctual
 
 import (
 	"encoding/json"
