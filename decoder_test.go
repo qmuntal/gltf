@@ -186,6 +186,7 @@ func TestDecoder_decodeBuffer(t *testing.T) {
 		{"invalidURI", &Decoder{}, args{&Buffer{ByteLength: 1, URI: "../a.bin"}}, nil, true},
 		{"noSchemeErr", NewDecoder(nil), args{&Buffer{ByteLength: 3, URI: "ftp://a.bin"}}, nil, false},
 		{"base", NewDecoderFS(nil, fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{&Buffer{ByteLength: 6, URI: "a.bin"}}, []byte("abcdfg"), false},
+		{"dotdot", NewDecoderFS(nil, fstest.MapFS{"a..b.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{&Buffer{ByteLength: 6, URI: "a..b.bin"}}, []byte("abcdfg"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

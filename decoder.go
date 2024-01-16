@@ -192,7 +192,10 @@ func (d *Decoder) validateBuffer(buffer *Buffer) error {
 }
 
 func validateBufferURI(uri string) error {
-	if uri == "" || strings.Contains(uri, "..") || strings.HasPrefix(uri, "/") || strings.HasPrefix(uri, "\\") {
+	if u, err := url.Parse(uri); err == nil && u.Scheme != "" {
+		return nil
+	}
+	if !filepath.IsLocal(uri) {
 		return fmt.Errorf("gltf: Invalid buffer.uri value '%s'", uri)
 	}
 	return nil
