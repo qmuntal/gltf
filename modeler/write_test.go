@@ -73,7 +73,7 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 		t.Errorf("TestWriteAttributesInterleaved() = %v", diff)
 	}
 	accs := []*gltf.Accessor{
-		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, Min: []float32{0, 0, -1}, Max: []float32{1, 2, 3}},
+		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, Min: []float64{0, 0, -1}, Max: []float64{1, 2, 3}},
 		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ByteOffset: 12},
 		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ByteOffset: 24},
 		{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec2, ByteOffset: 40},
@@ -306,7 +306,7 @@ func TestWritePosition(t *testing.T) {
 		}, args{[][3]float32{{1, 2, 3}, {0, 0, -1}}}, 1, &gltf.Document{
 			Accessors: []*gltf.Accessor{
 				{},
-				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat, Max: []float32{1, 2, 3}, Min: []float32{0, 0, -1}},
+				{BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat, Max: []float64{1, 2, 3}, Min: []float64{0, 0, -1}},
 			},
 			BufferViews: []*gltf.BufferView{
 				{ByteLength: 24, Target: gltf.TargetArrayBuffer},
