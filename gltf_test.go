@@ -116,11 +116,11 @@ func TestNode_MatrixOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [16]float32
+		want [16]float64
 	}{
 		{"default", &Node{Matrix: DefaultMatrix}, DefaultMatrix},
 		{"zeros", &Node{Matrix: emptyMatrix}, DefaultMatrix},
-		{"other", &Node{Matrix: [16]float32{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}}, [16]float32{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}},
+		{"other", &Node{Matrix: [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}}, [16]float64{2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -135,11 +135,11 @@ func TestNode_RotationOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [4]float32
+		want [4]float64
 	}{
 		{"default", &Node{Rotation: DefaultRotation}, DefaultRotation},
 		{"zeros", &Node{Rotation: emptyRotation}, DefaultRotation},
-		{"other", &Node{Rotation: [4]float32{1, 2, 3, 4}}, [4]float32{1, 2, 3, 4}},
+		{"other", &Node{Rotation: [4]float64{1, 2, 3, 4}}, [4]float64{1, 2, 3, 4}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -154,11 +154,11 @@ func TestNode_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [3]float32
+		want [3]float64
 	}{
 		{"default", &Node{Scale: DefaultScale}, DefaultScale},
 		{"zeros", &Node{Scale: emptyScale}, DefaultScale},
-		{"other", &Node{Scale: [3]float32{1, 2, 3}}, [3]float32{1, 2, 3}},
+		{"other", &Node{Scale: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -173,10 +173,10 @@ func TestNode_TranslationOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *Node
-		want [3]float32
+		want [3]float64
 	}{
 		{"default", &Node{Translation: DefaultTranslation}, DefaultTranslation},
-		{"other", &Node{Translation: [3]float32{1, 2, 3}}, [3]float32{1, 2, 3}},
+		{"other", &Node{Translation: [3]float64{1, 2, 3}}, [3]float64{1, 2, 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -191,10 +191,10 @@ func TestPBRMetallicRoughness_BaseColorFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want [4]float32
+		want [4]float64
 	}{
-		{"empty", &PBRMetallicRoughness{}, [4]float32{1, 1, 1, 1}},
-		{"other", &PBRMetallicRoughness{BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 0.5}}, [4]float32{0.8, 0.8, 0.8, 0.5}},
+		{"empty", &PBRMetallicRoughness{}, [4]float64{1, 1, 1, 1}},
+		{"other", &PBRMetallicRoughness{BaseColorFactor: &[4]float64{0.8, 0.8, 0.8, 0.5}}, [4]float64{0.8, 0.8, 0.8, 0.5}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -209,7 +209,7 @@ func TestOcclusionTexture_StrengthOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		o    *OcclusionTexture
-		want float32
+		want float64
 	}{
 		{"empty", &OcclusionTexture{}, 1},
 		{"other", &OcclusionTexture{Strength: Float(2)}, 2},
@@ -227,7 +227,7 @@ func TestNormalTexture_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		n    *NormalTexture
-		want float32
+		want float64
 	}{
 		{"empty", &NormalTexture{}, 1},
 		{"other", &NormalTexture{Scale: Float(2)}, 2},
@@ -245,7 +245,7 @@ func TestMaterial_AlphaCutoffOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		m    *Material
-		want float32
+		want float64
 	}{
 		{"empty", &Material{}, 0.5},
 		{"other", &Material{AlphaCutoff: Float(2)}, 2},
@@ -263,7 +263,7 @@ func TestPBRMetallicRoughness_MetallicFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want float32
+		want float64
 	}{
 		{"empty", &PBRMetallicRoughness{}, 1},
 		{"other", &PBRMetallicRoughness{MetallicFactor: Float(2)}, 2},
@@ -281,7 +281,7 @@ func TestPBRMetallicRoughness_RoughnessFactorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *PBRMetallicRoughness
-		want float32
+		want float64
 	}{
 		{"empty", &PBRMetallicRoughness{}, 1},
 		{"other", &PBRMetallicRoughness{RoughnessFactor: Float(2)}, 2},

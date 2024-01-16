@@ -159,7 +159,7 @@ func TestEncoder_Encode(t *testing.T) {
 		{"withExtensions", args{&Document{Extras: 8.0, ExtensionsUsed: []string{"c"}, ExtensionsRequired: []string{"d", "e"}}}, false},
 		{"withAsset", args{&Document{Asset: Asset{Extras: 8.0, Copyright: "@2019", Generator: "qmuntal/gltf", Version: "2.0", MinVersion: "1.0"}}}, false},
 		{"withAccessors", args{&Document{Accessors: []*Accessor{
-			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: ComponentByte, Normalized: true, Count: 5, Type: AccessorVec3, Max: []float32{1, 2}, Min: []float32{2.4}},
+			{Extras: 8.0, Name: "acc_1", BufferView: Index(0), ByteOffset: 50, ComponentType: ComponentByte, Normalized: true, Count: 5, Type: AccessorVec3, Max: []float64{1, 2}, Min: []float64{2.4}},
 			{BufferView: Index(0), Normalized: false, Count: 50, Type: AccessorVec4, Sparse: &Sparse{Extras: 8.0, Count: 2,
 				Values:  SparseValues{Extras: 8.0, BufferView: 1, ByteOffset: 2},
 				Indices: SparseIndices{Extras: 8.0, BufferView: 1, ByteOffset: 2, ComponentType: ComponentFloat}},
@@ -192,10 +192,10 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "external", URI: "https://web.com/a", MimeType: "data:image/png"},
 		}}}, false},
 		{"withMaterials", args{&Document{Materials: []*Material{
-			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float32{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque},
+			{Extras: 8.0, Name: "base", EmissiveFactor: [3]float64{1.0, 1.0, 1.0}, DoubleSided: true, AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque},
 			{Extras: 8.0, Name: "pbr", AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque,
 				PBRMetallicRoughness: &PBRMetallicRoughness{
-					Extras: 8.0, MetallicFactor: Float(1), RoughnessFactor: Float(2), BaseColorFactor: &[4]float32{0.8, 0.8, 0.8, 1},
+					Extras: 8.0, MetallicFactor: Float(1), RoughnessFactor: Float(2), BaseColorFactor: &[4]float64{0.8, 0.8, 0.8, 1},
 					BaseColorTexture:         &TextureInfo{Extras: 8.0, Index: 1, TexCoord: 3},
 					MetallicRoughnessTexture: &TextureInfo{Extras: 8.0, Index: 6, TexCoord: 5},
 				},
@@ -209,7 +209,7 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float(0.5), AlphaMode: AlphaMask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
 		}}}, false},
 		{"withMeshes", args{&Document{Meshes: []*Mesh{
-			{Extras: 8.0, Name: "mesh_1", Weights: []float32{1.2, 2}},
+			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
 			{Extras: 8.0, Name: "mesh_2", Primitives: []*Primitive{
 				{Extras: 8.0, Attributes: Attribute{POSITION: 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 				{Extras: 8.0, Targets: []Attribute{{POSITION: 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
@@ -217,9 +217,9 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []*Node{
 			{Extras: 8.0, Name: "n-1", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
-				Matrix: [16]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float32{1.5, 1.3, 12, 0}, Scale: [3]float32{1, 3, 4}, Translation: [3]float32{0, 7.8, 9}, Weights: []float32{1, 3}},
+				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
 			{Extras: 8.0, Name: "n-2", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
-				Matrix: [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float32{0, 0, 0, 1}, Scale: [3]float32{1, 1, 1}},
+				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 		}}}, false},
 		{"withSampler", args{&Document{Samplers: []*Sampler{
 			{Extras: 8.0, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: WrapClampToEdge, WrapT: WrapMirroredRepeat},
@@ -316,22 +316,22 @@ func TestNode_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", new(Node), args{[]byte("{}")}, &Node{
-			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-			Rotation: [4]float32{0, 0, 0, 1},
-			Scale:    [3]float32{1, 1, 1},
+			Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float64{0, 0, 0, 1},
+			Scale:    [3]float64{1, 1, 1},
 		}, false},
 		{"nodefault", new(Node), args{[]byte(`{"matrix":[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],"rotation":[0,0,0,1],"scale":[1,1,1],"camera":0,"mesh":0,"skin":0}`)}, &Node{
-			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-			Rotation: [4]float32{0, 0, 0, 1},
-			Scale:    [3]float32{1, 1, 1},
+			Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float64{0, 0, 0, 1},
+			Scale:    [3]float64{1, 1, 1},
 			Camera:   Index(0),
 			Mesh:     Index(0),
 			Skin:     Index(0),
 		}, false},
 		{"nodefault", new(Node), args{[]byte(`{"matrix":[1,2,2,0,0,1,3,4,0,0,1,0,5,0,0,5],"rotation":[1,2,3,4],"scale":[2,3,4],"camera":1,"mesh":2,"skin":3}`)}, &Node{
-			Matrix:   [16]float32{1, 2, 2, 0, 0, 1, 3, 4, 0, 0, 1, 0, 5, 0, 0, 5},
-			Rotation: [4]float32{1, 2, 3, 4},
-			Scale:    [3]float32{2, 3, 4},
+			Matrix:   [16]float64{1, 2, 2, 0, 0, 1, 3, 4, 0, 0, 1, 0, 5, 0, 0, 5},
+			Rotation: [4]float64{1, 2, 3, 4},
+			Scale:    [3]float64{2, 3, 4},
 			Camera:   Index(1),
 			Mesh:     Index(2),
 			Skin:     Index(3),
@@ -444,9 +444,9 @@ func TestPBRMetallicRoughness_UnmarshalJSON(t *testing.T) {
 		want    *PBRMetallicRoughness
 		wantErr bool
 	}{
-		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: &[4]float32{1, 1, 1, 1}, MetallicFactor: Float(1), RoughnessFactor: Float(1)}, false},
+		{"default", new(PBRMetallicRoughness), args{[]byte("{}")}, &PBRMetallicRoughness{BaseColorFactor: &[4]float64{1, 1, 1, 1}, MetallicFactor: Float(1), RoughnessFactor: Float(1)}, false},
 		{"nodefault", new(PBRMetallicRoughness), args{[]byte(`{"baseColorFactor": [0.1,0.2,0.6,0.7],"metallicFactor":0.5,"roughnessFactor":0.1}`)}, &PBRMetallicRoughness{
-			BaseColorFactor: &[4]float32{0.1, 0.2, 0.6, 0.7}, MetallicFactor: Float(0.5), RoughnessFactor: Float(0.1),
+			BaseColorFactor: &[4]float64{0.1, 0.2, 0.6, 0.7}, MetallicFactor: Float(0.5), RoughnessFactor: Float(0.1),
 		}, false},
 	}
 	for _, tt := range tests {
@@ -470,28 +470,28 @@ func TestNode_MarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", &Node{
-			Matrix:   [16]float32{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-			Rotation: [4]float32{0, 0, 0, 1},
-			Scale:    [3]float32{1, 1, 1},
+			Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation: [4]float64{0, 0, 0, 1},
+			Scale:    [3]float64{1, 1, 1},
 		}, []byte("{}"), false},
 		{"default2", &Node{
-			Matrix:   [16]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-			Rotation: [4]float32{0, 0, 0, 0},
-			Scale:    [3]float32{0, 0, 0},
+			Matrix:   [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation: [4]float64{0, 0, 0, 0},
+			Scale:    [3]float64{0, 0, 0},
 		}, []byte("{}"), false},
 		{"empty", &Node{
-			Matrix:   [16]float32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-			Rotation: [4]float32{0, 0, 0, 0},
-			Scale:    [3]float32{0, 0, 0},
+			Matrix:   [16]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation: [4]float64{0, 0, 0, 0},
+			Scale:    [3]float64{0, 0, 0},
 			Camera:   Index(0),
 			Skin:     Index(0),
 			Mesh:     Index(0),
 		}, []byte(`{"camera":0,"skin":0,"mesh":0}`), false},
 		{"nodefault", &Node{
-			Matrix:      [16]float32{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-			Rotation:    [4]float32{1, 0, 0, 0},
-			Scale:       [3]float32{1, 0, 0},
-			Translation: [3]float32{1, 0, 0},
+			Matrix:      [16]float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Rotation:    [4]float64{1, 0, 0, 0},
+			Scale:       [3]float64{1, 0, 0},
+			Translation: [3]float64{1, 0, 0},
 			Camera:      Index(1),
 			Skin:        Index(1),
 			Mesh:        Index(1),
@@ -593,9 +593,9 @@ func TestPBRMetallicRoughness_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &PBRMetallicRoughness{MetallicFactor: Float(1), RoughnessFactor: Float(1), BaseColorFactor: &[4]float32{1, 1, 1, 1}}, []byte(`{}`), false},
+		{"default", &PBRMetallicRoughness{MetallicFactor: Float(1), RoughnessFactor: Float(1), BaseColorFactor: &[4]float64{1, 1, 1, 1}}, []byte(`{}`), false},
 		{"empty", &PBRMetallicRoughness{MetallicFactor: Float(0), RoughnessFactor: Float(0)}, []byte(`{"metallicFactor":0,"roughnessFactor":0}`), false},
-		{"nodefault", &PBRMetallicRoughness{MetallicFactor: Float(0.5), RoughnessFactor: Float(0.5), BaseColorFactor: &[4]float32{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
+		{"nodefault", &PBRMetallicRoughness{MetallicFactor: Float(0.5), RoughnessFactor: Float(0.5), BaseColorFactor: &[4]float64{1, 0.5, 1, 1}}, []byte(`{"baseColorFactor":[1,0.5,1,1],"metallicFactor":0.5,"roughnessFactor":0.5}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

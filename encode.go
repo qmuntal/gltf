@@ -278,10 +278,10 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 func (n *Node) MarshalJSON() ([]byte, error) {
 	type alias Node
 	tmp := &struct {
-		Matrix      *[16]float32 `json:"matrix,omitempty"`                                          // A 4x4 transformation matrix stored in column-major order.
-		Rotation    *[4]float32  `json:"rotation,omitempty" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
-		Scale       *[3]float32  `json:"scale,omitempty"`
-		Translation *[3]float32  `json:"translation,omitempty"`
+		Matrix      *[16]float64 `json:"matrix,omitempty"`                                          // A 4x4 transformation matrix stored in column-major order.
+		Rotation    *[4]float64  `json:"rotation,omitempty" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+		Scale       *[3]float64  `json:"scale,omitempty"`
+		Translation *[3]float64  `json:"translation,omitempty"`
 		*alias
 	}{
 		alias: (*alias)(n),
@@ -339,8 +339,8 @@ func (m *Material) UnmarshalJSON(data []byte) error {
 func (m *Material) MarshalJSON() ([]byte, error) {
 	type alias Material
 	tmp := &struct {
-		EmissiveFactor *[3]float32 `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
-		AlphaCutoff    *float32    `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
+		EmissiveFactor *[3]float64 `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
+		AlphaCutoff    *float64    `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
 		*alias
 	}{
 		alias: (*alias)(m),
@@ -348,7 +348,7 @@ func (m *Material) MarshalJSON() ([]byte, error) {
 	if m.AlphaCutoff != nil && *m.AlphaCutoff != 0.5 {
 		tmp.AlphaCutoff = m.AlphaCutoff
 	}
-	if m.EmissiveFactor != [3]float32{0, 0, 0} {
+	if m.EmissiveFactor != [3]float64{0, 0, 0} {
 		tmp.EmissiveFactor = &m.EmissiveFactor
 	}
 	return json.Marshal(tmp)
@@ -370,7 +370,7 @@ func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 	type alias NormalTexture
 	if n.Scale != nil && *n.Scale == 1 {
 		return json.Marshal(&struct {
-			Scale float32 `json:"scale,omitempty"`
+			Scale float64 `json:"scale,omitempty"`
 			*alias
 		}{
 			Scale: 0,
@@ -396,7 +396,7 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 	type alias OcclusionTexture
 	if o.Strength != nil && *o.Strength == 1 {
 		return json.Marshal(&struct {
-			Strength float32 `json:"strength,omitempty"`
+			Strength float64 `json:"strength,omitempty"`
 			*alias
 		}{
 			Strength: 0,
@@ -409,7 +409,7 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshal the pbr with the correct default values.
 func (p *PBRMetallicRoughness) UnmarshalJSON(data []byte) error {
 	type alias PBRMetallicRoughness
-	tmp := alias(PBRMetallicRoughness{BaseColorFactor: &[4]float32{1, 1, 1, 1}, MetallicFactor: Float(1), RoughnessFactor: Float(1)})
+	tmp := alias(PBRMetallicRoughness{BaseColorFactor: &[4]float64{1, 1, 1, 1}, MetallicFactor: Float(1), RoughnessFactor: Float(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*p = PBRMetallicRoughness(tmp)
@@ -431,7 +431,7 @@ func (p *PBRMetallicRoughness) MarshalJSON() ([]byte, error) {
 	if p.RoughnessFactor != nil && *p.RoughnessFactor == 1 {
 		tmp.RoughnessFactor = nil
 	}
-	if p.BaseColorFactor != nil && *p.BaseColorFactor == [4]float32{1, 1, 1, 1} {
+	if p.BaseColorFactor != nil && *p.BaseColorFactor == [4]float64{1, 1, 1, 1} {
 		tmp.BaseColorFactor = nil
 	}
 	return json.Marshal(tmp)

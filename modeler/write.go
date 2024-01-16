@@ -113,13 +113,13 @@ func WritePosition(doc *gltf.Document, data [][3]float32) uint32 {
 	return index
 }
 
-func minMaxFloat32(data [][3]float32) ([3]float32, [3]float32) {
-	min := [3]float32{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
-	max := [3]float32{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
+func minMaxFloat32(data [][3]float32) ([3]float64, [3]float64) {
+	min := [3]float64{math.MaxFloat64, math.MaxFloat64, math.MaxFloat64}
+	max := [3]float64{-math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64}
 	for _, v := range data {
 		for i, x := range v {
-			min[i] = float32(math.Min(float64(min[i]), float64(x)))
-			max[i] = float32(math.Max(float64(max[i]), float64(x)))
+			min[i] = math.Min(float64(min[i]), float64(x))
+			max[i] = math.Max(float64(max[i]), float64(x))
 		}
 	}
 	return min, max

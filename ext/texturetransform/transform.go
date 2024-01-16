@@ -9,9 +9,9 @@ import (
 
 var (
 	// DefaultScale defines a scaling that does not modify the size of the object.
-	DefaultScale = [2]float32{1, 1}
-	emptyScale   = [2]float32{0, 0}
-	emptyOffset  = [2]float32{0, 0}
+	DefaultScale = [2]float64{1, 1}
+	emptyScale   = [2]float64{0, 0}
+	emptyOffset  = [2]float64{0, 0}
 )
 
 const (
@@ -32,14 +32,14 @@ func init() {
 
 // TextureTranform can be used in textureInfo to pack many low-res texture into a single large texture atlas.
 type TextureTranform struct {
-	Offset   [2]float32 `json:"offset"`
-	Rotation float32    `json:"rotation,omitempty"`
-	Scale    [2]float32 `json:"scale"`
+	Offset   [2]float64 `json:"offset"`
+	Rotation float64    `json:"rotation,omitempty"`
+	Scale    [2]float64 `json:"scale"`
 	TexCoord *uint32    `json:"texCoord,omitempty"`
 }
 
 // ScaleOrDefault returns the node scale if it represents a valid scale factor, else return the default one.
-func (t *TextureTranform) ScaleOrDefault() [2]float32 {
+func (t *TextureTranform) ScaleOrDefault() [2]float64 {
 	if t.Scale == emptyScale {
 		return DefaultScale
 	}

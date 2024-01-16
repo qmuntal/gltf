@@ -11,11 +11,11 @@ func TestTextureTranform_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
 		t    *TextureTranform
-		want [2]float32
+		want [2]float64
 	}{
 		{"default", &TextureTranform{Scale: DefaultScale}, DefaultScale},
 		{"zeros", &TextureTranform{Scale: emptyScale}, DefaultScale},
-		{"other", &TextureTranform{Scale: [2]float32{1, 2}}, [2]float32{1, 2}},
+		{"other", &TextureTranform{Scale: [2]float64{1, 2}}, [2]float64{1, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestTextureTranform_UnmarshalJSON(t *testing.T) {
 	}{
 		{"default", new(TextureTranform), args{[]byte("{}")}, &TextureTranform{Scale: DefaultScale}, false},
 		{"nodefault", new(TextureTranform), args{[]byte(`{"offset": [0.1,0.2],"rotation":1.57,"scale":[1, -1],"texCoord":2}`)}, &TextureTranform{
-			Offset: [2]float32{0.1, 0.2}, Rotation: 1.57, Scale: [2]float32{1, -1}, TexCoord: gltf.Index(2),
+			Offset: [2]float64{0.1, 0.2}, Rotation: 1.57, Scale: [2]float64{1, -1}, TexCoord: gltf.Index(2),
 		}, false},
 	}
 	for _, tt := range tests {
@@ -64,7 +64,7 @@ func TestTextureTranform_MarshalJSON(t *testing.T) {
 	}{
 		{"default", &TextureTranform{Scale: DefaultScale}, []byte(`{}`), false},
 		{"empty", &TextureTranform{}, []byte(`{}`), false},
-		{"nodefault", &TextureTranform{Offset: [2]float32{0.1, 0.2}, Rotation: 1.57, Scale: [2]float32{1, -1}, TexCoord: gltf.Index(2)}, []byte(`{"offset":[0.1,0.2],"rotation":1.57,"scale":[1,-1],"texCoord":2}`), false},
+		{"nodefault", &TextureTranform{Offset: [2]float64{0.1, 0.2}, Rotation: 1.57, Scale: [2]float64{1, -1}, TexCoord: gltf.Index(2)}, []byte(`{"offset":[0.1,0.2],"rotation":1.57,"scale":[1,-1],"texCoord":2}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
