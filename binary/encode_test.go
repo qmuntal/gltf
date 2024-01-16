@@ -49,12 +49,12 @@ func buildBufferF(n int) []byte {
 func TestRead(t *testing.T) {
 	type args struct {
 		b    []byte
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{"small", args{[]byte{0, 0}, []int8{1, 2, 3}}, []int8{0, 0}, true},
@@ -179,7 +179,7 @@ func TestRead(t *testing.T) {
 func TestWrite(t *testing.T) {
 	type args struct {
 		n    int
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string

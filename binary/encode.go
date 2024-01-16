@@ -14,7 +14,7 @@ import (
 //
 // Data should be a slice of glTF predefined fixed-size types.
 // If data length is greater than the length of b, Read returns io.ErrShortBuffer.
-func Read(b []byte, byteStride uint32, data interface{}) error {
+func Read(b []byte, byteStride uint32, data any) error {
 	c, t, n := Type(data)
 	size := gltf.SizeOfElement(c, t)
 	if byteStride == 0 {
@@ -222,7 +222,7 @@ func Read(b []byte, byteStride uint32, data interface{}) error {
 //
 // Data must be a slice of glTF predefined fixed-size types,
 // else it fallbacks to `encoding/binary.Write`.
-func Write(b []byte, stride uint32, data interface{}) error {
+func Write(b []byte, stride uint32, data any) error {
 	c, t, n := Type(data)
 	if n == 0 {
 		return binary.Write(bytes.NewBuffer(b), binary.LittleEndian, data)

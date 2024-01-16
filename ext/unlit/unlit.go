@@ -12,7 +12,7 @@ const (
 )
 
 // Unmarshal decodes the json data into the correct type.
-func Unmarshal(data []byte) (interface{}, error) {
+func Unmarshal(data []byte) (any, error) {
 	u := new(Unlit)
 	err := json.Unmarshal(data, u)
 	return u, err
@@ -25,7 +25,7 @@ func init() {
 // Unlit defines an unlit shading model.
 // When present, the extension indicates that a material should be unlit.
 // Additional properties on the extension object are allowed, but may lead to undefined behaviour in conforming viewers.
-type Unlit map[string]interface{}
+type Unlit map[string]any
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.
 func (u *Unlit) UnmarshalJSON(data []byte) error {

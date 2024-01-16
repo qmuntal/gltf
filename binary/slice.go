@@ -11,7 +11,7 @@ import (
 // MakeSliceBuffer returns the slice type associated with c and t and with the given element count.
 // If the buffer is an slice which type matches with the expected by the acr then it will
 // be used as backing slice.
-func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count uint32, buffer interface{}) interface{} {
+func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count uint32, buffer any) any {
 	if buffer == nil {
 		return MakeSlice(c, t, count)
 	}
@@ -32,7 +32,7 @@ func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count uint32, bu
 // MakeSlice returns the slice type associated with c and t and with the given element count.
 // For example, if c is gltf.ComponentFloat and t is gltf.AccessorVec3
 // then MakeSlice(c, t, 5) is equivalent to make([][3]float32, 5).
-func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count uint32) interface{} {
+func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count uint32) any {
 	var tp reflect.Type
 	switch c {
 	case gltf.ComponentUbyte:
@@ -68,7 +68,7 @@ func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count uint32) interfac
 
 // Type returns the associated glTF type data.
 // It panics if data is not an slice.
-func Type(data interface{}) (c gltf.ComponentType, t gltf.AccessorType, count uint32) {
+func Type(data any) (c gltf.ComponentType, t gltf.AccessorType, count uint32) {
 	v := reflect.ValueOf(data)
 	if v.Kind() != reflect.Slice {
 		panic(fmt.Sprintf("go3mf: binary.Type expecting a slice but got %s", v.Kind()))

@@ -25,7 +25,7 @@ type envelop struct {
 }
 
 // Unmarshal decodes the json data into the correct type.
-func Unmarshal(data []byte) (interface{}, error) {
+func Unmarshal(data []byte) (any, error) {
 	var env envelop
 	if err := json.Unmarshal([]byte(data), &env); err != nil {
 		return nil, err

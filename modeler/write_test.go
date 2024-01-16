@@ -333,7 +333,7 @@ func TestWritePosition(t *testing.T) {
 
 func TestWriteJoints(t *testing.T) {
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string
@@ -390,7 +390,7 @@ func TestWriteJoints(t *testing.T) {
 
 func TestWriteWeights(t *testing.T) {
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string
@@ -462,7 +462,7 @@ func TestWriteWeights(t *testing.T) {
 
 func TestWriteTextureCoord(t *testing.T) {
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string
@@ -534,7 +534,7 @@ func TestWriteTextureCoord(t *testing.T) {
 
 func TestWriteIndices(t *testing.T) {
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string
@@ -591,7 +591,7 @@ func TestWriteIndices(t *testing.T) {
 
 func TestWriteColor(t *testing.T) {
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string

@@ -68,7 +68,7 @@ func TestUnmarshal(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{"base", args{[]byte("{}")}, &PBRSpecularGlossiness{DiffuseFactor: &[4]float64{1, 1, 1, 1}, SpecularFactor: &[3]float64{1, 1, 1}, GlossinessFactor: gltf.Float(1)}, false},

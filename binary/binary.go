@@ -9,22 +9,22 @@
 // they all follow the same `generic` interface, and the only difference is the
 // type of the value:
 //
-// type Component interface {
-//   Scalar([]byte) interface{}
-//   Vec2([]byte) [2]interface{}
-//   Vec3([]byte) [2]interface{}
-//   Vec4([]byte) [2]interface{}
-//   Mat2([]byte) [2][2]interface{}
-//   Mat3([]byte) [3][3]interface{}
-//   Mat4([]byte) [4][4]interface{}
-//   PutScalar([]byte, interface{})
-//   PutVec2([]byte, [2]interface{})
-//   PutVec3([]byte, [3]interface{})
-//   PutVec4([]byte, [4]interface{})
-//   PutMat2([]byte, [2][2]interface{})
-//   PutMat3([]byte, [3][3]interface{})
-//   PutMat4([]byte, [4][4]interface{})
-// }
+//	type Component interface {
+//	  Scalar([]byte) any
+//	  Vec2([]byte) [2]any
+//	  Vec3([]byte) [2]any
+//	  Vec4([]byte) [2]any
+//	  Mat2([]byte) [2][2]any
+//	  Mat3([]byte) [3][3]any
+//	  Mat4([]byte) [4][4]any
+//	  PutScalar([]byte, any)
+//	  PutVec2([]byte, [2]any)
+//	  PutVec3([]byte, [3]any)
+//	  PutVec4([]byte, [4]any)
+//	  PutMat2([]byte, [2][2]any)
+//	  PutMat3([]byte, [3][3]any)
+//	  PutMat4([]byte, [4][4]any)
+//	}
 //
 // This package favors simplicity and compliance over efficiency,
 // but it is still an order of magnitude more performant than using the built-in

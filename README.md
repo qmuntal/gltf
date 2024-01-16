@@ -206,7 +206,7 @@ func init() {
     gltf.RegisterExtension(ExtensionName, Unmarshal)
 }
 
-func Unmarshal(data []byte) (interface{}, error) {
+func Unmarshal(data []byte) (any, error) {
     foo := new(Foo)
     err := json.Unmarshal(data, foo)
     return foo, err
