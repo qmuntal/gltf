@@ -13,7 +13,7 @@ const (
 )
 
 // Unmarshal decodes the json data into the correct type.
-func Unmarshal(data []byte) (interface{}, error) {
+func Unmarshal(data []byte) (any, error) {
 	pbr := new(PBRSpecularGlossiness)
 	err := json.Unmarshal(data, pbr)
 	return pbr, err

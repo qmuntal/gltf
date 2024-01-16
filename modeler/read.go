@@ -22,7 +22,7 @@ import (
 //
 // ReadAccessor is safe to use even with malformed documents.
 // If that happens it will return an error instead of panic.
-func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer interface{}) (interface{}, error) {
+func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer any) (any, error) {
 	if acr.BufferView == nil && acr.Sparse == nil {
 		return nil, nil
 	}

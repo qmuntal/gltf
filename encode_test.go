@@ -676,7 +676,7 @@ func (f *fakeExt) UnmarshalJSON(data []byte) error {
 }
 
 func TestExtensions_UnmarshalJSON(t *testing.T) {
-	RegisterExtension("fake_ext", func(data []byte) (interface{}, error) {
+	RegisterExtension("fake_ext", func(data []byte) (any, error) {
 		e := new(fakeExt)
 		err := json.Unmarshal(data, e)
 		return e, err

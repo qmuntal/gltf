@@ -108,7 +108,7 @@ func TestReadAccessor(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{"nodata", args{&gltf.Document{}, &gltf.Accessor{}}, nil, false},

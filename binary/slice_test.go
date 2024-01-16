@@ -16,7 +16,7 @@ func TestMakeSlice(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want interface{}
+		want any
 	}{
 		// Scalar
 		{"[]uint8", args{gltf.ComponentUbyte, gltf.AccessorScalar, 5}, make([]uint8, 5)},
@@ -82,12 +82,12 @@ func TestMakeSliceBuffer(t *testing.T) {
 		c      gltf.ComponentType
 		t      gltf.AccessorType
 		count  uint32
-		buffer interface{}
+		buffer any
 	}
 	tests := []struct {
 		name string
 		args args
-		want interface{}
+		want any
 	}{
 		{"nil buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, nil}, make([][2]uint8, 2)},
 		{"empty buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 0)}, make([][2]uint8, 2)},

@@ -114,7 +114,7 @@ func TestUnmarshal(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    interface{}
+		want    any
 		wantErr bool
 	}{
 		{"error", args{[]byte(`{"light: 1}`)}, nil, true},
