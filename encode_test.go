@@ -166,13 +166,13 @@ func TestEncoder_Encode(t *testing.T) {
 			},
 		}}}, false},
 		{"withAnimations", args{&Document{Animations: []*Animation{
-			{Extras: 8.0, Name: "an_1", Channels: []*Channel{
-				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSRotation}},
-				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSScale}},
+			{Extras: 8.0, Name: "an_1", Channels: []*AnimationChannel{
+				{Extras: 8.0, Sampler: 1, Target: AnimationChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSRotation}},
+				{Extras: 8.0, Sampler: 2, Target: AnimationChannelTarget{Extras: 8.0, Node: Index(10), Path: TRSScale}},
 			}},
-			{Extras: 8.0, Name: "an_2", Channels: []*Channel{
-				{Extras: 8.0, Sampler: Index(1), Target: ChannelTarget{Extras: 8.0, Node: Index(3), Path: TRSWeights}},
-				{Extras: 8.0, Sampler: Index(2), Target: ChannelTarget{Extras: 8.0, Node: Index(5), Path: TRSTranslation}},
+			{Extras: 8.0, Name: "an_2", Channels: []*AnimationChannel{
+				{Extras: 8.0, Sampler: 1, Target: AnimationChannelTarget{Extras: 8.0, Node: Index(3), Path: TRSWeights}},
+				{Extras: 8.0, Sampler: 2, Target: AnimationChannelTarget{Extras: 8.0, Node: Index(5), Path: TRSTranslation}},
 			}},
 			{Extras: 8.0, Name: "an_3", Samplers: []*AnimationSampler{
 				{Extras: 8.0, Input: 1, Output: 1, Interpolation: InterpolationCubicSpline},
