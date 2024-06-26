@@ -66,9 +66,24 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer any) (any, erro
 		s := reflect.ValueOf(buffer)
 		ind := reflect.ValueOf(indices)
 		vals := reflect.ValueOf(values)
-		tp := reflect.TypeOf((*int)(nil)).Elem()
 		for i := 0; i < int(acr.Sparse.Count); i++ {
-			id := ind.Index(i).Convert(tp).Interface().(int)
+			var id int
+			idx := ind.Index(i)
+			if idx.CanInt() {
+				v := idx.Int()
+				if v < 0 || v >= int64(acr.Count) {
+					return nil, fmt.Errorf("gltf: sparse accessor index '%d' out of range: %d", i, v)
+				}
+				id = int(v)
+			} else if idx.CanUint() {
+				v := idx.Uint()
+				if v >= uint64(acr.Count) {
+					return nil, fmt.Errorf("gltf: sparse accessor index '%d' out of range: %d", i, v)
+				}
+				id = int(v)
+			} else {
+				return nil, fmt.Errorf("gltf: sparse accessor index '%d' is not an integer", i)
+			}
 			s.Index(id).Set(vals.Index(i))
 		}
 	}
