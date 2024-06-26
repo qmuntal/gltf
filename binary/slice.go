@@ -71,7 +71,7 @@ func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count uint32) any {
 func Type(data any) (c gltf.ComponentType, t gltf.AccessorType, count uint32) {
 	v := reflect.ValueOf(data)
 	if v.Kind() != reflect.Slice {
-		panic(fmt.Sprintf("go3mf: binary.Type expecting a slice but got %s", v.Kind()))
+		panic(fmt.Sprintf("gltf: binary.Type expecting a slice but got %s", v.Kind()))
 	}
 	count = uint32(v.Len())
 	switch data.(type) {
@@ -160,7 +160,7 @@ func Type(data any) (c gltf.ComponentType, t gltf.AccessorType, count uint32) {
 	case [][4][4]float32:
 		c, t = gltf.ComponentFloat, gltf.AccessorMat4
 	default:
-		panic(fmt.Sprintf("go3mf: binary.Type expecting a glTF supported type but got %s", v.Kind()))
+		panic(fmt.Sprintf("gltf: binary.Type expecting a glTF supported type but got %s", v.Kind()))
 	}
 	return
 }

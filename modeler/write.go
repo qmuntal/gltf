@@ -338,7 +338,7 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...any) (uint
 		if i == 0 {
 			refLength = l
 		} else if refLength != l {
-			return 0, errors.New("go3mf: interleaved data shall have the same number of elements in all chunks")
+			return 0, errors.New("gltf: interleaved data shall have the same number of elements in all chunks")
 		}
 		sizeOfElement := gltf.SizeOfElement(c, a)
 		size += l * sizeOfElement
@@ -401,7 +401,7 @@ func sliceLength(data any) int {
 		return 0
 	}
 	if v.Kind() != reflect.Slice {
-		panic(fmt.Sprintf("go3mf: expecting a slice but got %s", v.Kind()))
+		panic(fmt.Sprintf("gltf: expecting a slice but got %s", v.Kind()))
 	}
 	return v.Len()
 }
