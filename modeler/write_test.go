@@ -31,7 +31,7 @@ func TestAlignment(t *testing.T) {
 func TestWriteAttributesInterleaved(t *testing.T) {
 	data := [][3]float32{{1, 2, 3}, {0, 0, -1}}
 	doc := gltf.NewDocument()
-	attrs, err := WriteAttributesInterleaved(doc,
+	attrs, err := WritePrimitiveAttributes(doc,
 		PrimitiveAttribute{Name: gltf.POSITION, Data: data},
 		PrimitiveAttribute{Name: gltf.NORMAL, Data: data},
 		PrimitiveAttribute{Name: gltf.TANGENT, Data: [][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}}},
@@ -89,7 +89,7 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 
 func TestWriteAttributesInterleaved_OnlyPosition(t *testing.T) {
 	doc := gltf.NewDocument()
-	_, err := WriteAttributesInterleaved(doc,
+	_, err := WritePrimitiveAttributes(doc,
 		PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
 		PrimitiveAttribute{Name: gltf.TANGENT, Data: make([][4]float32, 0)},
 		PrimitiveAttribute{Name: "COLOR_1"})
@@ -103,7 +103,7 @@ func TestWriteAttributesInterleaved_OnlyPosition(t *testing.T) {
 
 func TestWriteAttributesInterleaved_Error(t *testing.T) {
 	doc := gltf.NewDocument()
-	_, err := WriteAttributesInterleaved(doc,
+	_, err := WritePrimitiveAttributes(doc,
 		PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
 		PrimitiveAttribute{Name: gltf.COLOR_0, Data: [][3]float32{{1, 2, 3}}},
 	)

@@ -130,11 +130,11 @@ gltf.Save(doc, "./test.gltf")
 
 ### Data interleaving
 
-The data of the attributes that are stored in a single bufferView may be stored as an Array-Of-Structures, which may produce a rendering perfomance boost in static attributes. `qmuntal/gltf/modeler` facilitates the creation of interleaved accessors and buffer views with the methods [WriteAttributesInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAttributesInterleaved), [WriteAccessorsInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAccessorsInterleaved), and [WriteBufferViewInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteBufferViewInterleaved) being the first one the most recommended for creating mesh primitives:
+The data of the attributes that are stored in a single bufferView may be stored as an Array-Of-Structures, which may produce a rendering perfomance boost in static attributes. `qmuntal/gltf/modeler` facilitates the creation of interleaved accessors and buffer views with the methods [WritePrimitiveAttributes](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WritePrimitiveAttributes), [WriteAccessorsInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAccessorsInterleaved), and [WriteBufferViewInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteBufferViewInterleaved) being the first one the most recommended for creating mesh primitives:
 
 ```go
 doc := gltf.NewDocument()
-attrs, _ := modeler.WriteAttributesInterleaved(doc,
+attrs, _ := modeler.WritePrimitiveAttributes(doc,
     modeler.PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}},
     modeler.PrimitiveAttribute{Name: gltf.COLOR_0, Data: [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}},
 )

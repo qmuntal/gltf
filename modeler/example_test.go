@@ -103,7 +103,7 @@ func ExampleWriteAccessorsInterleaved() {
 
 func ExampleWriteAttributesInterleaved() {
 	doc := gltf.NewDocument()
-	attrs, _ := modeler.WriteAttributesInterleaved(doc,
+	attrs, _ := modeler.WritePrimitiveAttributes(doc,
 		modeler.PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
 		modeler.PrimitiveAttribute{Name: gltf.NORMAL, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
 		modeler.PrimitiveAttribute{Name: gltf.TANGENT, Data: [][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}}},

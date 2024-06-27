@@ -222,9 +222,9 @@ type PrimitiveAttribute struct {
 	Data any
 }
 
-// WriteAttributesInterleaved write all the attributes to doc.
+// WritePrimitiveAttributes write all the primitives attributes to doc as interleaved data.
 // Returns an attribute map that can be directly used as a primitive attributes.
-func WriteAttributesInterleaved(doc *gltf.Document, attr ...PrimitiveAttribute) (gltf.PrimitiveAttributes, error) {
+func WritePrimitiveAttributes(doc *gltf.Document, attr ...PrimitiveAttribute) (gltf.PrimitiveAttributes, error) {
 	type attrProps struct {
 		Name       string
 		Normalized bool
@@ -256,7 +256,7 @@ func WriteAttributesInterleaved(doc *gltf.Document, attr ...PrimitiveAttribute) 
 	if err != nil {
 		return nil, err
 	}
-	attrs := make(map[string]uint32, len(props))
+	attrs := make(gltf.PrimitiveAttributes, len(props))
 	for i, index := range indices {
 		prop := props[i]
 		attrs[prop.Name] = index
