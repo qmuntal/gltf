@@ -216,84 +216,41 @@ func WriteAccessorsInterleaved(doc *gltf.Document, data ...any) ([]uint32, error
 	return indices, nil
 }
 
-// CustomAttribute defines an application-specific attribute
-type CustomAttribute struct {
+// Attribute is a property of a gltf object.
+type Attribute struct {
 	Name string
 	Data any
 }
 
-// Attributes defines all the vertex attributes that can
-// be associated to a primitive.
-type Attributes struct {
-	Position [][3]float32
-	Normal   [][3]float32
-	Tangent  [][4]float32
-	// [][2]uint8, [][2]uint16 or [][2]float32
-	TextureCoord_0, TextureCoord_1 any
-	// [][4]uint8, [][4]uint16 or [][4]float32
-	Weights any
-	// [][4]uint8 or [][4]uint16
-	Joints any
-	//[]color.RGBA, []color.RGBA64, [][4]uint8, [][3]uint8, [][4]uint16, [][3]uint16, [][3]float32 or [][4]float32
-	Color            any
-	CustomAttributes []CustomAttribute
-}
-
-// WriteAttributesInterleaved write all the attributes in v
-// which are not nil and have a non-zero length.
-// Returns an attribute map that can be directly used
-// as a primitive attributes.
-func WriteAttributesInterleaved(doc *gltf.Document, v Attributes) (map[string]uint32, error) {
+// WriteAttributesInterleaved write all the attributes to doc.
+// Returns an attribute map that can be directly used as a primitive attributes.
+func WriteAttributesInterleaved(doc *gltf.Document, attr ...Attribute) (map[string]uint32, error) {
 	type attrProps struct {
 		Name       string
 		Normalized bool
 	}
-	var (
-		props []attrProps
-		data  []any
-	)
-	if len(v.Position) != 0 {
-		props = append(props, attrProps{Name: gltf.POSITION})
-		data = append(data, v.Position)
-	}
-	if len(v.Normal) != 0 {
-		props = append(props, attrProps{Name: gltf.NORMAL})
-		data = append(data, v.Normal)
-	}
-	if len(v.Tangent) != 0 {
-		props = append(props, attrProps{Name: gltf.TANGENT})
-		data = append(data, v.Tangent)
-	}
-	if sliceLength(v.TextureCoord_0) != 0 {
-		normalized := checkTextureCoord(v.TextureCoord_0)
-		props = append(props, attrProps{Name: gltf.TEXCOORD_0, Normalized: normalized})
-		data = append(data, v.TextureCoord_0)
-	}
-	if sliceLength(v.TextureCoord_1) != 0 {
-		normalized := checkTextureCoord(v.TextureCoord_1)
-		props = append(props, attrProps{Name: gltf.TEXCOORD_1, Normalized: normalized})
-		data = append(data, v.TextureCoord_1)
-	}
-	if sliceLength(v.Weights) != 0 {
-		normalized := checkWeights(v.Weights)
-		props = append(props, attrProps{Name: gltf.WEIGHTS_0, Normalized: normalized})
-		data = append(data, v.Weights)
-	}
-	if sliceLength(v.Joints) != 0 {
-		checkJoints(v.Joints)
-		props = append(props, attrProps{Name: gltf.JOINTS_0})
-		data = append(data, v.Joints)
-	}
-	if sliceLength(v.Color) != 0 {
-		normalized := checkColor(v.Color)
-		props = append(props, attrProps{Name: gltf.COLOR_0, Normalized: normalized})
-		data = append(data, v.Color)
-	}
-	for _, c := range v.CustomAttributes {
-		if sliceLength(c.Data) != 0 {
-			props = append(props, attrProps{Name: c.Name})
-			data = append(data, c.Data)
+	data := make([]any, 0, len(attr))
+	props := make([]attrProps, 0, len(attr))
+	var min, max [3]float64
+	for _, a := range attr {
+		if sliceLength(a.Data) == 0 {
+			continue
 		}
+		var normalized bool
+		switch a.Name {
+		case gltf.POSITION:
+			min, max = minMaxFloat32(a.Data.([][3]float32))
+		case gltf.TEXCOORD_0, gltf.TEXCOORD_1:
+			normalized = checkTextureCoord(a.Data)
+		case gltf.WEIGHTS_0:
+			normalized = checkWeights(a.Data)
+		case gltf.JOINTS_0:
+			checkJoints(a.Data)
+		case gltf.COLOR_0:
+			normalized = checkColor(a.Data)
+		}
+		data = append(data, a.Data)
+		props = append(props, attrProps{Name: a.Name, Normalized: normalized})
 	}
 	indices, err := WriteAccessorsInterleaved(doc, data...)
 	if err != nil {
@@ -306,7 +263,6 @@ func WriteAttributesInterleaved(doc *gltf.Document, v Attributes) (map[string]ui
 		doc.Accessors[index].Normalized = prop.Normalized
 	}
 	if pos, ok := attrs[gltf.POSITION]; ok {
-		min, max := minMaxFloat32(v.Position)
 		doc.Accessors[pos].Min = min[:]
 		doc.Accessors[pos].Max = max[:]
 	}
