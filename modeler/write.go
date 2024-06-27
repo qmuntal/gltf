@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"image/color"
 	"io"
-	"io/ioutil"
 	"math"
 	"reflect"
 
@@ -157,7 +156,7 @@ func WriteImage(doc *gltf.Document, name string, mimeType string, r io.Reader) (
 		data = r.Bytes()
 	default:
 		var err error
-		data, err = ioutil.ReadAll(r)
+		data, err = io.ReadAll(r)
 		if err != nil {
 			return 0, err
 		}
