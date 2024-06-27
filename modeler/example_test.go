@@ -18,7 +18,7 @@ func Example() {
 		Primitives: []*gltf.Primitive{
 			{
 				Indices: gltf.Index(indicesAccessor),
-				Attributes: map[string]uint32{
+				Attributes: gltf.PrimitiveAttributes{
 					gltf.POSITION: positionAccessor,
 					gltf.COLOR_0:  colorIndices,
 				},
@@ -60,7 +60,7 @@ func ExampleWriteImage() {
 		Primitives: []*gltf.Primitive{
 			{
 				Indices: gltf.Index(indicesAccessor),
-				Attributes: map[string]uint32{
+				Attributes: gltf.PrimitiveAttributes{
 					gltf.POSITION:   positionAccessor,
 					gltf.TEXCOORD_0: textureAccessor,
 				},
@@ -87,7 +87,7 @@ func ExampleWriteAccessorsInterleaved() {
 		Primitives: []*gltf.Primitive{
 			{
 				Indices: gltf.Index(indicesAccessor),
-				Attributes: map[string]uint32{
+				Attributes: gltf.PrimitiveAttributes{
 					gltf.POSITION: indices[0],
 					gltf.COLOR_0:  indices[1],
 				},
