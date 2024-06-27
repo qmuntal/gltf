@@ -32,16 +32,16 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 	data := [][3]float32{{1, 2, 3}, {0, 0, -1}}
 	doc := gltf.NewDocument()
 	attrs, err := WriteAttributesInterleaved(doc,
-		Attribute{Name: gltf.POSITION, Data: data},
-		Attribute{Name: gltf.NORMAL, Data: data},
-		Attribute{Name: gltf.TANGENT, Data: [][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}}},
-		Attribute{Name: gltf.TEXCOORD_0, Data: [][2]float32{{1, 2}, {1, 2}}},
-		Attribute{Name: gltf.TEXCOORD_1, Data: [][2]float32{{1, 2}, {1, 2}}},
-		Attribute{Name: gltf.WEIGHTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
-		Attribute{Name: gltf.JOINTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
-		Attribute{Name: gltf.COLOR_0, Data: data},
-		Attribute{Name: "COLOR_1", Data: data},
-		Attribute{Name: "COLOR_2", Data: data},
+		PrimitiveAttribute{Name: gltf.POSITION, Data: data},
+		PrimitiveAttribute{Name: gltf.NORMAL, Data: data},
+		PrimitiveAttribute{Name: gltf.TANGENT, Data: [][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}}},
+		PrimitiveAttribute{Name: gltf.TEXCOORD_0, Data: [][2]float32{{1, 2}, {1, 2}}},
+		PrimitiveAttribute{Name: gltf.TEXCOORD_1, Data: [][2]float32{{1, 2}, {1, 2}}},
+		PrimitiveAttribute{Name: gltf.WEIGHTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
+		PrimitiveAttribute{Name: gltf.JOINTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
+		PrimitiveAttribute{Name: gltf.COLOR_0, Data: data},
+		PrimitiveAttribute{Name: "COLOR_1", Data: data},
+		PrimitiveAttribute{Name: "COLOR_2", Data: data},
 	)
 	if err != nil {
 		t.Fatalf("TestWriteAttributesInterleaved() got error = %v", err)
@@ -90,9 +90,9 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 func TestWriteAttributesInterleaved_OnlyPosition(t *testing.T) {
 	doc := gltf.NewDocument()
 	_, err := WriteAttributesInterleaved(doc,
-		Attribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
-		Attribute{Name: gltf.TANGENT, Data: make([][4]float32, 0)},
-		Attribute{Name: "COLOR_1"})
+		PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
+		PrimitiveAttribute{Name: gltf.TANGENT, Data: make([][4]float32, 0)},
+		PrimitiveAttribute{Name: "COLOR_1"})
 	if err != nil {
 		t.Fatalf("TestWriteAttributesInterleaved_OnlyPosition() got error = %v", err)
 	}
@@ -104,8 +104,8 @@ func TestWriteAttributesInterleaved_OnlyPosition(t *testing.T) {
 func TestWriteAttributesInterleaved_Error(t *testing.T) {
 	doc := gltf.NewDocument()
 	_, err := WriteAttributesInterleaved(doc,
-		Attribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
-		Attribute{Name: gltf.COLOR_0, Data: [][3]float32{{1, 2, 3}}},
+		PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
+		PrimitiveAttribute{Name: gltf.COLOR_0, Data: [][3]float32{{1, 2, 3}}},
 	)
 	if err == nil {
 		t.Error("TestWriteAttributesInterleaved_Error() expected an error")

@@ -135,8 +135,8 @@ The data of the attributes that are stored in a single bufferView may be stored 
 ```go
 doc := gltf.NewDocument()
 attrs, _ := modeler.WriteAttributesInterleaved(doc,
-    modeler.Attribute{Name: gltf.POSITION, Data: [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}},
-    modeler.Attribute{Name: gltf.COLOR_0, Data: [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}},
+    modeler.PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}},
+    modeler.PrimitiveAttribute{Name: gltf.COLOR_0, Data: [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}},
 )
 doc.Meshes = []*gltf.Mesh{{
     Name: "Pyramid",

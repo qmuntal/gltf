@@ -216,15 +216,15 @@ func WriteAccessorsInterleaved(doc *gltf.Document, data ...any) ([]uint32, error
 	return indices, nil
 }
 
-// Attribute holds the data referenced by a gltf.Attribute.
-type Attribute struct {
+// PrimitiveAttribute holds the data referenced by a gltf.PrimitiveAttributes entry.
+type PrimitiveAttribute struct {
 	Name string
 	Data any
 }
 
 // WriteAttributesInterleaved write all the attributes to doc.
 // Returns an attribute map that can be directly used as a primitive attributes.
-func WriteAttributesInterleaved(doc *gltf.Document, attr ...Attribute) (gltf.PrimitiveAttributes, error) {
+func WriteAttributesInterleaved(doc *gltf.Document, attr ...PrimitiveAttribute) (gltf.PrimitiveAttributes, error) {
 	type attrProps struct {
 		Name       string
 		Normalized bool
