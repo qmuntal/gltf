@@ -268,7 +268,7 @@ func WritePrimitiveAttributes(doc *gltf.Document, attr ...PrimitiveAttribute) (g
 			normalized, err = checkColor(a.Data)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", a.Name, a.Name)
+			return nil, fmt.Errorf("%s: %w", a.Name, err)
 		}
 		data = append(data, a.Data)
 		props = append(props, attrProps{Name: a.Name, Normalized: normalized})
