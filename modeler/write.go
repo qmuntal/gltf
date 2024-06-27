@@ -45,60 +45,70 @@ func WriteTangent(doc *gltf.Document, data [][4]float32) uint32 {
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteTextureCoord(doc *gltf.Document, data any) uint32 {
-	normalized := checkTextureCoord(data)
+	normalized, err := checkTextureCoord(data)
+	if err != nil {
+		panic(err)
+	}
 	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 	doc.Accessors[index].Normalized = normalized
 	return index
 }
 
-func checkTextureCoord(data any) bool {
+func checkTextureCoord(data any) (bool, error) {
 	var normalized bool
 	switch data.(type) {
 	case [][2]uint8, [][2]uint16:
 		normalized = true
 	case [][2]float32:
 	default:
-		panic(fmt.Sprintf("modeler.WriteTextureCoord: invalid type %T", data))
+		return false, fmt.Errorf("invalid type %T", data)
 	}
-	return normalized
+	return normalized, nil
 }
 
 // WriteWeights adds a new WEIGHTS accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteWeights(doc *gltf.Document, data any) uint32 {
-	normalized := checkWeights(data)
+	normalized, err := checkWeights(data)
+	if err != nil {
+		panic(err)
+	}
 	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 	doc.Accessors[index].Normalized = normalized
 	return index
 }
 
-func checkWeights(data any) bool {
+func checkWeights(data any) (bool, error) {
 	var normalized bool
 	switch data.(type) {
 	case [][4]uint8, [][4]uint16:
 		normalized = true
 	case [][4]float32:
 	default:
-		panic(fmt.Sprintf("modeler.WriteWeights: invalid type %T", data))
+		return false, fmt.Errorf("invalid type %T", data)
 	}
-	return normalized
+	return normalized, nil
 }
 
 // WriteJoints adds a new JOINTS accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
 func WriteJoints(doc *gltf.Document, data any) uint32 {
-	checkJoints(data)
+	err := checkJoints(data)
+	if err != nil {
+		panic(err)
+	}
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
-func checkJoints(data any) {
+func checkJoints(data any) error {
 	switch data.(type) {
 	case [][4]uint8, [][4]uint16:
 	default:
-		panic(fmt.Sprintf("modeler.WriteJoints: invalid type %T", data))
+		return fmt.Errorf("invalid type %T", data)
 	}
+	return nil
 }
 
 // WritePosition adds a new POSITION accessor to doc
@@ -128,22 +138,25 @@ func minMaxFloat32(data [][3]float32) ([3]float64, [3]float64) {
 // and fills the buffer with data.
 // If success it returns the index of the new accessor.
 func WriteColor(doc *gltf.Document, data any) uint32 {
-	normalized := checkColor(data)
+	normalized, err := checkColor(data)
+	if err != nil {
+		panic(err)
+	}
 	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 	doc.Accessors[index].Normalized = normalized
 	return index
 }
 
-func checkColor(data any) bool {
+func checkColor(data any) (bool, error) {
 	var normalized bool
 	switch data.(type) {
 	case []color.RGBA, []color.RGBA64, [][4]uint8, [][3]uint8, [][4]uint16, [][3]uint16:
 		normalized = true
 	case [][3]float32, [][4]float32:
 	default:
-		panic(fmt.Sprintf("modeler.WriteColor: invalid type %T", data))
+		return false, fmt.Errorf("invalid type %T", data)
 	}
-	return normalized
+	return normalized, nil
 }
 
 // WriteImage adds a new image to doc
@@ -232,6 +245,7 @@ func WritePrimitiveAttributes(doc *gltf.Document, attr ...PrimitiveAttribute) (g
 	data := make([]any, 0, len(attr))
 	props := make([]attrProps, 0, len(attr))
 	var min, max [3]float64
+	var err error
 	for _, a := range attr {
 		if sliceLength(a.Data) == 0 {
 			continue
@@ -239,15 +253,22 @@ func WritePrimitiveAttributes(doc *gltf.Document, attr ...PrimitiveAttribute) (g
 		var normalized bool
 		switch a.Name {
 		case gltf.POSITION:
-			min, max = minMaxFloat32(a.Data.([][3]float32))
+			if v, ok := a.Data.([][3]float32); ok {
+				min, max = minMaxFloat32(v)
+			} else {
+				err = fmt.Errorf("invalid type %T", data)
+			}
 		case gltf.TEXCOORD_0, gltf.TEXCOORD_1:
-			normalized = checkTextureCoord(a.Data)
+			normalized, err = checkTextureCoord(a.Data)
 		case gltf.WEIGHTS_0:
-			normalized = checkWeights(a.Data)
+			normalized, err = checkWeights(a.Data)
 		case gltf.JOINTS_0:
-			checkJoints(a.Data)
+			err = checkJoints(a.Data)
 		case gltf.COLOR_0:
-			normalized = checkColor(a.Data)
+			normalized, err = checkColor(a.Data)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", a.Name, a.Name)
 		}
 		data = append(data, a.Data)
 		props = append(props, attrProps{Name: a.Name, Normalized: normalized})
