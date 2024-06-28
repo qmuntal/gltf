@@ -9,7 +9,7 @@ import (
 )
 
 func BenchmarkNative(b *testing.B) {
-	var s uint32 = 1000
+	var s int = 1000
 	bs := make([]byte, s*gltf.SizeOfElement(gltf.ComponentFloat, gltf.AccessorVec3))
 	data := make([][3]float32, s)
 	b.ResetTimer()
@@ -21,7 +21,7 @@ func BenchmarkNative(b *testing.B) {
 }
 
 func BenchmarkWrite(b *testing.B) {
-	var s uint32 = 1000
+	var s int = 1000
 	bs := make([]byte, s*gltf.SizeOfElement(gltf.ComponentFloat, gltf.AccessorVec3))
 	data := make([][3]float32, s)
 	b.ResetTimer()
@@ -31,7 +31,7 @@ func BenchmarkWrite(b *testing.B) {
 }
 
 func BenchmarkWrite_builtint(b *testing.B) {
-	var s uint32 = 1000
+	var s int = 1000
 	bs := bytes.NewBuffer(make([]byte, s*gltf.SizeOfElement(gltf.ComponentFloat, gltf.AccessorVec3)))
 	data := make([][3]float32, s)
 	b.ResetTimer()

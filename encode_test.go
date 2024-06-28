@@ -216,9 +216,9 @@ func TestEncoder_Encode(t *testing.T) {
 			}},
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []*Node{
-			{Extras: 8.0, Name: "n-1", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
+			{Extras: 8.0, Name: "n-1", Camera: Index(1), Children: []int{1, 2}, Skin: Index(3),
 				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
-			{Extras: 8.0, Name: "n-2", Camera: Index(1), Children: []uint32{1, 2}, Skin: Index(3),
+			{Extras: 8.0, Name: "n-2", Camera: Index(1), Children: []int{1, 2}, Skin: Index(3),
 				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 		}}}, false},
 		{"withSampler", args{&Document{Samplers: []*Sampler{
@@ -227,12 +227,12 @@ func TestEncoder_Encode(t *testing.T) {
 		}}}, false},
 		{"withScene", args{&Document{Scene: Index(1)}}, false},
 		{"withScenes", args{&Document{Scenes: []*Scene{
-			{Extras: 8.0, Name: "s_1", Nodes: []uint32{1, 2}},
-			{Extras: 8.0, Name: "s_2", Nodes: []uint32{2, 3}},
+			{Extras: 8.0, Name: "s_1", Nodes: []int{1, 2}},
+			{Extras: 8.0, Name: "s_2", Nodes: []int{2, 3}},
 		}}}, false},
 		{"withSkins", args{&Document{Skins: []*Skin{
-			{Extras: 8.0, Name: "skin_1", InverseBindMatrices: Index(2), Skeleton: Index(4), Joints: []uint32{5, 6}},
-			{Extras: 8.0, Name: "skin_2", InverseBindMatrices: Index(3), Skeleton: Index(4), Joints: []uint32{7, 8}},
+			{Extras: 8.0, Name: "skin_1", InverseBindMatrices: Index(2), Skeleton: Index(4), Joints: []int{5, 6}},
+			{Extras: 8.0, Name: "skin_2", InverseBindMatrices: Index(3), Skeleton: Index(4), Joints: []int{7, 8}},
 		}}}, false},
 		{"withTextures", args{&Document{Textures: []*Texture{
 			{Extras: 8.0, Name: "t_1", Sampler: Index(2), Source: Index(3)},

@@ -176,7 +176,7 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 	if err != nil {
 		return err
 	}
-	if header.Type != glbChunkBIN || header.Length < buffer.ByteLength {
+	if header.Type != glbChunkBIN || header.Length < uint32(buffer.ByteLength) {
 		return errors.New("gltf: Invalid GLB BIN header")
 	}
 	buffer.Data = make([]byte, buffer.ByteLength)

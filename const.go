@@ -50,8 +50,8 @@ const (
 )
 
 // ByteSize returns the size of a component in bytes.
-func (c ComponentType) ByteSize() uint32 {
-	return map[ComponentType]uint32{
+func (c ComponentType) ByteSize() int {
+	return map[ComponentType]int{
 		ComponentByte:   1,
 		ComponentUbyte:  1,
 		ComponentShort:  2,
@@ -104,8 +104,8 @@ const (
 )
 
 // Components returns the number of components of an accessor type.
-func (a AccessorType) Components() uint32 {
-	return map[AccessorType]uint32{
+func (a AccessorType) Components() int {
+	return map[AccessorType]int{
 		AccessorScalar: 1,
 		AccessorVec2:   2,
 		AccessorVec3:   3,
@@ -161,7 +161,7 @@ const (
 )
 
 // PrimitiveAttributes is a map that each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
-type PrimitiveAttributes = map[string]uint32
+type PrimitiveAttributes = map[string]int
 
 // PrimitiveMode defines the type of primitives to render. All valid values correspond to WebGL enums.
 type PrimitiveMode uint8

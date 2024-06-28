@@ -50,7 +50,7 @@ func TestOpen(t *testing.T) {
 			Nodes:     []*Node{{Mesh: Index(0), Name: "Cube", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}}},
 			Samplers:  []*Sampler{{WrapS: WrapRepeat, WrapT: WrapRepeat}},
 			Scene:     Index(0),
-			Scenes:    []*Scene{{Nodes: []uint32{0}}},
+			Scenes:    []*Scene{{Nodes: []int{0}}},
 			Textures: []*Texture{
 				{Sampler: Index(0), Source: Index(0)}, {Sampler: Index(0), Source: Index(1)},
 			},
@@ -77,7 +77,7 @@ func TestOpen(t *testing.T) {
 				{Camera: Index(1), Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}, Translation: [3]float64{0.5, 0.5, 3.0}},
 			},
 			Scene:  nil,
-			Scenes: []*Scene{{Nodes: []uint32{0, 1, 2}}},
+			Scenes: []*Scene{{Nodes: []int{0, 1, 2}}},
 		}, false},
 		{args{"testdata/BoxVertexColors/glTF-Binary/BoxVertexColors.glb", ""}, &Document{
 			Accessors: []*Accessor{
@@ -99,14 +99,14 @@ func TestOpen(t *testing.T) {
 			Materials: []*Material{{Name: "Default", AlphaMode: AlphaOpaque, AlphaCutoff: Float(0.5), PBRMetallicRoughness: &PBRMetallicRoughness{BaseColorFactor: &[4]float64{0.8, 0.8, 0.8, 1}, MetallicFactor: Float(0.1), RoughnessFactor: Float(0.99)}}},
 			Meshes:    []*Mesh{{Name: "Cube", Primitives: []*Primitive{{Indices: Index(0), Material: Index(0), Mode: PrimitiveTriangles, Attributes: PrimitiveAttributes{POSITION: 1, COLOR_0: 3, NORMAL: 2, TEXCOORD_0: 4}}}}},
 			Nodes: []*Node{
-				{Name: "RootNode", Children: []uint32{1, 2, 3}, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
+				{Name: "RootNode", Children: []int{1, 2, 3}, Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 				{Name: "Mesh", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 				{Name: "Cube", Mesh: Index(0), Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 				{Name: "Texture Group", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
 			},
 			Samplers: []*Sampler{{WrapS: WrapRepeat, WrapT: WrapRepeat}},
 			Scene:    Index(0),
-			Scenes:   []*Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
+			Scenes:   []*Scene{{Name: "Root Scene", Nodes: []int{0}}},
 		}, false},
 		{args{"testdata/Box With Spaces/glTF/Box With Spaces.gltf", ""}, &Document{
 			Accessors: []*Accessor{
@@ -135,7 +135,7 @@ func TestOpen(t *testing.T) {
 			Meshes:   []*Mesh{{Name: "Cube", Primitives: []*Primitive{{Indices: Index(3), Material: Index(0), Mode: PrimitiveTriangles, Attributes: PrimitiveAttributes{NORMAL: 1, POSITION: 0, TEXCOORD_0: 2}}}}},
 			Nodes:    []*Node{{Mesh: Index(0), Name: "Cube", Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}}},
 			Scene:    Index(0),
-			Scenes:   []*Scene{{Name: "Scene", Nodes: []uint32{0}}},
+			Scenes:   []*Scene{{Name: "Scene", Nodes: []int{0}}},
 			Textures: []*Texture{{Source: Index(0)}, {Source: Index(1)}, {Source: Index(2)}},
 		}, false},
 	}

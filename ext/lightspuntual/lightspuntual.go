@@ -46,7 +46,7 @@ const (
 )
 
 // LightIndex is the id of the light referenced by this node.
-type LightIndex uint32
+type LightIndex int
 
 // Spot defines the spot cone.
 type Spot struct {

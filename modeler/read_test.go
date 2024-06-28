@@ -17,10 +17,10 @@ func TestReadColor64_ReuseBuffer(t *testing.T) {
 	}
 	doc := &gltf.Document{
 		BufferViews: []*gltf.BufferView{
-			{Buffer: 0, ByteLength: uint32(len(data))},
+			{Buffer: 0, ByteLength: len(data)},
 		},
 		Buffers: []*gltf.Buffer{
-			{Data: data, ByteLength: uint32(len(data))},
+			{Data: data, ByteLength: len(data)},
 		},
 	}
 	var buf [][4]uint16
@@ -264,10 +264,10 @@ func TestReadIndices(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadIndices(doc, tt.args.acr, tt.args.buffer)
@@ -311,10 +311,10 @@ func TestReadNormal(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadNormal(doc, tt.args.acr, tt.args.buffer)
@@ -358,10 +358,10 @@ func TestReadTangent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadTangent(doc, tt.args.acr, tt.args.buffer)
@@ -411,10 +411,10 @@ func TestReadTextureCoord(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadTextureCoord(doc, tt.args.acr, tt.args.buffer)
@@ -464,10 +464,10 @@ func TestReadWeights(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadWeights(doc, tt.args.acr, tt.args.buffer)
@@ -511,10 +511,10 @@ func TestReadJoints(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadJoints(doc, tt.args.acr, tt.args.buffer)
@@ -558,10 +558,10 @@ func TestReadPosition(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadPosition(doc, tt.args.acr, tt.args.buffer)
@@ -617,10 +617,10 @@ func TestReadColor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadColor(doc, tt.args.acr, tt.args.buffer)
@@ -676,10 +676,10 @@ func TestReadColor64(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			doc := &gltf.Document{
 				BufferViews: []*gltf.BufferView{
-					{Buffer: 0, ByteLength: uint32(len(tt.args.data))},
+					{Buffer: 0, ByteLength: len(tt.args.data)},
 				},
 				Buffers: []*gltf.Buffer{
-					{Data: tt.args.data, ByteLength: uint32(len(tt.args.data))},
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
 			got, err := ReadColor64(doc, tt.args.acr, tt.args.buffer)

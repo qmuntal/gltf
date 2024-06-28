@@ -303,7 +303,7 @@ func TestSizeOfElement(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want uint32
+		want int
 	}{
 		{"byte-vec2", args{ComponentByte, AccessorVec2}, 4},
 		{"ubyte-vec2", args{ComponentUbyte, AccessorVec2}, 4},

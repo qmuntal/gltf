@@ -90,8 +90,8 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer any) (any, erro
 	return buffer, nil
 }
 
-func readBufferView(doc *gltf.Document, bufferViewIndex uint32) ([]byte, error) {
-	if uint32(len(doc.BufferViews)) <= bufferViewIndex {
+func readBufferView(doc *gltf.Document, bufferViewIndex int) ([]byte, error) {
+	if len(doc.BufferViews) <= bufferViewIndex {
 		return nil, errors.New("gltf: bufferview index overflows")
 	}
 	return ReadBufferView(doc, doc.BufferViews[bufferViewIndex])
@@ -102,13 +102,13 @@ func readBufferView(doc *gltf.Document, bufferViewIndex uint32) ([]byte, error) 
 // It is safe to use even with malformed documents.
 // If that happens it will return an error instead of panic.
 func ReadBufferView(doc *gltf.Document, bv *gltf.BufferView) ([]byte, error) {
-	if uint32(len(doc.Buffers)) <= bv.Buffer {
+	if len(doc.Buffers) <= bv.Buffer {
 		return nil, errors.New("gltf: buffer index overflows")
 	}
 	buf := doc.Buffers[bv.Buffer].Data
 
 	high := bv.ByteOffset + bv.ByteLength
-	if uint32(len(buf)) < high {
+	if len(buf) < high {
 		return nil, io.ErrShortBuffer
 	}
 	return buf[bv.ByteOffset:high], nil
@@ -132,8 +132,8 @@ func ReadIndices(doc *gltf.Document, acr *gltf.Accessor, buffer []uint32) ([]uin
 	if err != nil {
 		return nil, err
 	}
-	if uint32(len(buffer)) < acr.Count {
-		buffer = append(buffer, make([]uint32, acr.Count-uint32(len(buffer)))...)
+	if len(buffer) < acr.Count {
+		buffer = append(buffer, make([]uint32, acr.Count-len(buffer))...)
 	} else {
 		buffer = buffer[:acr.Count]
 	}
@@ -204,8 +204,8 @@ func ReadTextureCoord(doc *gltf.Document, acr *gltf.Accessor, buffer [][2]float3
 	if err != nil {
 		return nil, err
 	}
-	if uint32(len(buffer)) < acr.Count {
-		buffer = append(buffer, make([][2]float32, acr.Count-uint32(len(buffer)))...)
+	if len(buffer) < acr.Count {
+		buffer = append(buffer, make([][2]float32, acr.Count-len(buffer))...)
 	} else {
 		buffer = buffer[:acr.Count]
 	}
@@ -246,8 +246,8 @@ func ReadWeights(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	if err != nil {
 		return nil, err
 	}
-	if uint32(len(buffer)) < acr.Count {
-		buffer = append(buffer, make([][4]float32, acr.Count-uint32(len(buffer)))...)
+	if len(buffer) < acr.Count {
+		buffer = append(buffer, make([][4]float32, acr.Count-len(buffer))...)
 	} else {
 		buffer = buffer[:acr.Count]
 	}
@@ -290,8 +290,8 @@ func ReadJoints(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([][
 	if err != nil {
 		return nil, err
 	}
-	if uint32(len(buffer)) < acr.Count {
-		buffer = append(buffer, make([][4]uint16, acr.Count-uint32(len(buffer)))...)
+	if len(buffer) < acr.Count {
+		buffer = append(buffer, make([][4]uint16, acr.Count-len(buffer))...)
 	} else {
 		buffer = buffer[:acr.Count]
 	}
@@ -346,8 +346,8 @@ func ReadColor(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint8) ([][4]
 	if err != nil {
 		return nil, err
 	}
-	if uint32(len(buffer)) < acr.Count {
-		buffer = append(buffer, make([][4]uint8, acr.Count-uint32(len(buffer)))...)
+	if len(buffer) < acr.Count {
+		buffer = append(buffer, make([][4]uint8, acr.Count-len(buffer))...)
 	} else {
 		buffer = buffer[:acr.Count]
 	}
@@ -405,8 +405,8 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 	if err != nil {
 		return nil, err
 	}
-	if uint32(len(buffer)) < acr.Count {
-		buffer = append(buffer, make([][4]uint16, acr.Count-uint32(len(buffer)))...)
+	if len(buffer) < acr.Count {
+		buffer = append(buffer, make([][4]uint16, acr.Count-len(buffer))...)
 	} else {
 		buffer = buffer[:acr.Count]
 	}
