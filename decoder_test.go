@@ -3,7 +3,7 @@ package gltf
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 	"testing/fstest"
@@ -12,7 +12,7 @@ import (
 )
 
 func readFile(path string) []byte {
-	r, _ := ioutil.ReadFile(path)
+	r, _ := os.ReadFile(path)
 	return r
 }
 

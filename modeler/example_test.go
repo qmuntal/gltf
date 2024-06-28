@@ -2,7 +2,7 @@ package modeler_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 
 	"github.com/qmuntal/gltf"
 	"github.com/qmuntal/gltf/modeler"
@@ -33,7 +33,7 @@ func Example() {
 }
 
 func ExampleWriteImage() {
-	img, err := ioutil.ReadFile("../assets/gopher_high.png")
+	img, err := os.ReadFile("../assets/gopher_high.png")
 	if err != nil {
 		panic(err)
 	}
