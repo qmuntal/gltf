@@ -260,13 +260,13 @@ type Mesh struct {
 
 // Primitive defines the geometry to be rendered with the given material.
 type Primitive struct {
-	Extensions Extensions    `json:"extensions,omitempty"`
-	Extras     any           `json:"extras,omitempty"`
-	Attributes Attribute     `json:"attributes"`
-	Indices    *uint32       `json:"indices,omitempty"` // The index of the accessor that contains the indices.
-	Material   *uint32       `json:"material,omitempty"`
-	Mode       PrimitiveMode `json:"mode,omitempty" validate:"lte=6"`
-	Targets    []Attribute   `json:"targets,omitempty" validate:"omitempty,dive,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
+	Extensions Extensions            `json:"extensions,omitempty"`
+	Extras     any                   `json:"extras,omitempty"`
+	Attributes PrimitiveAttributes   `json:"attributes"`
+	Indices    *uint32               `json:"indices,omitempty"` // The index of the accessor that contains the indices.
+	Material   *uint32               `json:"material,omitempty"`
+	Mode       PrimitiveMode         `json:"mode,omitempty" validate:"lte=6"`
+	Targets    []PrimitiveAttributes `json:"targets,omitempty" validate:"omitempty,dive,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
 }
 
 // The Material appearance of a primitive.

@@ -160,8 +160,8 @@ const (
 	TargetElementArrayBuffer Target = 34963 // ELEMENT_ARRAY_BUFFER
 )
 
-// Attribute is a map that each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
-type Attribute = map[string]uint32
+// PrimitiveAttributes is a map that each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
+type PrimitiveAttributes = map[string]uint32
 
 // PrimitiveMode defines the type of primitives to render. All valid values correspond to WebGL enums.
 type PrimitiveMode uint8

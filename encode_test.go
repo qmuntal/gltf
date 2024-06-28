@@ -211,8 +211,8 @@ func TestEncoder_Encode(t *testing.T) {
 		{"withMeshes", args{&Document{Meshes: []*Mesh{
 			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
 			{Extras: 8.0, Name: "mesh_2", Primitives: []*Primitive{
-				{Extras: 8.0, Attributes: Attribute{POSITION: 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
-				{Extras: 8.0, Targets: []Attribute{{POSITION: 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
+				{Extras: 8.0, Attributes: PrimitiveAttributes{POSITION: 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
+				{Extras: 8.0, Targets: []PrimitiveAttributes{{POSITION: 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 			}},
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []*Node{

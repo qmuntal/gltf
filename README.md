@@ -117,7 +117,7 @@ doc.Meshes = []*gltf.Mesh{{
     Name: "Pyramid",
     Primitives: []*gltf.Primitive{{
         Indices: gltf.Index(modeler.WriteIndices(doc, []uint16{0, 1, 2})),
-        Attributes: map[string]uint32{
+        Attributes: gltf.PrimitiveAttributes{
           gltf.POSITION: modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}),
           gltf.COLOR_0:  modeler.WriteColor(doc, [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}),
         },
@@ -130,14 +130,14 @@ gltf.Save(doc, "./test.gltf")
 
 ### Data interleaving
 
-The data of the attributes that are stored in a single bufferView may be stored as an Array-Of-Structures, which may produce a rendering perfomance boost in static attributes. `qmuntal/gltf/modeler` facilitates the creation of interleaved accessors and buffer views with the methods [WriteAttributesInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAttributesInterleaved), [WriteAccessorsInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAccessorsInterleaved), and [WriteBufferViewInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteBufferViewInterleaved) being the first one the most recommended for creating mesh primitives:
+The data of the attributes that are stored in a single bufferView may be stored as an Array-Of-Structures, which may produce a rendering perfomance boost in static attributes. `qmuntal/gltf/modeler` facilitates the creation of interleaved accessors and buffer views with the methods [WritePrimitiveAttributes](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WritePrimitiveAttributes), [WriteAccessorsInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteAccessorsInterleaved), and [WriteBufferViewInterleaved](https://pkg.go.dev/github.com/qmuntal/gltf/modeler#WriteBufferViewInterleaved) being the first one the most recommended for creating mesh primitives:
 
 ```go
 doc := gltf.NewDocument()
-attrs, _ := modeler.WriteAttributesInterleaved(doc, modeler.Attributes{
-  Position:       [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}},
-  Color:          [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}},
-})
+attrs, _ := modeler.WritePrimitiveAttributes(doc,
+    modeler.PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{0, 0, 0}, {0, 10, 0}, {0, 0, 10}}},
+    modeler.PrimitiveAttribute{Name: gltf.COLOR_0, Data: [][3]uint8{{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}},
+)
 doc.Meshes = []*gltf.Mesh{{
     Name: "Pyramid",
     Primitives: []*gltf.Primitive{{
@@ -199,7 +199,7 @@ const ExtensionName = "FAKE_Extension"
 
 type Foo struct {
     BufferView uint32          `json:"bufferView"`
-    Attributes gltf.Attribute  `json:"attributes"`
+    Attributes gltf.Attributes  `json:"attributes"`
 }
 
 func init() {
