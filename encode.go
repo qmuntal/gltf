@@ -165,10 +165,10 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	}
 
 	hasBinChunk := len(doc.Buffers) > 0 && doc.Buffers[0].URI == ""
-	var binPaddedLength uint32
+	var binPaddedLength int
 	if hasBinChunk {
 		binPaddedLength = ((doc.Buffers[0].ByteLength + 3) / 4) * 4
-		header.Length += uint32(8) + binPaddedLength
+		header.Length += uint32(8 + binPaddedLength)
 	}
 
 	err = binary.Write(e.w, binary.LittleEndian, &header)
@@ -184,7 +184,7 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 		for i := range binPadding {
 			binPadding[i] = 0
 		}
-		binHeader := chunkHeader{Length: binPaddedLength, Type: glbChunkBIN}
+		binHeader := chunkHeader{Length: uint32(binPaddedLength), Type: glbChunkBIN}
 		binary.Write(e.w, binary.LittleEndian, &binHeader)
 		e.w.Write(binBuffer.Data)
 		_, err = e.w.Write(binPadding)

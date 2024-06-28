@@ -50,7 +50,7 @@ func ExampleWriteImage() {
 		Name: "Texture",
 		PBRMetallicRoughness: &gltf.PBRMetallicRoughness{
 			BaseColorTexture: &gltf.TextureInfo{
-				Index: uint32(len(doc.Textures) - 1),
+				Index: len(doc.Textures) - 1,
 			},
 			MetallicFactor: gltf.Float(0),
 		},
@@ -64,7 +64,7 @@ func ExampleWriteImage() {
 					gltf.POSITION:   positionAccessor,
 					gltf.TEXCOORD_0: textureAccessor,
 				},
-				Material: gltf.Index(uint32(len(doc.Materials) - 1)),
+				Material: gltf.Index(len(doc.Materials) - 1),
 			},
 		},
 	}}

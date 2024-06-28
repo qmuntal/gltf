@@ -42,7 +42,7 @@ gltf.Document{
   }},
   Nodes: []*gltf.Node{{Name: "Cube", Mesh: gltf.Index(0)}},
   Scene:    gltf.Index(0),
-  Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
+  Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []int{0}}},
 }
 ```
 
@@ -198,7 +198,7 @@ To implement a custom extension decoding, call [gltf.RegisterExtension](https://
 const ExtensionName = "FAKE_Extension"
 
 type Foo struct {
-    BufferView uint32          `json:"bufferView"`
+    BufferView int          `json:"bufferView"`
     Attributes gltf.Attributes  `json:"attributes"`
 }
 

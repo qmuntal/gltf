@@ -35,7 +35,7 @@ type TextureTranform struct {
 	Offset   [2]float64 `json:"offset"`
 	Rotation float64    `json:"rotation,omitempty"`
 	Scale    [2]float64 `json:"scale"`
-	TexCoord *uint32    `json:"texCoord,omitempty"`
+	TexCoord *int       `json:"texCoord,omitempty"`
 }
 
 // ScaleOrDefault returns the node scale if it represents a valid scale factor, else return the default one.

@@ -11,7 +11,7 @@ func TestMakeSlice(t *testing.T) {
 	type args struct {
 		c     gltf.ComponentType
 		t     gltf.AccessorType
-		count uint32
+		count int
 	}
 	tests := []struct {
 		name string
@@ -81,7 +81,7 @@ func TestMakeSliceBuffer(t *testing.T) {
 	type args struct {
 		c      gltf.ComponentType
 		t      gltf.AccessorType
-		count  uint32
+		count  int
 		buffer any
 	}
 	tests := []struct {

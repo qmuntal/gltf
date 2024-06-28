@@ -7,8 +7,8 @@ import (
 	"sync"
 )
 
-// Index is an utility function that returns a pointer to a uint32.
-func Index(i uint32) *uint32 {
+// Index is an utility function that returns a pointer to a int.
+func Index(i int) *int {
 	return &i
 }
 
@@ -44,7 +44,7 @@ type Document struct {
 	Meshes             []*Mesh       `json:"meshes,omitempty" validate:"dive"`
 	Nodes              []*Node       `json:"nodes,omitempty" validate:"dive"`
 	Samplers           []*Sampler    `json:"samplers,omitempty" validate:"dive"`
-	Scene              *uint32       `json:"scene,omitempty"`
+	Scene              *int          `json:"scene,omitempty"`
 	Scenes             []*Scene      `json:"scenes,omitempty" validate:"dive"`
 	Skins              []*Skin       `json:"skins,omitempty" validate:"dive"`
 	Textures           []*Texture    `json:"textures,omitempty" validate:"dive"`
@@ -69,11 +69,11 @@ type Accessor struct {
 	Extensions    Extensions    `json:"extensions,omitempty"`
 	Extras        any           `json:"extras,omitempty"`
 	Name          string        `json:"name,omitempty"`
-	BufferView    *uint32       `json:"bufferView,omitempty"`
-	ByteOffset    uint32        `json:"byteOffset,omitempty"`
+	BufferView    *int          `json:"bufferView,omitempty"`
+	ByteOffset    int           `json:"byteOffset,omitempty"`
 	ComponentType ComponentType `json:"componentType" validate:"lte=5"`
 	Normalized    bool          `json:"normalized,omitempty"`      // Specifies whether integer data values should be normalized.
-	Count         uint32        `json:"count" validate:"required"` // The number of attributes referenced by this accessor.
+	Count         int           `json:"count" validate:"required"` // The number of attributes referenced by this accessor.
 	Type          AccessorType  `json:"type" validate:"lte=6"`
 	Max           []float64     `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
 	Min           []float64     `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
@@ -84,7 +84,7 @@ type Accessor struct {
 type Sparse struct {
 	Extensions Extensions    `json:"extensions,omitempty"`
 	Extras     any           `json:"extras,omitempty"`
-	Count      uint32        `json:"count" validate:"gte=1"` // Number of entries stored in the sparse array.
+	Count      int           `json:"count" validate:"gte=1"` // Number of entries stored in the sparse array.
 	Indices    SparseIndices `json:"indices"`                // Index array of size count that points to those accessor attributes that deviate from their initialization value.
 	Values     SparseValues  `json:"values"`                 // Array of size count times number of components, storing the displaced accessor attributes pointed by indices.
 }
@@ -93,16 +93,16 @@ type Sparse struct {
 type SparseValues struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
-	BufferView uint32     `json:"bufferView"`
-	ByteOffset uint32     `json:"byteOffset,omitempty"`
+	BufferView int        `json:"bufferView"`
+	ByteOffset int        `json:"byteOffset,omitempty"`
 }
 
 // SparseIndices defines the indices of those attributes that deviate from their initialization value.
 type SparseIndices struct {
 	Extensions    Extensions    `json:"extensions,omitempty"`
 	Extras        any           `json:"extras,omitempty"`
-	BufferView    uint32        `json:"bufferView"`
-	ByteOffset    uint32        `json:"byteOffset,omitempty"`
+	BufferView    int           `json:"bufferView"`
+	ByteOffset    int           `json:"byteOffset,omitempty"`
 	ComponentType ComponentType `json:"componentType" validate:"oneof=2 4 5"`
 }
 
@@ -114,7 +114,7 @@ type Buffer struct {
 	Extras     any        `json:"extras,omitempty"`
 	Name       string     `json:"name,omitempty"`
 	URI        string     `json:"uri,omitempty" validate:"omitempty"`
-	ByteLength uint32     `json:"byteLength" validate:"required"`
+	ByteLength int        `json:"byteLength" validate:"required"`
 	Data       []byte     `json:"-"`
 }
 
@@ -148,10 +148,10 @@ func (b *Buffer) marshalData() ([]byte, error) {
 type BufferView struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
-	Buffer     uint32     `json:"buffer"`
-	ByteOffset uint32     `json:"byteOffset,omitempty"`
-	ByteLength uint32     `json:"byteLength" validate:"required"`
-	ByteStride uint32     `json:"byteStride,omitempty" validate:"omitempty,gte=4,lte=252"`
+	Buffer     int        `json:"buffer"`
+	ByteOffset int        `json:"byteOffset,omitempty"`
+	ByteLength int        `json:"byteLength" validate:"required"`
+	ByteStride int        `json:"byteStride,omitempty" validate:"omitempty,gte=4,lte=252"`
 	Target     Target     `json:"target,omitempty" validate:"omitempty,oneof=34962 34963"`
 	Name       string     `json:"name,omitempty"`
 }
@@ -161,7 +161,7 @@ type Scene struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
 	Name       string     `json:"name,omitempty"`
-	Nodes      []uint32   `json:"nodes,omitempty" validate:"omitempty,unique"`
+	Nodes      []int      `json:"nodes,omitempty" validate:"omitempty,unique"`
 }
 
 // A Node in the node hierarchy.
@@ -170,11 +170,11 @@ type Node struct {
 	Extensions  Extensions  `json:"extensions,omitempty"`
 	Extras      any         `json:"extras,omitempty"`
 	Name        string      `json:"name,omitempty"`
-	Camera      *uint32     `json:"camera,omitempty"`
-	Children    []uint32    `json:"children,omitempty" validate:"omitempty,unique"`
-	Skin        *uint32     `json:"skin,omitempty"`
+	Camera      *int        `json:"camera,omitempty"`
+	Children    []int       `json:"children,omitempty" validate:"omitempty,unique"`
+	Skin        *int        `json:"skin,omitempty"`
 	Matrix      [16]float64 `json:"matrix"` // A 4x4 transformation matrix stored in column-major order.
-	Mesh        *uint32     `json:"mesh,omitempty"`
+	Mesh        *int        `json:"mesh,omitempty"`
 	Rotation    [4]float64  `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
 	Scale       [3]float64  `json:"scale"`
 	Translation [3]float64  `json:"translation"`
@@ -215,9 +215,9 @@ type Skin struct {
 	Extensions          Extensions `json:"extensions,omitempty"`
 	Extras              any        `json:"extras,omitempty"`
 	Name                string     `json:"name,omitempty"`
-	InverseBindMatrices *uint32    `json:"inverseBindMatrices,omitempty"`      // The index of the accessor containing the floating-point 4x4 inverse-bind matrices.
-	Skeleton            *uint32    `json:"skeleton,omitempty"`                 // The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
-	Joints              []uint32   `json:"joints" validate:"omitempty,unique"` // Indices of skeleton nodes, used as joints in this skin.
+	InverseBindMatrices *int       `json:"inverseBindMatrices,omitempty"`      // The index of the accessor containing the floating-point 4x4 inverse-bind matrices.
+	Skeleton            *int       `json:"skeleton,omitempty"`                 // The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
+	Joints              []int      `json:"joints" validate:"omitempty,unique"` // Indices of skeleton nodes, used as joints in this skin.
 }
 
 // A Camera projection. A node can reference a camera to apply a transform to place the camera in the scene.
@@ -263,8 +263,8 @@ type Primitive struct {
 	Extensions Extensions            `json:"extensions,omitempty"`
 	Extras     any                   `json:"extras,omitempty"`
 	Attributes PrimitiveAttributes   `json:"attributes"`
-	Indices    *uint32               `json:"indices,omitempty"` // The index of the accessor that contains the indices.
-	Material   *uint32               `json:"material,omitempty"`
+	Indices    *int                  `json:"indices,omitempty"` // The index of the accessor that contains the indices.
+	Material   *int                  `json:"material,omitempty"`
 	Mode       PrimitiveMode         `json:"mode,omitempty" validate:"lte=6"`
 	Targets    []PrimitiveAttributes `json:"targets,omitempty" validate:"omitempty,dive,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
 }
@@ -296,8 +296,8 @@ func (m *Material) AlphaCutoffOrDefault() float64 {
 type NormalTexture struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
-	Index      *uint32    `json:"index,omitempty"`
-	TexCoord   uint32     `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
+	Index      *int       `json:"index,omitempty"`
+	TexCoord   int        `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
 	Scale      *float64   `json:"scale,omitempty"`
 }
 
@@ -313,8 +313,8 @@ func (n *NormalTexture) ScaleOrDefault() float64 {
 type OcclusionTexture struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
-	Index      *uint32    `json:"index,omitempty"`
-	TexCoord   uint32     `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
+	Index      *int       `json:"index,omitempty"`
+	TexCoord   int        `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
 	Strength   *float64   `json:"strength,omitempty" validate:"omitempty,gte=0,lte=1"`
 }
 
@@ -365,8 +365,8 @@ func (p *PBRMetallicRoughness) BaseColorFactorOrDefault() [4]float64 {
 type TextureInfo struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
-	Index      uint32     `json:"index"`
-	TexCoord   uint32     `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
+	Index      int        `json:"index"`
+	TexCoord   int        `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
 }
 
 // A Texture and its sampler.
@@ -374,8 +374,8 @@ type Texture struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
 	Name       string     `json:"name,omitempty"`
-	Sampler    *uint32    `json:"sampler,omitempty"`
-	Source     *uint32    `json:"source,omitempty"`
+	Sampler    *int       `json:"sampler,omitempty"`
+	Source     *int       `json:"source,omitempty"`
 }
 
 // Sampler of a texture for filtering and wrapping modes.
@@ -397,7 +397,7 @@ type Image struct {
 	Name       string     `json:"name,omitempty"`
 	URI        string     `json:"uri,omitempty" validate:"omitempty"`
 	MimeType   string     `json:"mimeType,omitempty" validate:"omitempty,oneof=image/jpeg image/png"` // Manadatory if BufferView is defined.
-	BufferView *uint32    `json:"bufferView,omitempty"`                                               // Use this instead of the image's uri property.
+	BufferView *int       `json:"bufferView,omitempty"`                                               // Use this instead of the image's uri property.
 }
 
 // IsEmbeddedResource returns true if the buffer points to an embedded resource.
@@ -434,16 +434,16 @@ type Animation struct {
 type AnimationSampler struct {
 	Extensions    Extensions    `json:"extensions,omitempty"`
 	Extras        any           `json:"extras,omitempty"`
-	Input         uint32        `json:"input"` // The index of an accessor containing keyframe input values.
+	Input         int           `json:"input"` // The index of an accessor containing keyframe input values.
 	Interpolation Interpolation `json:"interpolation,omitempty" validate:"lte=2"`
-	Output        uint32        `json:"output"` // The index of an accessor containing keyframe output values.
+	Output        int           `json:"output"` // The index of an accessor containing keyframe output values.
 }
 
 // The AnimationChannel targets an animation's sampler at a node's property.
 type AnimationChannel struct {
 	Extensions Extensions             `json:"extensions,omitempty"`
 	Extras     any                    `json:"extras,omitempty"`
-	Sampler    uint32                 `json:"sampler"`
+	Sampler    int                    `json:"sampler"`
 	Target     AnimationChannelTarget `json:"target"`
 }
 
@@ -455,7 +455,7 @@ type AnimationChannel struct {
 type AnimationChannelTarget struct {
 	Extensions Extensions  `json:"extensions,omitempty"`
 	Extras     any         `json:"extras,omitempty"`
-	Node       *uint32     `json:"node,omitempty"`
+	Node       *int        `json:"node,omitempty"`
 	Path       TRSProperty `json:"path" validate:"lte=4"`
 }
 
@@ -489,7 +489,7 @@ func queryExtension(key string) (func([]byte) (any, error), bool) {
 // The element size may not be (component size) * (number of components),
 // as some of the elements are tightly packed in order to ensure
 // that they are aligned to 4-byte boundaries.
-func SizeOfElement(c ComponentType, t AccessorType) uint32 {
+func SizeOfElement(c ComponentType, t AccessorType) int {
 	// special cases
 	switch {
 	case (t == AccessorVec3 || t == AccessorVec2) && (c == ComponentByte || c == ComponentUbyte):

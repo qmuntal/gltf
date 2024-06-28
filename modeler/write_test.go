@@ -55,7 +55,7 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 	if len(doc.Accessors) != 10 {
 		t.Errorf("TestWriteAttributesInterleaved() accessors size = %v, want 10", len(doc.Accessors))
 	}
-	want := map[string]uint32{
+	want := map[string]int{
 		gltf.POSITION:   0,
 		gltf.NORMAL:     1,
 		gltf.TANGENT:    2,
@@ -210,7 +210,7 @@ func TestWriteNormal(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"base", &gltf.Document{
@@ -252,7 +252,7 @@ func TestWriteTangent(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"base", &gltf.Document{
@@ -294,7 +294,7 @@ func TestWritePosition(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"base", &gltf.Document{
@@ -336,7 +336,7 @@ func TestWriteJoints(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &gltf.Document{
@@ -393,7 +393,7 @@ func TestWriteWeights(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &gltf.Document{
@@ -465,7 +465,7 @@ func TestWriteTextureCoord(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &gltf.Document{
@@ -537,7 +537,7 @@ func TestWriteIndices(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"uint16", &gltf.Document{
@@ -594,7 +594,7 @@ func TestWriteColor(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 	}{
 		{"uint8", &gltf.Document{
@@ -667,7 +667,7 @@ func TestWriteImage(t *testing.T) {
 		name    string
 		m       *gltf.Document
 		args    args
-		want    uint32
+		want    int
 		wantDoc *gltf.Document
 		wantErr bool
 	}{

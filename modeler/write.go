@@ -18,7 +18,7 @@ import (
 // WriteIndices adds a new INDICES accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
-func WriteIndices(doc *gltf.Document, data any) uint32 {
+func WriteIndices(doc *gltf.Document, data any) int {
 	switch data.(type) {
 	case []uint16, []uint32:
 	default:
@@ -30,21 +30,21 @@ func WriteIndices(doc *gltf.Document, data any) uint32 {
 // WriteNormal adds a new NORMAL accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
-func WriteNormal(doc *gltf.Document, data [][3]float32) uint32 {
+func WriteNormal(doc *gltf.Document, data [][3]float32) int {
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
 // WriteTangent adds a new TANGENT accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
-func WriteTangent(doc *gltf.Document, data [][4]float32) uint32 {
+func WriteTangent(doc *gltf.Document, data [][4]float32) int {
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
 // WriteTextureCoord adds a new TEXTURECOORD accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
-func WriteTextureCoord(doc *gltf.Document, data any) uint32 {
+func WriteTextureCoord(doc *gltf.Document, data any) int {
 	normalized, err := checkTextureCoord(data)
 	if err != nil {
 		panic(err)
@@ -69,7 +69,7 @@ func checkTextureCoord(data any) (bool, error) {
 // WriteWeights adds a new WEIGHTS accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
-func WriteWeights(doc *gltf.Document, data any) uint32 {
+func WriteWeights(doc *gltf.Document, data any) int {
 	normalized, err := checkWeights(data)
 	if err != nil {
 		panic(err)
@@ -94,7 +94,7 @@ func checkWeights(data any) (bool, error) {
 // WriteJoints adds a new JOINTS accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
-func WriteJoints(doc *gltf.Document, data any) uint32 {
+func WriteJoints(doc *gltf.Document, data any) int {
 	err := checkJoints(data)
 	if err != nil {
 		panic(err)
@@ -114,7 +114,7 @@ func checkJoints(data any) error {
 // WritePosition adds a new POSITION accessor to doc
 // and fills the last buffer with data.
 // If success it returns the index of the new accessor.
-func WritePosition(doc *gltf.Document, data [][3]float32) uint32 {
+func WritePosition(doc *gltf.Document, data [][3]float32) int {
 	index := WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 	min, max := minMaxFloat32(data)
 	doc.Accessors[index].Min = min[:]
@@ -137,7 +137,7 @@ func minMaxFloat32(data [][3]float32) ([3]float64, [3]float64) {
 // WriteColor adds a new COLOR accessor to doc
 // and fills the buffer with data.
 // If success it returns the index of the new accessor.
-func WriteColor(doc *gltf.Document, data any) uint32 {
+func WriteColor(doc *gltf.Document, data any) int {
 	normalized, err := checkColor(data)
 	if err != nil {
 		panic(err)
@@ -162,7 +162,7 @@ func checkColor(data any) (bool, error) {
 // WriteImage adds a new image to doc
 // and fills the buffer with the image data.
 // If success it returns the index of the new image.
-func WriteImage(doc *gltf.Document, name string, mimeType string, r io.Reader) (uint32, error) {
+func WriteImage(doc *gltf.Document, name string, mimeType string, r io.Reader) (int, error) {
 	var data []byte
 	switch r := r.(type) {
 	case *bytes.Buffer:
@@ -180,13 +180,13 @@ func WriteImage(doc *gltf.Document, name string, mimeType string, r io.Reader) (
 		MimeType:   mimeType,
 		BufferView: gltf.Index(index),
 	})
-	return uint32(len(doc.Images) - 1), nil
+	return len(doc.Images) - 1, nil
 }
 
 // WriteAccessor adds a new Accessor to doc
 // and fills the buffer with the data.
 // Returns the index of the new accessor.
-func WriteAccessor(doc *gltf.Document, target gltf.Target, data any) uint32 {
+func WriteAccessor(doc *gltf.Document, target gltf.Target, data any) int {
 	ensurePadding(doc)
 	index := WriteBufferView(doc, target, data)
 	c, a, l := binary.Type(data)
@@ -197,7 +197,7 @@ func WriteAccessor(doc *gltf.Document, target gltf.Target, data any) uint32 {
 		Type:          a,
 		Count:         l,
 	})
-	return uint32(len(doc.Accessors) - 1)
+	return len(doc.Accessors) - 1
 }
 
 // WriteAccessorsInterleaved adds as many accessors as
@@ -206,14 +206,14 @@ func WriteAccessor(doc *gltf.Document, target gltf.Target, data any) uint32 {
 // Returns an slice with the indices of the newly created accessors,
 // with the same order as data or an error if the data elements
 // don´t have all the same length.
-func WriteAccessorsInterleaved(doc *gltf.Document, data ...any) ([]uint32, error) {
+func WriteAccessorsInterleaved(doc *gltf.Document, data ...any) ([]int, error) {
 	ensurePadding(doc)
 	index, err := WriteBufferViewInterleaved(doc, data...)
 	if err != nil {
 		return nil, err
 	}
-	indices := make([]uint32, len(data))
-	var byteOffset uint32
+	indices := make([]int, len(data))
+	var byteOffset int
 	for i, d := range data {
 		c, t, l := binary.Type(d)
 		doc.Accessors = append(doc.Accessors, &gltf.Accessor{
@@ -224,7 +224,7 @@ func WriteAccessorsInterleaved(doc *gltf.Document, data ...any) ([]uint32, error
 			Count:         l,
 		})
 		byteOffset += gltf.SizeOfElement(c, t)
-		indices[i] = uint32(len(doc.Accessors) - 1)
+		indices[i] = len(doc.Accessors) - 1
 	}
 	return indices, nil
 }
@@ -295,20 +295,20 @@ func WritePrimitiveAttributes(doc *gltf.Document, attr ...PrimitiveAttribute) (g
 // If success it returns the index of the new buffer view.
 // Returns the index of the new buffer view or an error if the data elements
 // don´t have all the same length.
-func WriteBufferViewInterleaved(doc *gltf.Document, data ...any) (uint32, error) {
+func WriteBufferViewInterleaved(doc *gltf.Document, data ...any) (int, error) {
 	return writeBufferViews(doc, gltf.TargetArrayBuffer, data...)
 }
 
 // WriteBufferView adds a new BufferView to doc
 // and fills the buffer with the data.
 // Returns the index of the new buffer view.
-func WriteBufferView(doc *gltf.Document, target gltf.Target, data any) uint32 {
+func WriteBufferView(doc *gltf.Document, target gltf.Target, data any) int {
 	index, _ := writeBufferViews(doc, target, data)
 	return index
 }
 
-func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...any) (uint32, error) {
-	var refLength, stride, size uint32
+func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...any) (int, error) {
+	var refLength, stride, size int
 	for i, d := range data {
 		c, a, l := binary.Type(d)
 		if i == 0 {
@@ -325,7 +325,7 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...any) (uint
 		}
 	}
 	buffer := lastBuffer(doc)
-	offset := uint32(len(buffer.Data))
+	offset := len(buffer.Data)
 	buffer.ByteLength += size
 	buffer.Data = append(buffer.Data, make([]byte, size)...)
 	dataOffset := offset
@@ -336,19 +336,19 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...any) (uint
 		dataOffset += gltf.SizeOfElement(c, a)
 	}
 	bufferView := &gltf.BufferView{
-		Buffer:     uint32(len(doc.Buffers)) - 1,
+		Buffer:     len(doc.Buffers) - 1,
 		ByteLength: size,
 		ByteOffset: offset,
 		ByteStride: stride,
 		Target:     target,
 	}
 	doc.BufferViews = append(doc.BufferViews, bufferView)
-	return uint32(len(doc.BufferViews)) - 1, nil
+	return len(doc.BufferViews) - 1, nil
 }
 
 func ensurePadding(doc *gltf.Document) {
 	buffer := lastBuffer(doc)
-	padding := getPadding(uint32(len(buffer.Data)))
+	padding := getPadding(len(buffer.Data))
 	buffer.Data = append(buffer.Data, make([]byte, padding)...)
 	buffer.ByteLength += padding
 }
@@ -360,7 +360,7 @@ func lastBuffer(doc *gltf.Document) *gltf.Buffer {
 	return doc.Buffers[len(doc.Buffers)-1]
 }
 
-func getPadding(offset uint32) uint32 {
+func getPadding(offset int) int {
 	padAlign := offset % 4
 	if padAlign == 0 {
 		return 0

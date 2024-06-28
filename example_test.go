@@ -38,14 +38,14 @@ func ExampleSave() {
 		}},
 		Meshes: []*gltf.Mesh{{Name: "Cube", Primitives: []*gltf.Primitive{{Indices: gltf.Index(0), Material: gltf.Index(0), Mode: gltf.PrimitiveTriangles, Attributes: gltf.PrimitiveAttributes{gltf.POSITION: 1, gltf.COLOR_0: 3, gltf.NORMAL: 2, gltf.TEXCOORD_0: 4}}}}},
 		Nodes: []*gltf.Node{
-			{Name: "RootNode", Children: []uint32{1, 2, 3}},
+			{Name: "RootNode", Children: []int{1, 2, 3}},
 			{Name: "Mesh"},
 			{Name: "Cube", Mesh: gltf.Index(0)},
 			{Name: "Texture Group"},
 		},
 		Samplers: []*gltf.Sampler{{WrapS: gltf.WrapRepeat, WrapT: gltf.WrapRepeat}},
 		Scene:    gltf.Index(0),
-		Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []uint32{0}}},
+		Scenes:   []*gltf.Scene{{Name: "Root Scene", Nodes: []int{0}}},
 	}
 	if err := gltf.SaveBinary(doc, "./example.glb"); err != nil {
 		panic(err)
