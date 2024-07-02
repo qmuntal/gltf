@@ -1,10 +1,11 @@
-package binary
+package binary_test
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/qmuntal/gltf"
+	"github.com/qmuntal/gltf/binary"
 )
 
 func TestMakeSlice(t *testing.T) {
@@ -70,7 +71,7 @@ func TestMakeSlice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeSlice(tt.args.c, tt.args.t, tt.args.count); !reflect.DeepEqual(got, tt.want) {
+			if got := binary.MakeSlice(tt.args.c, tt.args.t, tt.args.count); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeSlice() = %v, want %v", got, tt.want)
 			}
 		})
@@ -98,7 +99,7 @@ func TestMakeSliceBuffer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeSliceBuffer(tt.args.c, tt.args.t, tt.args.count, tt.args.buffer); !reflect.DeepEqual(got, tt.want) {
+			if got := binary.MakeSliceBuffer(tt.args.c, tt.args.t, tt.args.count, tt.args.buffer); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeSliceBuffer() = %v, want %v", got, tt.want)
 			}
 		})

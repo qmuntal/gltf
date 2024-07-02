@@ -1,14 +1,16 @@
-package gltf
+package gltf_test
 
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/qmuntal/gltf"
 )
 
 func TestAccessorType_UnmarshalJSON(t *testing.T) {
 	type args struct {
-		defaultType AccessorType
-		expType     AccessorType
+		defaultType gltf.AccessorType
+		expType     gltf.AccessorType
 		typeStr     []byte
 	}
 	tests := []struct {
@@ -16,7 +18,7 @@ func TestAccessorType_UnmarshalJSON(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"base", args{50, AccessorVec3, []byte(`"VEC3"`)}, false},
+		{"base", args{50, gltf.AccessorVec3, []byte(`"VEC3"`)}, false},
 		{"incorrect-type", args{100, 100, []byte(`"CUSTOM_TYPE"`)}, true},
 	}
 	for _, tt := range tests {

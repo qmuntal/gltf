@@ -1,4 +1,4 @@
-package lightspunctual
+package lightspunctual_test
 
 import (
 	"math"
@@ -7,16 +7,17 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/gltf"
+	"github.com/qmuntal/gltf/ext/lightspunctual"
 )
 
 func TestLight_IntensityOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
-		l    *Light
+		l    *lightspunctual.Light
 		want float64
 	}{
-		{"empty", &Light{}, 1},
-		{"other", &Light{Intensity: gltf.Float(0.5)}, 0.5},
+		{"empty", &lightspunctual.Light{}, 1},
+		{"other", &lightspunctual.Light{Intensity: gltf.Float(0.5)}, 0.5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -30,11 +31,11 @@ func TestLight_IntensityOrDefault(t *testing.T) {
 func TestLight_ColorOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
-		l    *Light
+		l    *lightspunctual.Light
 		want [3]float64
 	}{
-		{"empty", &Light{}, [3]float64{1, 1, 1}},
-		{"other", &Light{Color: &[3]float64{0.8, 0.8, 0.8}}, [3]float64{0.8, 0.8, 0.8}},
+		{"empty", &lightspunctual.Light{}, [3]float64{1, 1, 1}},
+		{"other", &lightspunctual.Light{Color: &[3]float64{0.8, 0.8, 0.8}}, [3]float64{0.8, 0.8, 0.8}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -48,11 +49,11 @@ func TestLight_ColorOrDefault(t *testing.T) {
 func TestSpot_OuterConeAngleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
-		s    *Spot
+		s    *lightspunctual.Spot
 		want float64
 	}{
-		{"empty", &Spot{}, math.Pi / 4},
-		{"other", &Spot{OuterConeAngle: gltf.Float(0.5)}, 0.5},
+		{"empty", &lightspunctual.Spot{}, math.Pi / 4},
+		{"other", &lightspunctual.Spot{OuterConeAngle: gltf.Float(0.5)}, 0.5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -69,15 +70,15 @@ func TestLight_UnmarshalJSON(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		l       *Light
+		l       *lightspunctual.Light
 		args    args
-		want    *Light
+		want    *lightspunctual.Light
 		wantErr bool
 	}{
-		{"default", new(Light), args{[]byte("{}")}, &Light{
+		{"default", new(lightspunctual.Light), args{[]byte("{}")}, &lightspunctual.Light{
 			Color: &[3]float64{1, 1, 1}, Intensity: gltf.Float(1), Range: gltf.Float(math.Inf(0)),
 		}, false},
-		{"nodefault", new(Light), args{[]byte(`{
+		{"nodefault", new(lightspunctual.Light), args{[]byte(`{
 			"color": [0.3, 0.7, 1.0],
 			"name": "AAA",
 			"intensity": 40.0,
@@ -87,9 +88,9 @@ func TestLight_UnmarshalJSON(t *testing.T) {
 			  "innerConeAngle": 1.0,
 			  "outerConeAngle": 2.0
 			}
-		  }`)}, &Light{
+		  }`)}, &lightspunctual.Light{
 			Name: "AAA", Type: "spot", Color: &[3]float64{0.3, 0.7, 1}, Intensity: gltf.Float(40), Range: gltf.Float(10),
-			Spot: &Spot{
+			Spot: &lightspunctual.Spot{
 				InnerConeAngle: 1.0,
 				OuterConeAngle: gltf.Float(2.0),
 			},
@@ -118,7 +119,7 @@ func TestUnmarshal(t *testing.T) {
 		wantErr bool
 	}{
 		{"error", args{[]byte(`{"light: 1}`)}, nil, true},
-		{"index", args{[]byte(`{"light": 1}`)}, LightIndex(1), false},
+		{"index", args{[]byte(`{"light": 1}`)}, lightspunctual.LightIndex(1), false},
 		{"lights", args{[]byte(`{"lights": [
 			{
 			  "color": [1.0, 0.9, 0.7],
@@ -132,14 +133,14 @@ func TestUnmarshal(t *testing.T) {
 			  "intensity": 20.0,
 			  "type": "point"
 			}
-		  ]}`)}, Lights{
+		  ]}`)}, lightspunctual.Lights{
 			{Color: &[3]float64{1, 0.9, 0.7}, Name: "Directional", Intensity: gltf.Float(3.0), Type: "directional", Range: gltf.Float(math.Inf(0))},
 			{Color: &[3]float64{1, 0, 0}, Name: "Point", Intensity: gltf.Float(20.0), Type: "point", Range: gltf.Float(math.Inf(0))},
 		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Unmarshal(tt.args.data)
+			got, err := lightspunctual.Unmarshal(tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
 				return

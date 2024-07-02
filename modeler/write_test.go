@@ -1,4 +1,4 @@
-package modeler
+package modeler_test
 
 import (
 	"bytes"
@@ -8,12 +8,13 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/qmuntal/gltf"
+	"github.com/qmuntal/gltf/modeler"
 )
 
 func TestAlignment(t *testing.T) {
 	doc := gltf.NewDocument()
-	WriteIndices(doc, []uint16{0, 1, 2})
-	WritePosition(doc, [][3]float32{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}})
+	modeler.WriteIndices(doc, []uint16{0, 1, 2})
+	modeler.WritePosition(doc, [][3]float32{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}})
 	if len(doc.Buffers) != 1 {
 		t.Errorf("Testalignment() buffer size = %v, want 1", len(doc.Buffers))
 	}
@@ -31,17 +32,17 @@ func TestAlignment(t *testing.T) {
 func TestWriteAttributesInterleaved(t *testing.T) {
 	data := [][3]float32{{1, 2, 3}, {0, 0, -1}}
 	doc := gltf.NewDocument()
-	attrs, err := WritePrimitiveAttributes(doc,
-		PrimitiveAttribute{Name: gltf.POSITION, Data: data},
-		PrimitiveAttribute{Name: gltf.NORMAL, Data: data},
-		PrimitiveAttribute{Name: gltf.TANGENT, Data: [][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}}},
-		PrimitiveAttribute{Name: gltf.TEXCOORD_0, Data: [][2]float32{{1, 2}, {1, 2}}},
-		PrimitiveAttribute{Name: gltf.TEXCOORD_1, Data: [][2]float32{{1, 2}, {1, 2}}},
-		PrimitiveAttribute{Name: gltf.WEIGHTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
-		PrimitiveAttribute{Name: gltf.JOINTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
-		PrimitiveAttribute{Name: gltf.COLOR_0, Data: data},
-		PrimitiveAttribute{Name: "COLOR_1", Data: data},
-		PrimitiveAttribute{Name: "COLOR_2", Data: data},
+	attrs, err := modeler.WritePrimitiveAttributes(doc,
+		modeler.PrimitiveAttribute{Name: gltf.POSITION, Data: data},
+		modeler.PrimitiveAttribute{Name: gltf.NORMAL, Data: data},
+		modeler.PrimitiveAttribute{Name: gltf.TANGENT, Data: [][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}}},
+		modeler.PrimitiveAttribute{Name: gltf.TEXCOORD_0, Data: [][2]float32{{1, 2}, {1, 2}}},
+		modeler.PrimitiveAttribute{Name: gltf.TEXCOORD_1, Data: [][2]float32{{1, 2}, {1, 2}}},
+		modeler.PrimitiveAttribute{Name: gltf.WEIGHTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
+		modeler.PrimitiveAttribute{Name: gltf.JOINTS_0, Data: [][4]uint8{{1, 2, 3, 4}, {1, 2, 3, 4}}},
+		modeler.PrimitiveAttribute{Name: gltf.COLOR_0, Data: data},
+		modeler.PrimitiveAttribute{Name: "COLOR_1", Data: data},
+		modeler.PrimitiveAttribute{Name: "COLOR_2", Data: data},
 	)
 	if err != nil {
 		t.Fatalf("TestWriteAttributesInterleaved() got error = %v", err)
@@ -89,10 +90,10 @@ func TestWriteAttributesInterleaved(t *testing.T) {
 
 func TestWriteAttributesInterleaved_OnlyPosition(t *testing.T) {
 	doc := gltf.NewDocument()
-	_, err := WritePrimitiveAttributes(doc,
-		PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
-		PrimitiveAttribute{Name: gltf.TANGENT, Data: make([][4]float32, 0)},
-		PrimitiveAttribute{Name: "COLOR_1"})
+	_, err := modeler.WritePrimitiveAttributes(doc,
+		modeler.PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
+		modeler.PrimitiveAttribute{Name: gltf.TANGENT, Data: make([][4]float32, 0)},
+		modeler.PrimitiveAttribute{Name: "COLOR_1"})
 	if err != nil {
 		t.Fatalf("TestWriteAttributesInterleaved_OnlyPosition() got error = %v", err)
 	}
@@ -103,9 +104,9 @@ func TestWriteAttributesInterleaved_OnlyPosition(t *testing.T) {
 
 func TestWriteAttributesInterleaved_Error(t *testing.T) {
 	doc := gltf.NewDocument()
-	_, err := WritePrimitiveAttributes(doc,
-		PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
-		PrimitiveAttribute{Name: gltf.COLOR_0, Data: [][3]float32{{1, 2, 3}}},
+	_, err := modeler.WritePrimitiveAttributes(doc,
+		modeler.PrimitiveAttribute{Name: gltf.POSITION, Data: [][3]float32{{1, 2, 3}, {0, 0, -1}}},
+		modeler.PrimitiveAttribute{Name: gltf.COLOR_0, Data: [][3]float32{{1, 2, 3}}},
 	)
 	if err == nil {
 		t.Error("TestWriteAttributesInterleaved_Error() expected an error")
@@ -114,7 +115,7 @@ func TestWriteAttributesInterleaved_Error(t *testing.T) {
 
 func TestWriteAccessorsInterleaved(t *testing.T) {
 	doc := gltf.NewDocument()
-	indices, err := WriteAccessorsInterleaved(doc,
+	indices, err := modeler.WriteAccessorsInterleaved(doc,
 		[][3]float32{{1, 2, 3}, {0, 0, -1}},
 		[][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}},
 		[][3]float32{{3, 1, 2}, {4, 0, 1}},
@@ -154,7 +155,7 @@ func TestWriteAccessorsInterleaved(t *testing.T) {
 
 func TestWriteAccessorsInterleaved_Error(t *testing.T) {
 	doc := gltf.NewDocument()
-	_, err := WriteAccessorsInterleaved(doc,
+	_, err := modeler.WriteAccessorsInterleaved(doc,
 		[][3]float32{{1, 2, 3}, {0, 0, -1}},
 		[][3]float32{{3, 1, 2}},
 	)
@@ -165,7 +166,7 @@ func TestWriteAccessorsInterleaved_Error(t *testing.T) {
 
 func TestWriteBufferViewInterleaved(t *testing.T) {
 	doc := gltf.NewDocument()
-	_, err := WriteBufferViewInterleaved(doc,
+	_, err := modeler.WriteBufferViewInterleaved(doc,
 		[][3]float32{{1, 2, 3}, {0, 0, -1}},
 		[][4]float32{{1, 2, 3, 4}, {1, 2, 3, 4}},
 		[][3]float32{{3, 1, 2}, {4, 0, 1}},
@@ -193,7 +194,7 @@ func TestWriteBufferViewInterleaved(t *testing.T) {
 
 func TestWriteBufferViewInterleaved_Error(t *testing.T) {
 	doc := gltf.NewDocument()
-	_, err := WriteBufferViewInterleaved(doc,
+	_, err := modeler.WriteBufferViewInterleaved(doc,
 		[][3]float32{{1, 2, 3}, {0, 0, -1}},
 		[][3]float32{{3, 1, 2}},
 	)
@@ -231,7 +232,7 @@ func TestWriteNormal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WriteNormal(tt.m, tt.args.data)
+			got := modeler.WriteNormal(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WriteNormal() = %v, want %v", got, tt.want)
 				return
@@ -273,7 +274,7 @@ func TestWriteTangent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WriteTangent(tt.m, tt.args.data)
+			got := modeler.WriteTangent(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WriteTangent() = %v, want %v", got, tt.want)
 				return
@@ -315,7 +316,7 @@ func TestWritePosition(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WritePosition(tt.m, tt.args.data)
+			got := modeler.WritePosition(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WritePosition() = %v, want %v", got, tt.want)
 				return
@@ -372,7 +373,7 @@ func TestWriteJoints(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WriteJoints(tt.m, tt.args.data)
+			got := modeler.WriteJoints(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WriteJoints() = %v, want %v", got, tt.want)
 				return
@@ -444,7 +445,7 @@ func TestWriteWeights(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WriteWeights(tt.m, tt.args.data)
+			got := modeler.WriteWeights(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WriteWeights() = %v, want %v", got, tt.want)
 				return
@@ -516,7 +517,7 @@ func TestWriteTextureCoord(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WriteTextureCoord(tt.m, tt.args.data)
+			got := modeler.WriteTextureCoord(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WriteTextureCoord() = %v, want %v", got, tt.want)
 				return
@@ -573,7 +574,7 @@ func TestWriteIndices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WriteIndices(tt.m, tt.args.data)
+			got := modeler.WriteIndices(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WriteIndices() = %v, want %v", got, tt.want)
 				return
@@ -644,7 +645,7 @@ func TestWriteColor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WriteColor(tt.m, tt.args.data)
+			got := modeler.WriteColor(tt.m, tt.args.data)
 			if tt.want != got {
 				t.Errorf("WriteColor() = %v, want %v", got, tt.want)
 				return
@@ -715,7 +716,7 @@ func TestWriteImage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := WriteImage(tt.m, tt.args.name, tt.args.mimeType, tt.args.r)
+			got, err := modeler.WriteImage(tt.m, tt.args.name, tt.args.mimeType, tt.args.r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WriteImage() error = %v, wantErr %v", err, tt.wantErr)
 				return

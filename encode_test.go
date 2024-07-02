@@ -1,4 +1,4 @@
-package gltf
+package gltf_test
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 	"testing/fstest"
 
 	"github.com/go-test/deep"
+	. "github.com/qmuntal/gltf"
 )
 
 type mockFile struct {
@@ -105,7 +106,11 @@ func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
 	if !strings.Contains(buff.String(), "BIN") {
 		t.Error("Encoder.Encode() as binary with bin buffer should contain bin chunk")
 	}
-	var header glbHeader
+	var header struct {
+		_      uint32
+		_      uint32
+		Length uint32
+	}
 	if err := binary.Read(buff, binary.LittleEndian, &header); err != nil {
 		t.Fatal(err)
 	}
@@ -125,8 +130,8 @@ func TestEncoder_Encode_Buffers_Without_URI(t *testing.T) {
 	if err := e.Encode(doc); err != nil {
 		t.Errorf("Encoder.Encode() error = %v", err)
 	}
-	if !strings.Contains(buf.String(), mimetypeApplicationOctet+",AQID") ||
-		!strings.Contains(buf.String(), mimetypeApplicationOctet+",BAUG") {
+	if !strings.Contains(buf.String(), "data:application/octet-stream;base64,AQID") ||
+		!strings.Contains(buf.String(), "data:application/octet-stream;base64,BAUG") {
 		t.Error("Encoder.Encode() should auto embed buffers without URI")
 	}
 	buf.Reset()
@@ -134,10 +139,10 @@ func TestEncoder_Encode_Buffers_Without_URI(t *testing.T) {
 	if err := e.Encode(doc); err != nil {
 		t.Errorf("Encoder.Encode() error = %v", err)
 	}
-	if strings.Contains(buf.String(), mimetypeApplicationOctet+",AQID") {
+	if strings.Contains(buf.String(), "data:application/octet-stream;base64,AQID") {
 		t.Error("Encoder.Encode() as binary should not embed fur buffer")
 	}
-	if !strings.Contains(buf.String(), mimetypeApplicationOctet+",BAUG") {
+	if !strings.Contains(buf.String(), "data:application/octet-stream;base64,BAUG") {
 		t.Error("Encoder.Encode() should auto embed buffers without URI")
 	}
 }

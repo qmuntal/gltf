@@ -1,9 +1,11 @@
-package unlit
+package unlit_test
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/gltf/ext/unlit"
 )
 
 func TestUnlit_UnmarshalJSON(t *testing.T) {
@@ -13,18 +15,18 @@ func TestUnlit_UnmarshalJSON(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *Unlit
+		want    *unlit.Unlit
 		wantErr bool
 	}{
-		{"err", args{[]byte(`{"fake": {{"a":2}}`)}, &Unlit{}, true},
-		{"empty", args{[]byte(`{}`)}, &Unlit{}, false},
-		{"withProps", args{[]byte(`{"fake": {"a":2}}`)}, &Unlit{
+		{"err", args{[]byte(`{"fake": {{"a":2}}`)}, &unlit.Unlit{}, true},
+		{"empty", args{[]byte(`{}`)}, &unlit.Unlit{}, false},
+		{"withProps", args{[]byte(`{"fake": {"a":2}}`)}, &unlit.Unlit{
 			"fake": json.RawMessage(`{"a":2}`),
 		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			u := Unlit{}
+			u := unlit.Unlit{}
 			if err := u.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("Unlit.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -46,11 +48,11 @@ func TestUnmarshal(t *testing.T) {
 		want    any
 		wantErr bool
 	}{
-		{"base", args{[]byte("{}")}, &Unlit{}, false},
+		{"base", args{[]byte("{}")}, &unlit.Unlit{}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Unmarshal(tt.args.data)
+			got, err := unlit.Unmarshal(tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
 				return

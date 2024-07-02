@@ -1,38 +1,39 @@
-package gltf
+package gltf_test
 
 import (
 	"math"
 	"testing"
 
 	"github.com/go-test/deep"
+	"github.com/qmuntal/gltf"
 )
 
 func TestNormalize(t *testing.T) {
-	if got := NormalizeByte(0.0236); got != 3 {
+	if got := gltf.NormalizeByte(0.0236); got != 3 {
 		t.Errorf("NormalizeByte = %v, want %v", got, 3)
 	}
-	if got := NormalizeUbyte(0.2); got != 51 {
+	if got := gltf.NormalizeUbyte(0.2); got != 51 {
 		t.Errorf("NormalizeUbyte = %v, want %v", got, 51)
 	}
-	if got := NormalizeShort(0.03053); got != 1000 {
+	if got := gltf.NormalizeShort(0.03053); got != 1000 {
 		t.Errorf("NormalizeShort = %v, want %v", got, 1000)
 	}
-	if got := NormalizeUshort(0.2); got != 13107 {
+	if got := gltf.NormalizeUshort(0.2); got != 13107 {
 		t.Errorf("NormalizeUshort = %v, want %v", got, 13107)
 	}
 }
 
 func TestDenormalize(t *testing.T) {
-	if got := DenormalizeByte(3); math.Abs(float64(got)-0.0236) > 1e-4 {
+	if got := gltf.DenormalizeByte(3); math.Abs(float64(got)-0.0236) > 1e-4 {
 		t.Errorf("DenormalizeByte = %v, want %v", got, 0.0236)
 	}
-	if got := DenormalizeUbyte(51); got != 0.2 {
+	if got := gltf.DenormalizeUbyte(51); got != 0.2 {
 		t.Errorf("DenormalizeUbyte = %v, want %v", got, 0.2)
 	}
-	if got := DenormalizeShort(1000); math.Abs(float64(got)-0.03053) > 1e-4 {
+	if got := gltf.DenormalizeShort(1000); math.Abs(float64(got)-0.03053) > 1e-4 {
 		t.Errorf("DenormalizeShort = %v, want %v", got, 0.03053)
 	}
-	if got := DenormalizeUshort(13107); got != 0.2 {
+	if got := gltf.DenormalizeUshort(13107); got != 0.2 {
 		t.Errorf("DenormalizeUshort = %v, want %v", got, 0.2)
 	}
 }
@@ -54,7 +55,7 @@ func TestNormalizeRGBA(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NormalizeRGBA(tt.args.v)
+			got := gltf.NormalizeRGBA(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("NormalizeRGBA() = %v", diff)
 			}
@@ -79,7 +80,7 @@ func TestNormalizeRGB(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NormalizeRGB(tt.args.v)
+			got := gltf.NormalizeRGB(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("NormalizeRGB() = %v", diff)
 			}
@@ -104,7 +105,7 @@ func TestNormalizeRGBA64(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NormalizeRGBA64(tt.args.v)
+			got := gltf.NormalizeRGBA64(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("NormalizeRGBA64() = %v", diff)
 			}
@@ -129,7 +130,7 @@ func TestNormalizeRGB64(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NormalizeRGB64(tt.args.v)
+			got := gltf.NormalizeRGB64(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("NormalizeRGB64() = %v", diff)
 			}
@@ -154,7 +155,7 @@ func TestDenormalizeRGBA(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := DenormalizeRGBA(tt.args.v)
+			got := gltf.DenormalizeRGBA(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("DenormalizeRGBA() = %v", diff)
 			}
@@ -179,7 +180,7 @@ func TestDenormalizeRGB(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := DenormalizeRGB(tt.args.v)
+			got := gltf.DenormalizeRGB(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("DenormalizeRGB() = %v", diff)
 			}
@@ -204,7 +205,7 @@ func TestDenormalizeRGBA64(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := DenormalizeRGBA64(tt.args.v)
+			got := gltf.DenormalizeRGBA64(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("DenormalizeRGBA64() = %v", diff)
 			}
@@ -229,7 +230,7 @@ func TestDenormalizeRGB64(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := DenormalizeRGB64(tt.args.v)
+			got := gltf.DenormalizeRGB64(tt.args.v)
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Errorf("DenormalizeRGB64() = %v", diff)
 			}

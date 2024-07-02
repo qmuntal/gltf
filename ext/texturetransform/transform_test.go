@@ -1,21 +1,22 @@
-package texturetransform
+package texturetransform_test
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/qmuntal/gltf"
+	"github.com/qmuntal/gltf/ext/texturetransform"
 )
 
 func TestTextureTranform_ScaleOrDefault(t *testing.T) {
 	tests := []struct {
 		name string
-		t    *TextureTranform
+		t    *texturetransform.TextureTranform
 		want [2]float64
 	}{
-		{"default", &TextureTranform{Scale: DefaultScale}, DefaultScale},
-		{"zeros", &TextureTranform{Scale: emptyScale}, DefaultScale},
-		{"other", &TextureTranform{Scale: [2]float64{1, 2}}, [2]float64{1, 2}},
+		{"default", &texturetransform.TextureTranform{Scale: texturetransform.DefaultScale}, texturetransform.DefaultScale},
+		{"zeros", &texturetransform.TextureTranform{Scale: [2]float64{0, 0}}, texturetransform.DefaultScale},
+		{"other", &texturetransform.TextureTranform{Scale: [2]float64{1, 2}}, [2]float64{1, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -32,13 +33,13 @@ func TestTextureTranform_UnmarshalJSON(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		t       *TextureTranform
+		t       *texturetransform.TextureTranform
 		args    args
-		want    *TextureTranform
+		want    *texturetransform.TextureTranform
 		wantErr bool
 	}{
-		{"default", new(TextureTranform), args{[]byte("{}")}, &TextureTranform{Scale: DefaultScale}, false},
-		{"nodefault", new(TextureTranform), args{[]byte(`{"offset": [0.1,0.2],"rotation":1.57,"scale":[1, -1],"texCoord":2}`)}, &TextureTranform{
+		{"default", new(texturetransform.TextureTranform), args{[]byte("{}")}, &texturetransform.TextureTranform{Scale: texturetransform.DefaultScale}, false},
+		{"nodefault", new(texturetransform.TextureTranform), args{[]byte(`{"offset": [0.1,0.2],"rotation":1.57,"scale":[1, -1],"texCoord":2}`)}, &texturetransform.TextureTranform{
 			Offset: [2]float64{0.1, 0.2}, Rotation: 1.57, Scale: [2]float64{1, -1}, TexCoord: gltf.Index(2),
 		}, false},
 	}
@@ -58,13 +59,13 @@ func TestTextureTranform_UnmarshalJSON(t *testing.T) {
 func TestTextureTranform_MarshalJSON(t *testing.T) {
 	tests := []struct {
 		name    string
-		t       *TextureTranform
+		t       *texturetransform.TextureTranform
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &TextureTranform{Scale: DefaultScale}, []byte(`{}`), false},
-		{"empty", &TextureTranform{}, []byte(`{}`), false},
-		{"nodefault", &TextureTranform{Offset: [2]float64{0.1, 0.2}, Rotation: 1.57, Scale: [2]float64{1, -1}, TexCoord: gltf.Index(2)}, []byte(`{"offset":[0.1,0.2],"rotation":1.57,"scale":[1,-1],"texCoord":2}`), false},
+		{"default", &texturetransform.TextureTranform{Scale: texturetransform.DefaultScale}, []byte(`{}`), false},
+		{"empty", &texturetransform.TextureTranform{}, []byte(`{}`), false},
+		{"nodefault", &texturetransform.TextureTranform{Offset: [2]float64{0.1, 0.2}, Rotation: 1.57, Scale: [2]float64{1, -1}, TexCoord: gltf.Index(2)}, []byte(`{"offset":[0.1,0.2],"rotation":1.57,"scale":[1,-1],"texCoord":2}`), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -90,11 +91,11 @@ func TestUnmarshal(t *testing.T) {
 		want    any
 		wantErr bool
 	}{
-		{"base", args{[]byte("{}")}, &TextureTranform{Scale: DefaultScale}, false},
+		{"base", args{[]byte("{}")}, &texturetransform.TextureTranform{Scale: texturetransform.DefaultScale}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Unmarshal(tt.args.data)
+			got, err := texturetransform.Unmarshal(tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
 				return

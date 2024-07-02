@@ -1,11 +1,12 @@
-package binary
+package binary_test
 
 import (
 	"bytes"
-	"encoding/binary"
+	gobinary "encoding/binary"
 	"testing"
 
 	"github.com/qmuntal/gltf"
+	"github.com/qmuntal/gltf/binary"
 )
 
 func BenchmarkNative(b *testing.B) {
@@ -15,7 +16,7 @@ func BenchmarkNative(b *testing.B) {
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		for i := range data {
-			Float.PutVec3(bs[4*i:], data[i])
+			binary.Float.PutVec3(bs[4*i:], data[i])
 		}
 	}
 }
@@ -26,7 +27,7 @@ func BenchmarkWrite(b *testing.B) {
 	data := make([][3]float32, s)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		Write(bs, 0, data)
+		binary.Write(bs, 0, data)
 	}
 }
 
@@ -36,6 +37,6 @@ func BenchmarkWrite_builtint(b *testing.B) {
 	data := make([][3]float32, s)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		binary.Write(bs, binary.LittleEndian, data)
+		gobinary.Write(bs, gobinary.LittleEndian, data)
 	}
 }

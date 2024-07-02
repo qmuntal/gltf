@@ -1,11 +1,13 @@
-package binary
+package binary_test
 
 import (
-	"encoding/binary"
+	gobinary "encoding/binary"
 	"image/color"
 	"math"
 	"reflect"
 	"testing"
+
+	"github.com/qmuntal/gltf/binary"
 )
 
 func buildBuffer1(n int, empty ...int) []byte {
@@ -22,7 +24,7 @@ func buildBuffer1(n int, empty ...int) []byte {
 func buildBuffer2(n int, empty ...int) []byte {
 	b := make([]byte, 2*n)
 	for i := 0; i < n; i++ {
-		binary.LittleEndian.PutUint16(b[i*2:], uint16(i+1))
+		gobinary.LittleEndian.PutUint16(b[i*2:], uint16(i+1))
 	}
 	for _, e := range empty {
 		b[e] = 0
@@ -33,7 +35,7 @@ func buildBuffer2(n int, empty ...int) []byte {
 func buildBuffer3(n int) []byte {
 	b := make([]byte, 4*n)
 	for i := 0; i < n; i++ {
-		binary.LittleEndian.PutUint32(b[i*4:], uint32(i+1))
+		gobinary.LittleEndian.PutUint32(b[i*4:], uint32(i+1))
 	}
 	return b
 }
@@ -41,7 +43,7 @@ func buildBuffer3(n int) []byte {
 func buildBufferF(n int) []byte {
 	b := make([]byte, 4*n)
 	for i := 0; i < n; i++ {
-		binary.LittleEndian.PutUint32(b[i*4:], math.Float32bits(float32(i+1)))
+		gobinary.LittleEndian.PutUint32(b[i*4:], math.Float32bits(float32(i+1)))
 	}
 	return b
 }
@@ -166,7 +168,7 @@ func TestRead(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := Read(tt.args.b, 0, tt.args.data); (err != nil) != tt.wantErr {
+			if err := binary.Read(tt.args.b, 0, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("Read() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !tt.wantErr && !reflect.DeepEqual(tt.args.data, tt.want) {
@@ -297,7 +299,7 @@ func TestWrite(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := make([]byte, tt.args.n)
-			if err := Write(b, 0, tt.args.data); (err != nil) != tt.wantErr {
+			if err := binary.Write(b, 0, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("Write() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !tt.wantErr && !reflect.DeepEqual(b, tt.want) {
@@ -317,8 +319,8 @@ func Test_ubyteComponent_Scalar(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := make([]byte, 1)
-			Ubyte.PutScalar(b, tt.want)
-			if got := Ubyte.Scalar(b); got != tt.want {
+			binary.Ubyte.PutScalar(b, tt.want)
+			if got := binary.Ubyte.Scalar(b); got != tt.want {
 				t.Errorf("ubyteComponent.Scalar() = %v, want %v", got, tt.want)
 			}
 		})
@@ -335,8 +337,8 @@ func Test_byteComponent_Scalar(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := make([]byte, 1)
-			Byte.PutScalar(b, tt.want)
-			if got := Byte.Scalar(b); got != tt.want {
+			binary.Byte.PutScalar(b, tt.want)
+			if got := binary.Byte.Scalar(b); got != tt.want {
 				t.Errorf("byteComponent.Scalar() = %v, want %v", got, tt.want)
 			}
 		})

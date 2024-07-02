@@ -1,6 +1,10 @@
-package gltf
+package gltf_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/qmuntal/gltf"
+)
 
 func BenchmarkOpenASCII(b *testing.B) {
 	benchs := []struct {
@@ -18,7 +22,7 @@ func BenchmarkOpenASCII(b *testing.B) {
 	for _, bb := range benchs {
 		b.Run(bb.name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_, err := Open(bb.name)
+				_, err := gltf.Open(bb.name)
 				if err != nil {
 					b.Errorf("Open() error = %v", err)
 					return
@@ -41,7 +45,7 @@ func BenchmarkOpenEmbedded(b *testing.B) {
 	for _, bb := range benchs {
 		b.Run(bb.name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_, err := Open(bb.name)
+				_, err := gltf.Open(bb.name)
 				if err != nil {
 					b.Errorf("Open() error = %v", err)
 					return
@@ -61,7 +65,7 @@ func BenchmarkOpenBinary(b *testing.B) {
 	for _, bb := range benchs {
 		b.Run(bb.name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_, err := Open(bb.name)
+				_, err := gltf.Open(bb.name)
 				if err != nil {
 					b.Errorf("Open() error = %v", err)
 					return

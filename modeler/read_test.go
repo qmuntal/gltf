@@ -1,10 +1,11 @@
-package modeler
+package modeler_test
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/qmuntal/gltf"
+	"github.com/qmuntal/gltf/modeler"
 )
 
 func TestReadColor64_ReuseBuffer(t *testing.T) {
@@ -25,14 +26,14 @@ func TestReadColor64_ReuseBuffer(t *testing.T) {
 	}
 	var buf [][4]uint16
 	var err error
-	buf, err = ReadColor64(doc, acc2, buf)
+	buf, err = modeler.ReadColor64(doc, acc2, buf)
 	if err != nil {
 		t.Error(err)
 	}
 	if len(buf) != int(acc2.Count) {
 		t.Errorf("ReadColor() len = %d, want %d", len(buf), acc2.Count)
 	}
-	buf, err = ReadColor64(doc, acc1, buf)
+	buf, err = modeler.ReadColor64(doc, acc1, buf)
 	if err != nil {
 		t.Error(err)
 	}
@@ -70,7 +71,7 @@ func TestReadBufferView(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadBufferView(tt.args.doc, tt.args.bv)
+			got, err := modeler.ReadBufferView(tt.args.doc, tt.args.bv)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadBufferView() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -91,7 +92,7 @@ func TestReadAccessor_Buffered(t *testing.T) {
 	acr := &gltf.Accessor{
 		BufferView: gltf.Index(0), ByteOffset: 3, ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 3,
 	}
-	data, err := ReadAccessor(doc, acr, make([]byte, 100))
+	data, err := modeler.ReadAccessor(doc, acr, make([]byte, 100))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +177,7 @@ func TestReadAccessor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadAccessor(tt.args.doc, tt.args.acr, nil)
+			got, err := modeler.ReadAccessor(tt.args.doc, tt.args.acr, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadAccessor() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -203,7 +204,7 @@ func TestReadAccessorAllocs(t *testing.T) {
 
 	testFunc := func(t *testing.T, buf [][3]float32, want float32) {
 		allocs := testing.AllocsPerRun(10, func() {
-			ReadAccessor(doc, acr, buf)
+			modeler.ReadAccessor(doc, acr, buf)
 		})
 		if allocs != float64(want) {
 			t.Errorf("ReadAccessor expected %v allocs got %v", want, allocs)
@@ -270,7 +271,7 @@ func TestReadIndices(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadIndices(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadIndices(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadIndices() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -317,7 +318,7 @@ func TestReadNormal(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadNormal(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadNormal(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadNormal() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -364,7 +365,7 @@ func TestReadTangent(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadTangent(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadTangent(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadTangent() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -417,7 +418,7 @@ func TestReadTextureCoord(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadTextureCoord(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadTextureCoord(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadTextureCoord() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -470,7 +471,7 @@ func TestReadWeights(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadWeights(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadWeights(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadWeights() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -517,7 +518,7 @@ func TestReadJoints(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadJoints(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadJoints(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadJoints() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -564,7 +565,7 @@ func TestReadPosition(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadPosition(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadPosition(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadPosition() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -623,7 +624,7 @@ func TestReadColor(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadColor(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadColor(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadColor() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -682,7 +683,7 @@ func TestReadColor64(t *testing.T) {
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
 				},
 			}
-			got, err := ReadColor64(doc, tt.args.acr, tt.args.buffer)
+			got, err := modeler.ReadColor64(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadColor64() error = %v, wantErr %v", err, tt.wantErr)
 				return
