@@ -25,10 +25,10 @@ func init() {
 
 // PBRSpecularGlossiness defines a specular-glossiness material model.
 type PBRSpecularGlossiness struct {
-	DiffuseFactor             *[4]float64       `json:"diffuseFactor,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
+	DiffuseFactor             *[4]float64       `json:"diffuseFactor,omitempty"`
 	DiffuseTexture            *gltf.TextureInfo `json:"diffuseTexture,omitempty"`
-	SpecularFactor            *[3]float64       `json:"specularFactor,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
-	GlossinessFactor          *float64          `json:"glossinessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	SpecularFactor            *[3]float64       `json:"specularFactor,omitempty"`
+	GlossinessFactor          *float64          `json:"glossinessFactor,omitempty"`
 	SpecularGlossinessTexture *gltf.TextureInfo `json:"specularGlossinessTexture,omitempty"`
 }
 

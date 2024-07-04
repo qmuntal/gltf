@@ -81,7 +81,7 @@ type Lights []*Light
 type Light struct {
 	Type      string      `json:"type"`
 	Name      string      `json:"name,omitempty"`
-	Color     *[3]float64 `json:"color,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
+	Color     *[3]float64 `json:"color,omitempty"`
 	Intensity *float64    `json:"intensity,omitempty"`
 	Range     *float64    `json:"range,omitempty"`
 	Spot      *Spot       `json:"spot,omitempty"`

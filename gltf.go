@@ -21,10 +21,10 @@ func Float(val float64) *float64 {
 type Asset struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
-	Copyright  string     `json:"copyright,omitempty"`         // A copyright message suitable for display to credit the content creator.
-	Generator  string     `json:"generator,omitempty"`         // Tool that generated this glTF model. Useful for debugging.
-	Version    string     `json:"version" validate:"required"` // The glTF version that this asset targets.
-	MinVersion string     `json:"minVersion,omitempty"`        // The minimum glTF version that this asset targets.
+	Copyright  string     `json:"copyright,omitempty"`  // A copyright message suitable for display to credit the content creator.
+	Generator  string     `json:"generator,omitempty"`  // Tool that generated this glTF model. Useful for debugging.
+	Version    string     `json:"version"`              // The glTF version that this asset targets.
+	MinVersion string     `json:"minVersion,omitempty"` // The minimum glTF version that this asset targets.
 }
 
 // Document defines the root object for a glTF asset.
@@ -33,21 +33,21 @@ type Document struct {
 	Extras             any           `json:"extras,omitempty"`
 	ExtensionsUsed     []string      `json:"extensionsUsed,omitempty"`
 	ExtensionsRequired []string      `json:"extensionsRequired,omitempty"`
-	Accessors          []*Accessor   `json:"accessors,omitempty" validate:"dive"`
-	Animations         []*Animation  `json:"animations,omitempty" validate:"dive"`
+	Accessors          []*Accessor   `json:"accessors,omitempty"`
+	Animations         []*Animation  `json:"animations,omitempty"`
 	Asset              Asset         `json:"asset"`
-	Buffers            []*Buffer     `json:"buffers,omitempty" validate:"dive"`
-	BufferViews        []*BufferView `json:"bufferViews,omitempty" validate:"dive"`
-	Cameras            []*Camera     `json:"cameras,omitempty" validate:"dive"`
-	Images             []*Image      `json:"images,omitempty" validate:"dive"`
-	Materials          []*Material   `json:"materials,omitempty" validate:"dive"`
-	Meshes             []*Mesh       `json:"meshes,omitempty" validate:"dive"`
-	Nodes              []*Node       `json:"nodes,omitempty" validate:"dive"`
-	Samplers           []*Sampler    `json:"samplers,omitempty" validate:"dive"`
+	Buffers            []*Buffer     `json:"buffers,omitempty"`
+	BufferViews        []*BufferView `json:"bufferViews,omitempty"`
+	Cameras            []*Camera     `json:"cameras,omitempty"`
+	Images             []*Image      `json:"images,omitempty"`
+	Materials          []*Material   `json:"materials,omitempty"`
+	Meshes             []*Mesh       `json:"meshes,omitempty"`
+	Nodes              []*Node       `json:"nodes,omitempty"`
+	Samplers           []*Sampler    `json:"samplers,omitempty"`
 	Scene              *int          `json:"scene,omitempty"`
-	Scenes             []*Scene      `json:"scenes,omitempty" validate:"dive"`
-	Skins              []*Skin       `json:"skins,omitempty" validate:"dive"`
-	Textures           []*Texture    `json:"textures,omitempty" validate:"dive"`
+	Scenes             []*Scene      `json:"scenes,omitempty"`
+	Skins              []*Skin       `json:"skins,omitempty"`
+	Textures           []*Texture    `json:"textures,omitempty"`
 }
 
 // NewDocument returns a new Document with sane defaults.
@@ -71,22 +71,22 @@ type Accessor struct {
 	Name          string        `json:"name,omitempty"`
 	BufferView    *int          `json:"bufferView,omitempty"`
 	ByteOffset    int           `json:"byteOffset,omitempty"`
-	ComponentType ComponentType `json:"componentType" validate:"lte=5"`
-	Normalized    bool          `json:"normalized,omitempty"`      // Specifies whether integer data values should be normalized.
-	Count         int           `json:"count" validate:"required"` // The number of attributes referenced by this accessor.
-	Type          AccessorType  `json:"type" validate:"lte=6"`
-	Max           []float64     `json:"max,omitempty" validate:"omitempty,lte=16"` // Maximum value of each component in this attribute.
-	Min           []float64     `json:"min,omitempty" validate:"omitempty,lte=16"` // Minimum value of each component in this attribute.
-	Sparse        *Sparse       `json:"sparse,omitempty"`                          // Sparse storage of attributes that deviate from their initialization value.
+	ComponentType ComponentType `json:"componentType"`
+	Normalized    bool          `json:"normalized,omitempty"` // Specifies whether integer data values should be normalized.
+	Count         int           `json:"count"`                // The number of attributes referenced by this accessor.
+	Type          AccessorType  `json:"type"`
+	Max           []float64     `json:"max,omitempty"`    // Maximum value of each component in this attribute.
+	Min           []float64     `json:"min,omitempty"`    // Minimum value of each component in this attribute.
+	Sparse        *Sparse       `json:"sparse,omitempty"` // Sparse storage of attributes that deviate from their initialization value.
 }
 
 // Sparse storage of attributes that deviate from their initialization value.
 type Sparse struct {
 	Extensions Extensions    `json:"extensions,omitempty"`
 	Extras     any           `json:"extras,omitempty"`
-	Count      int           `json:"count" validate:"gte=1"` // Number of entries stored in the sparse array.
-	Indices    SparseIndices `json:"indices"`                // Index array of size count that points to those accessor attributes that deviate from their initialization value.
-	Values     SparseValues  `json:"values"`                 // Array of size count times number of components, storing the displaced accessor attributes pointed by indices.
+	Count      int           `json:"count"`   // Number of entries stored in the sparse array.
+	Indices    SparseIndices `json:"indices"` // Index array of size count that points to those accessor attributes that deviate from their initialization value.
+	Values     SparseValues  `json:"values"`  // Array of size count times number of components, storing the displaced accessor attributes pointed by indices.
 }
 
 // SparseValues stores the displaced accessor attributes pointed by accessor.sparse.indices.
@@ -103,7 +103,7 @@ type SparseIndices struct {
 	Extras        any           `json:"extras,omitempty"`
 	BufferView    int           `json:"bufferView"`
 	ByteOffset    int           `json:"byteOffset,omitempty"`
-	ComponentType ComponentType `json:"componentType" validate:"oneof=2 4 5"`
+	ComponentType ComponentType `json:"componentType"`
 }
 
 // A Buffer points to binary geometry, animation, or skins.
@@ -113,8 +113,8 @@ type Buffer struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
 	Name       string     `json:"name,omitempty"`
-	URI        string     `json:"uri,omitempty" validate:"omitempty"`
-	ByteLength int        `json:"byteLength" validate:"required"`
+	URI        string     `json:"uri,omitempty"`
+	ByteLength int        `json:"byteLength"`
 	Data       []byte     `json:"-"`
 }
 
@@ -150,9 +150,9 @@ type BufferView struct {
 	Extras     any        `json:"extras,omitempty"`
 	Buffer     int        `json:"buffer"`
 	ByteOffset int        `json:"byteOffset,omitempty"`
-	ByteLength int        `json:"byteLength" validate:"required"`
-	ByteStride int        `json:"byteStride,omitempty" validate:"omitempty,gte=4,lte=252"`
-	Target     Target     `json:"target,omitempty" validate:"omitempty,oneof=34962 34963"`
+	ByteLength int        `json:"byteLength"`
+	ByteStride int        `json:"byteStride,omitempty"`
+	Target     Target     `json:"target,omitempty"`
 	Name       string     `json:"name,omitempty"`
 }
 
@@ -161,7 +161,7 @@ type Scene struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
 	Name       string     `json:"name,omitempty"`
-	Nodes      []int      `json:"nodes,omitempty" validate:"omitempty,unique"`
+	Nodes      []int      `json:"nodes,omitempty"`
 }
 
 // A Node in the node hierarchy.
@@ -171,11 +171,11 @@ type Node struct {
 	Extras      any         `json:"extras,omitempty"`
 	Name        string      `json:"name,omitempty"`
 	Camera      *int        `json:"camera,omitempty"`
-	Children    []int       `json:"children,omitempty" validate:"omitempty,unique"`
+	Children    []int       `json:"children,omitempty"`
 	Skin        *int        `json:"skin,omitempty"`
 	Matrix      [16]float64 `json:"matrix"` // A 4x4 transformation matrix stored in column-major order.
 	Mesh        *int        `json:"mesh,omitempty"`
-	Rotation    [4]float64  `json:"rotation" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+	Rotation    [4]float64  `json:"rotation"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
 	Scale       [3]float64  `json:"scale"`
 	Translation [3]float64  `json:"translation"`
 	Weights     []float64   `json:"weights,omitempty"` // The weights of the instantiated Morph Target.
@@ -215,9 +215,9 @@ type Skin struct {
 	Extensions          Extensions `json:"extensions,omitempty"`
 	Extras              any        `json:"extras,omitempty"`
 	Name                string     `json:"name,omitempty"`
-	InverseBindMatrices *int       `json:"inverseBindMatrices,omitempty"`      // The index of the accessor containing the floating-point 4x4 inverse-bind matrices.
-	Skeleton            *int       `json:"skeleton,omitempty"`                 // The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
-	Joints              []int      `json:"joints" validate:"omitempty,unique"` // Indices of skeleton nodes, used as joints in this skin.
+	InverseBindMatrices *int       `json:"inverseBindMatrices,omitempty"` // The index of the accessor containing the floating-point 4x4 inverse-bind matrices.
+	Skeleton            *int       `json:"skeleton,omitempty"`            // The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
+	Joints              []int      `json:"joints"`                        // Indices of skeleton nodes, used as joints in this skin.
 }
 
 // A Camera projection. A node can reference a camera to apply a transform to place the camera in the scene.
@@ -233,10 +233,10 @@ type Camera struct {
 type Orthographic struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
-	Xmag       float64    `json:"xmag"`                               // The horizontal magnification of the view.
-	Ymag       float64    `json:"ymag"`                               // The vertical magnification of the view.
-	Zfar       float64    `json:"zfar" validate:"gt=0,gtfield=Znear"` // The distance to the far clipping plane.
-	Znear      float64    `json:"znear" validate:"gte=0"`             // The distance to the near clipping plane.
+	Xmag       float64    `json:"xmag"`  // The horizontal magnification of the view.
+	Ymag       float64    `json:"ymag"`  // The vertical magnification of the view.
+	Zfar       float64    `json:"zfar"`  // The distance to the far clipping plane.
+	Znear      float64    `json:"znear"` // The distance to the near clipping plane.
 }
 
 // Perspective camera containing properties to create a perspective projection matrix.
@@ -254,7 +254,7 @@ type Mesh struct {
 	Extensions Extensions   `json:"extensions,omitempty"`
 	Extras     any          `json:"extras,omitempty"`
 	Name       string       `json:"name,omitempty"`
-	Primitives []*Primitive `json:"primitives" validate:"required,gt=0,dive"`
+	Primitives []*Primitive `json:"primitives"`
 	Weights    []float64    `json:"weights,omitempty"`
 }
 
@@ -265,8 +265,8 @@ type Primitive struct {
 	Attributes PrimitiveAttributes   `json:"attributes"`
 	Indices    *int                  `json:"indices,omitempty"` // The index of the accessor that contains the indices.
 	Material   *int                  `json:"material,omitempty"`
-	Mode       PrimitiveMode         `json:"mode,omitempty" validate:"lte=6"`
-	Targets    []PrimitiveAttributes `json:"targets,omitempty" validate:"omitempty,dive,dive,keys,oneof=POSITION NORMAL TANGENT,endkeys"` // Only POSITION, NORMAL, and TANGENT supported.
+	Mode       PrimitiveMode         `json:"mode,omitempty"`
+	Targets    []PrimitiveAttributes `json:"targets,omitempty"` // Only POSITION, NORMAL, and TANGENT supported.
 }
 
 // The Material appearance of a primitive.
@@ -278,9 +278,9 @@ type Material struct {
 	NormalTexture        *NormalTexture        `json:"normalTexture,omitempty"`
 	OcclusionTexture     *OcclusionTexture     `json:"occlusionTexture,omitempty"`
 	EmissiveTexture      *TextureInfo          `json:"emissiveTexture,omitempty"`
-	EmissiveFactor       [3]float64            `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
-	AlphaMode            AlphaMode             `json:"alphaMode,omitempty" validate:"lte=2"`
-	AlphaCutoff          *float64              `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
+	EmissiveFactor       [3]float64            `json:"emissiveFactor,omitempty"`
+	AlphaMode            AlphaMode             `json:"alphaMode,omitempty"`
+	AlphaCutoff          *float64              `json:"alphaCutoff,omitempty"`
 	DoubleSided          bool                  `json:"doubleSided,omitempty"`
 }
 
@@ -315,7 +315,7 @@ type OcclusionTexture struct {
 	Extras     any        `json:"extras,omitempty"`
 	Index      *int       `json:"index,omitempty"`
 	TexCoord   int        `json:"texCoord,omitempty"` // The index of texture's TEXCOORD attribute used for texture coordinate mapping.
-	Strength   *float64   `json:"strength,omitempty" validate:"omitempty,gte=0,lte=1"`
+	Strength   *float64   `json:"strength,omitempty"`
 }
 
 // StrengthOrDefault returns the strength if it is not nil, else return the default one.
@@ -330,10 +330,10 @@ func (o *OcclusionTexture) StrengthOrDefault() float64 {
 type PBRMetallicRoughness struct {
 	Extensions               Extensions   `json:"extensions,omitempty"`
 	Extras                   any          `json:"extras,omitempty"`
-	BaseColorFactor          *[4]float64  `json:"baseColorFactor,omitempty" validate:"omitempty,dive,gte=0,lte=1"`
+	BaseColorFactor          *[4]float64  `json:"baseColorFactor,omitempty"`
 	BaseColorTexture         *TextureInfo `json:"baseColorTexture,omitempty"`
-	MetallicFactor           *float64     `json:"metallicFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
-	RoughnessFactor          *float64     `json:"roughnessFactor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	MetallicFactor           *float64     `json:"metallicFactor,omitempty"`
+	RoughnessFactor          *float64     `json:"roughnessFactor,omitempty"`
 	MetallicRoughnessTexture *TextureInfo `json:"metallicRoughnessTexture,omitempty"`
 }
 
@@ -383,10 +383,10 @@ type Sampler struct {
 	Extensions Extensions   `json:"extensions,omitempty"`
 	Extras     any          `json:"extras,omitempty"`
 	Name       string       `json:"name,omitempty"`
-	MagFilter  MagFilter    `json:"magFilter,omitempty" validate:"lte=1"`
-	MinFilter  MinFilter    `json:"minFilter,omitempty" validate:"lte=5"`
-	WrapS      WrappingMode `json:"wrapS,omitempty" validate:"lte=2"`
-	WrapT      WrappingMode `json:"wrapT,omitempty" validate:"lte=2"`
+	MagFilter  MagFilter    `json:"magFilter,omitempty"`
+	MinFilter  MinFilter    `json:"minFilter,omitempty"`
+	WrapS      WrappingMode `json:"wrapS,omitempty"`
+	WrapT      WrappingMode `json:"wrapT,omitempty"`
 }
 
 // Image data used to create a texture. Image can be referenced by URI or bufferView index.
@@ -395,9 +395,9 @@ type Image struct {
 	Extensions Extensions `json:"extensions,omitempty"`
 	Extras     any        `json:"extras,omitempty"`
 	Name       string     `json:"name,omitempty"`
-	URI        string     `json:"uri,omitempty" validate:"omitempty"`
-	MimeType   string     `json:"mimeType,omitempty" validate:"omitempty,oneof=image/jpeg image/png"` // Manadatory if BufferView is defined.
-	BufferView *int       `json:"bufferView,omitempty"`                                               // Use this instead of the image's uri property.
+	URI        string     `json:"uri,omitempty"`
+	MimeType   string     `json:"mimeType,omitempty"`   // Manadatory if BufferView is defined.
+	BufferView *int       `json:"bufferView,omitempty"` // Use this instead of the image's uri property.
 }
 
 // IsEmbeddedResource returns true if the buffer points to an embedded resource.
@@ -426,8 +426,8 @@ type Animation struct {
 	Extensions Extensions          `json:"extensions,omitempty"`
 	Extras     any                 `json:"extras,omitempty"`
 	Name       string              `json:"name,omitempty"`
-	Channels   []*AnimationChannel `json:"channels" validate:"required,gt=0,dive"`
-	Samplers   []*AnimationSampler `json:"samplers" validate:"required,gt=0,dive"`
+	Channels   []*AnimationChannel `json:"channels"`
+	Samplers   []*AnimationSampler `json:"samplers"`
 }
 
 // AnimationSampler combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
@@ -435,7 +435,7 @@ type AnimationSampler struct {
 	Extensions    Extensions    `json:"extensions,omitempty"`
 	Extras        any           `json:"extras,omitempty"`
 	Input         int           `json:"input"` // The index of an accessor containing keyframe input values.
-	Interpolation Interpolation `json:"interpolation,omitempty" validate:"lte=2"`
+	Interpolation Interpolation `json:"interpolation,omitempty"`
 	Output        int           `json:"output"` // The index of an accessor containing keyframe output values.
 }
 
@@ -456,7 +456,7 @@ type AnimationChannelTarget struct {
 	Extensions Extensions  `json:"extensions,omitempty"`
 	Extras     any         `json:"extras,omitempty"`
 	Node       *int        `json:"node,omitempty"`
-	Path       TRSProperty `json:"path" validate:"lte=4"`
+	Path       TRSProperty `json:"path"`
 }
 
 // Extensions is map where the keys are the extension identifiers and the values are the extensions payloads.
