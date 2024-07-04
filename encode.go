@@ -278,8 +278,8 @@ func (n *Node) UnmarshalJSON(data []byte) error {
 func (n *Node) MarshalJSON() ([]byte, error) {
 	type alias Node
 	tmp := &struct {
-		Matrix      *[16]float64 `json:"matrix,omitempty"`                                          // A 4x4 transformation matrix stored in column-major order.
-		Rotation    *[4]float64  `json:"rotation,omitempty" validate:"omitempty,dive,gte=-1,lte=1"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
+		Matrix      *[16]float64 `json:"matrix,omitempty"`   // A 4x4 transformation matrix stored in column-major order.
+		Rotation    *[4]float64  `json:"rotation,omitempty"` // The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
 		Scale       *[3]float64  `json:"scale,omitempty"`
 		Translation *[3]float64  `json:"translation,omitempty"`
 		*alias
@@ -339,8 +339,8 @@ func (m *Material) UnmarshalJSON(data []byte) error {
 func (m *Material) MarshalJSON() ([]byte, error) {
 	type alias Material
 	tmp := &struct {
-		EmissiveFactor *[3]float64 `json:"emissiveFactor,omitempty" validate:"dive,gte=0,lte=1"`
-		AlphaCutoff    *float64    `json:"alphaCutoff,omitempty" validate:"omitempty,gte=0"`
+		EmissiveFactor *[3]float64 `json:"emissiveFactor,omitempty"`
+		AlphaCutoff    *float64    `json:"alphaCutoff,omitempty"`
 		*alias
 	}{
 		alias: (*alias)(m),
