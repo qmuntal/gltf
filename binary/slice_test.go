@@ -71,7 +71,7 @@ func TestMakeSlice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := binary.MakeSlice(tt.args.c, tt.args.t, tt.args.count); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := binary.MakeSlice(tt.args.c, tt.args.t, tt.args.count); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeSlice() = %v, want %v", got, tt.want)
 			}
 		})
@@ -83,7 +83,7 @@ func TestMakeSliceBuffer(t *testing.T) {
 		c      gltf.ComponentType
 		t      gltf.AccessorType
 		count  int
-		buffer any
+		buffer []byte
 	}
 	tests := []struct {
 		name string
@@ -91,15 +91,15 @@ func TestMakeSliceBuffer(t *testing.T) {
 		want any
 	}{
 		{"nil buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, nil}, make([][2]uint8, 2)},
-		{"empty buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 0)}, make([][2]uint8, 2)},
-		{"different buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][3]int8, 3)}, make([][2]uint8, 2)},
-		{"small buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 1)}, make([][2]uint8, 2)},
-		{"large buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 3)}, make([][2]uint8, 2)},
-		{"same buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([][2]uint8, 2)}, make([][2]uint8, 2)},
+		{"empty buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([]uint8, 0)}, make([][2]uint8, 2)},
+		{"different buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([]uint8, 9)}, make([][2]uint8, 2)},
+		{"small buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([]uint8, 2)}, make([][2]uint8, 2)},
+		{"large buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([]uint8, 6)}, make([][2]uint8, 2)},
+		{"same buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([]uint8, 4)}, make([][2]uint8, 2)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := binary.MakeSliceBuffer(tt.args.c, tt.args.t, tt.args.count, tt.args.buffer); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := binary.MakeSliceBuffer(tt.args.c, tt.args.t, tt.args.count, tt.args.buffer); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeSliceBuffer() = %v, want %v", got, tt.want)
 			}
 		})
