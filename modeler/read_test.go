@@ -202,7 +202,7 @@ func TestReadAccessorAllocs(t *testing.T) {
 		BufferView: gltf.Index(0), ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 4,
 	}
 
-	testFunc := func(t *testing.T, buf [][3]float32, want float32) {
+	testFunc := func(t *testing.T, buf []byte, want float32) {
 		allocs := testing.AllocsPerRun(10, func() {
 			modeler.ReadAccessor(doc, acr, buf)
 		})
@@ -215,14 +215,14 @@ func TestReadAccessorAllocs(t *testing.T) {
 		testFunc(t, nil, 2)
 	})
 	t.Run("2", func(t *testing.T) {
-		buf := make([][3]float32, 2)
+		buf := make([]byte, 24)
 		testFunc(t, buf, 6)
 		testFunc(t, buf, 6)
 		testFunc(t, buf, 6)
 		testFunc(t, buf, 6)
 	})
 	t.Run("4", func(t *testing.T) {
-		buf := make([][3]float32, 4)
+		buf := make([]byte, 48)
 		testFunc(t, buf, 1)
 		testFunc(t, buf, 1)
 		testFunc(t, buf, 1)
