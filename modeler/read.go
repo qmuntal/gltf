@@ -11,6 +11,13 @@ import (
 	"github.com/qmuntal/gltf/binary"
 )
 
+var uint32Pool = sync.Pool{
+	New: func() any {
+		buf := make([]uint32, 100)
+		return &buf
+	},
+}
+
 // ReadAccessor returns the data references by acr as an slice
 // whose element types are the ones associated with acr.ComponentType and acr.Type.
 //
@@ -42,57 +49,36 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 	}
 
 	if acr.Sparse != nil {
-		indicesBuffer, err := readBufferView(doc, acr.Sparse.Indices.BufferView)
+		bufPtr := uint32Pool.Get().(*[]uint32)
+		defer uint32Pool.Put(bufPtr)
+		indices, err := ReadIndices(doc, &gltf.Accessor{
+			ComponentType: acr.Sparse.Indices.ComponentType,
+			Count:         acr.Sparse.Count,
+			Type:          gltf.AccessorScalar,
+			BufferView:    &acr.Sparse.Indices.BufferView,
+			ByteOffset:    acr.Sparse.Indices.ByteOffset,
+		}, *bufPtr)
 		if err != nil {
 			return nil, err
 		}
 
-		byteStride := doc.BufferViews[acr.Sparse.Indices.BufferView].ByteStride
-		indices, err := binary.MakeSlice(acr.Sparse.Indices.ComponentType, gltf.AccessorScalar, acr.Sparse.Count)
-		if err != nil {
-			return nil, err
-		}
-		err = binary.Read(indicesBuffer[acr.Sparse.Indices.ByteOffset:], byteStride, indices)
-		if err != nil {
-			return nil, err
-		}
-
-		valuesBuffer, err := readBufferView(doc, acr.Sparse.Values.BufferView)
-		if err != nil {
-			return nil, err
-		}
-		byteStride = doc.BufferViews[acr.Sparse.Values.ByteOffset].ByteStride
-		values, err := binary.MakeSlice(acr.ComponentType, acr.Type, acr.Sparse.Count)
-		if err != nil {
-			return nil, err
-		}
-		err = binary.Read(valuesBuffer[acr.Sparse.Values.ByteOffset:], byteStride, values)
+		valuesBufPtr := bufPool.Get().(*[]byte)
+		defer bufPool.Put(valuesBufPtr)
+		values, err := ReadAccessor(doc, &gltf.Accessor{
+			ComponentType: acr.ComponentType,
+			Count:         acr.Sparse.Count,
+			Type:          acr.Type,
+			BufferView:    &acr.Sparse.Values.BufferView,
+			ByteOffset:    acr.Sparse.Values.ByteOffset,
+		}, *valuesBufPtr)
 		if err != nil {
 			return nil, err
 		}
 
 		s := reflect.ValueOf(data)
-		ind := reflect.ValueOf(indices)
 		vals := reflect.ValueOf(values)
 		for i := 0; i < int(acr.Sparse.Count); i++ {
-			var id int
-			idx := ind.Index(i)
-			if idx.CanInt() {
-				v := idx.Int()
-				if v < 0 || v >= int64(acr.Count) {
-					return nil, fmt.Errorf("gltf: sparse accessor index '%d' out of range: %d", i, v)
-				}
-				id = int(v)
-			} else if idx.CanUint() {
-				v := idx.Uint()
-				if v >= uint64(acr.Count) {
-					return nil, fmt.Errorf("gltf: sparse accessor index '%d' out of range: %d", i, v)
-				}
-				id = int(v)
-			} else {
-				return nil, fmt.Errorf("gltf: sparse accessor index '%d' is not an integer", i)
-			}
-			s.Index(id).Set(vals.Index(i))
+			s.Index(int(indices[i])).Set(vals.Index(i))
 		}
 	}
 	return data, nil
