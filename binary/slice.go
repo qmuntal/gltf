@@ -18,7 +18,7 @@ func reslice[T any](v []byte, length, rem int) []T {
 	if rem > 0 {
 		return append(s, make([]T, rem)...)
 	}
-	return s[:length]
+	return s
 }
 
 func castSlice(c gltf.ComponentType, t gltf.AccessorType, count int, v []byte) any {
@@ -27,7 +27,6 @@ func castSlice(c gltf.ComponentType, t gltf.AccessorType, count int, v []byte) a
 	if count < l {
 		l = count
 	} else if count > l {
-		l = count
 		rem = count - l
 	}
 
