@@ -9,144 +9,155 @@ import (
 	"github.com/qmuntal/gltf"
 )
 
-func castSlice(c gltf.ComponentType, t gltf.AccessorType, v []byte) any {
+func reslice[T any](v []byte, length, rem int) []T {
 	var ptr unsafe.Pointer
 	if len(v) != 0 {
 		ptr = unsafe.Pointer(&v[0])
 	}
+	s := unsafe.Slice((*T)(unsafe.Pointer(ptr)), length)
+	if rem > 0 {
+		return append(s, make([]T, rem)...)
+	}
+	return s
+}
+
+func castSlice(c gltf.ComponentType, t gltf.AccessorType, count int, v []byte) any {
+	l := len(v) / (c.ByteSize() * t.Components())
+	var rem int
+	if count < l {
+		l = count
+	} else if count > l {
+		rem = count - l
+	}
+
 	switch c {
 	case gltf.ComponentUbyte:
 		switch t {
 		case gltf.AccessorScalar:
-			return v
+			return reslice[uint8](v, l, rem)
 		case gltf.AccessorVec2:
-			return unsafe.Slice((*[2]uint8)(ptr), len(v)/2)
+			return reslice[[2]uint8](v, l, rem)
 		case gltf.AccessorVec3:
-			return unsafe.Slice((*[3]uint8)(ptr), len(v)/3)
+			return reslice[[3]uint8](v, l, rem)
 		case gltf.AccessorVec4:
-			return unsafe.Slice((*[4]uint8)(ptr), len(v)/4)
+			return reslice[[4]uint8](v, l, rem)
 		case gltf.AccessorMat2:
-			return unsafe.Slice((*[2][2]uint8)(ptr), len(v)/4)
+			return reslice[[2][2]uint8](v, l, rem)
 		case gltf.AccessorMat3:
-			return unsafe.Slice((*[3][3]uint8)(ptr), len(v)/9)
+			return reslice[[3][3]uint8](v, l, rem)
 		case gltf.AccessorMat4:
-			return unsafe.Slice((*[4][4]uint8)(ptr), len(v)/16)
+			return reslice[[4][4]uint8](v, l, rem)
 		}
 	case gltf.ComponentByte:
 		switch t {
 		case gltf.AccessorScalar:
-			return unsafe.Slice((*int8)(ptr), len(v))
+			return reslice[int8](v, l, rem)
 		case gltf.AccessorVec2:
-			return unsafe.Slice((*[2]int8)(ptr), len(v)/2)
+			return reslice[[2]int8](v, l, rem)
 		case gltf.AccessorVec3:
-			return unsafe.Slice((*[3]int8)(ptr), len(v)/3)
+			return reslice[[3]int8](v, l, rem)
 		case gltf.AccessorVec4:
-			return unsafe.Slice((*[4]int8)(ptr), len(v)/4)
+			return reslice[[4]int8](v, l, rem)
 		case gltf.AccessorMat2:
-			return unsafe.Slice((*[2][2]int8)(ptr), len(v)/4)
+			return reslice[[2][2]int8](v, l, rem)
 		case gltf.AccessorMat3:
-			return unsafe.Slice((*[3][3]int8)(ptr), len(v)/9)
+			return reslice[[3][3]int8](v, l, rem)
 		case gltf.AccessorMat4:
-			return unsafe.Slice((*[4][4]int8)(ptr), len(v)/16)
+			return reslice[[4][4]int8](v, l, rem)
 		}
 	case gltf.ComponentUshort:
 		switch t {
 		case gltf.AccessorScalar:
-			return unsafe.Slice((*uint16)(ptr), len(v)/2)
+			return reslice[uint16](v, l, rem)
 		case gltf.AccessorVec2:
-			return unsafe.Slice((*[2]uint16)(ptr), len(v)/4)
+			return reslice[[2]uint16](v, l, rem)
 		case gltf.AccessorVec3:
-			return unsafe.Slice((*[3]uint16)(ptr), len(v)/6)
+			return reslice[[3]uint16](v, l, rem)
 		case gltf.AccessorVec4:
-			return unsafe.Slice((*[4]uint16)(ptr), len(v)/8)
+			return reslice[[4]uint16](v, l, rem)
 		case gltf.AccessorMat2:
-			return unsafe.Slice((*[2][2]uint16)(ptr), len(v)/8)
+			return reslice[[2][2]uint16](v, l, rem)
 		case gltf.AccessorMat3:
-			return unsafe.Slice((*[3][3]uint16)(ptr), len(v)/18)
+			return reslice[[3][3]uint16](v, l, rem)
 		case gltf.AccessorMat4:
-			return unsafe.Slice((*[4][4]uint16)(ptr), len(v)/32)
+			return reslice[[4][4]uint16](v, l, rem)
 		}
 	case gltf.ComponentShort:
 		switch t {
 		case gltf.AccessorScalar:
-			return unsafe.Slice((*int16)(ptr), len(v)/2)
+			return reslice[int16](v, l, rem)
 		case gltf.AccessorVec2:
-			return unsafe.Slice((*[2]int16)(ptr), len(v)/4)
+			return reslice[[2]int16](v, l, rem)
 		case gltf.AccessorVec3:
-			return unsafe.Slice((*[3]int16)(ptr), len(v)/6)
+			return reslice[[3]int16](v, l, rem)
 		case gltf.AccessorVec4:
-			return unsafe.Slice((*[4]int16)(ptr), len(v)/8)
+			return reslice[[4]int16](v, l, rem)
 		case gltf.AccessorMat2:
-			return unsafe.Slice((*[2][2]int16)(ptr), len(v)/8)
+			return reslice[[2][2]int16](v, l, rem)
 		case gltf.AccessorMat3:
-			return unsafe.Slice((*[3][3]int16)(ptr), len(v)/18)
+			return reslice[[3][3]int16](v, l, rem)
 		case gltf.AccessorMat4:
-			return unsafe.Slice((*[4][4]int16)(ptr), len(v)/32)
+			return reslice[[4][4]int16](v, l, rem)
 		}
 	case gltf.ComponentUint:
 		switch t {
 		case gltf.AccessorScalar:
-			return unsafe.Slice((*uint32)(ptr), len(v)/4)
+			return reslice[uint32](v, l, rem)
 		case gltf.AccessorVec2:
-			return unsafe.Slice((*[2]uint32)(ptr), len(v)/8)
+			return reslice[[2]uint32](v, l, rem)
 		case gltf.AccessorVec3:
-			return unsafe.Slice((*[3]uint32)(ptr), len(v)/12)
+			return reslice[[3]uint32](v, l, rem)
 		case gltf.AccessorVec4:
-			return unsafe.Slice((*[4]uint32)(ptr), len(v)/16)
+			return reslice[[4]uint32](v, l, rem)
 		case gltf.AccessorMat2:
-			return unsafe.Slice((*[2][2]uint32)(ptr), len(v)/16)
+			return reslice[[2][2]uint32](v, l, rem)
 		case gltf.AccessorMat3:
-			return unsafe.Slice((*[3][3]uint32)(ptr), len(v)/36)
+
 		case gltf.AccessorMat4:
-			return unsafe.Slice((*[4][4]uint32)(ptr), len(v)/64)
+			return reslice[[4][4]uint32](v, l, rem)
 		}
 	case gltf.ComponentFloat:
 		switch t {
 		case gltf.AccessorScalar:
-			return unsafe.Slice((*float32)(ptr), len(v)/4)
+			return reslice[float32](v, l, rem)
 		case gltf.AccessorVec2:
-			return unsafe.Slice((*[2]float32)(ptr), len(v)/8)
+			return reslice[[2]float32](v, l, rem)
 		case gltf.AccessorVec3:
-			return unsafe.Slice((*[3]float32)(ptr), len(v)/12)
+			return reslice[[3]float32](v, l, rem)
 		case gltf.AccessorVec4:
-			return unsafe.Slice((*[4]float32)(ptr), len(v)/16)
+			return reslice[[4]float32](v, l, rem)
 		case gltf.AccessorMat2:
-			return unsafe.Slice((*[2][2]float32)(ptr), len(v)/16)
+			return reslice[[2][2]float32](v, l, rem)
 		case gltf.AccessorMat3:
-			return unsafe.Slice((*[3][3]float32)(ptr), len(v)/36)
+			return reslice[[3][3]float32](v, l, rem)
 		case gltf.AccessorMat4:
-			return unsafe.Slice((*[4][4]float32)(ptr), len(v)/64)
+			return reslice[[4][4]float32](v, l, rem)
 		}
 	}
-	return nil
+	panic(fmt.Errorf("gltf: unsupported component type %d or accessor type %d", c, t))
 }
 
 // MakeSliceBuffer returns the slice type associated with c and t and with the given element count.
 // If the buffer is an slice which type matches with the expected by the acr then it will
 // be used as backing slice.
 func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count int, buffer []byte) (any, error) {
+	if err := checkAccessorType(c, t); err != nil {
+		return nil, err
+	}
+	buffer = buffer[:cap(buffer)] // Extend the slice to its capacity.
 	if len(buffer) == 0 {
 		return MakeSlice(c, t, count)
 	}
-	v := castSlice(c, t, buffer)
-	if v == nil {
-		return MakeSlice(c, t, count)
-	}
-	count1 := reflect.ValueOf(v).Len()
-	if count1 < count {
-		tmpSlice, _ := MakeSlice(c, t, count-count1)
-		return reflect.AppendSlice(reflect.ValueOf(v), reflect.ValueOf(tmpSlice)).Interface(), nil
-	}
-	if count1 > count {
-		return reflect.ValueOf(v).Slice(0, int(count)).Interface(), nil
-	}
-	return v, nil
+	return castSlice(c, t, count, buffer), nil
 }
 
 // MakeSlice returns the slice type associated with c and t and with the given element count.
 // For example, if c is gltf.ComponentFloat and t is gltf.AccessorVec3
 // then MakeSlice(c, t, 5) is equivalent to make([][3]float32, 5).
 func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count int) (any, error) {
+	if err := checkAccessorType(c, t); err != nil {
+		return nil, err
+	}
 	var tp reflect.Type
 	switch c {
 	case gltf.ComponentUbyte:
@@ -162,7 +173,7 @@ func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count int) (any, error
 	case gltf.ComponentFloat:
 		tp = reflect.TypeOf((*float32)(nil))
 	default:
-		return nil, fmt.Errorf("gltf: unsupported component type %d", c)
+		panic(fmt.Errorf("gltf: unsupported component type %d", c))
 	}
 	tp = tp.Elem()
 	switch t {
@@ -181,7 +192,7 @@ func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count int) (any, error
 	case gltf.AccessorMat4:
 		tp = reflect.ArrayOf(4, reflect.ArrayOf(4, tp))
 	default:
-		return nil, fmt.Errorf("gltf: unsupported accessor type %d", t)
+		panic(fmt.Errorf("gltf: unsupported accessor type %d", t))
 	}
 	return reflect.MakeSlice(reflect.SliceOf(tp), count, count).Interface(), nil
 }
@@ -283,4 +294,20 @@ func Type(data any) (c gltf.ComponentType, t gltf.AccessorType, count int) {
 		panic(fmt.Sprintf("gltf: binary.Type expecting a glTF supported type but got %s", v.Kind()))
 	}
 	return
+}
+
+func checkAccessorType(c gltf.ComponentType, t gltf.AccessorType) error {
+	switch c {
+	case gltf.ComponentUbyte, gltf.ComponentByte, gltf.ComponentUshort,
+		gltf.ComponentShort, gltf.ComponentUint, gltf.ComponentFloat:
+	default:
+		return fmt.Errorf("gltf: unsupported component type %d", c)
+	}
+	switch t {
+	case gltf.AccessorScalar, gltf.AccessorVec2, gltf.AccessorVec3,
+		gltf.AccessorVec4, gltf.AccessorMat2, gltf.AccessorMat3, gltf.AccessorMat4:
+	default:
+		return fmt.Errorf("gltf: unsupported accessor type %d", t)
+	}
+	return nil
 }
