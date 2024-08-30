@@ -203,7 +203,7 @@ func TestReadAccessorAllocs(t *testing.T) {
 	}
 
 	testFunc := func(t *testing.T, buf []byte, want float32) {
-		allocs := testing.AllocsPerRun(10, func() {
+		allocs := testing.AllocsPerRun(50, func() {
 			modeler.ReadAccessor(doc, acr, buf)
 		})
 		if allocs != float64(want) {
@@ -216,10 +216,10 @@ func TestReadAccessorAllocs(t *testing.T) {
 	})
 	t.Run("2", func(t *testing.T) {
 		buf := make([]byte, 24)
-		testFunc(t, buf, 3)
-		testFunc(t, buf, 3)
-		testFunc(t, buf, 3)
-		testFunc(t, buf, 3)
+		testFunc(t, buf, 2)
+		testFunc(t, buf, 2)
+		testFunc(t, buf, 2)
+		testFunc(t, buf, 2)
 	})
 	t.Run("4", func(t *testing.T) {
 		buf := make([]byte, 48)
