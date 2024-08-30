@@ -36,8 +36,92 @@ func BenchmarkReadAccessorSparse(b *testing.B) {
 			Values:  gltf.SparseValues{BufferView: 2},
 		},
 	}
+	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_, err := modeler.ReadAccessor(doc, acr, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkReadAccessorBuffer(b *testing.B) {
+	doc := &gltf.Document{
+		Buffers: []*gltf.Buffer{{ByteLength: 52, Data: []byte{
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+		}}}, BufferViews: []*gltf.BufferView{{Buffer: 0, ByteLength: 48}},
+	}
+	acr := &gltf.Accessor{
+		BufferView: gltf.Index(0), ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 4,
+	}
+	buf := make([]byte, 48)
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, err := modeler.ReadAccessor(doc, acr, buf)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkReadAccessor(b *testing.B) {
+	doc := &gltf.Document{
+		Buffers: []*gltf.Buffer{{ByteLength: 52, Data: []byte{
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+			0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64,
+		}}}, BufferViews: []*gltf.BufferView{{Buffer: 0, ByteLength: 48}},
+	}
+	acr := &gltf.Accessor{
+		BufferView: gltf.Index(0), ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 4,
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, err := modeler.ReadAccessor(doc, acr, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkReadIndices(b *testing.B) {
+	doc := &gltf.Document{
+		Buffers:     []*gltf.Buffer{{ByteLength: 8, Data: []byte{1, 0, 0, 0, 2, 0, 0, 0}}},
+		BufferViews: []*gltf.BufferView{{Buffer: 0, ByteLength: 8}},
+	}
+	acr := &gltf.Accessor{
+		BufferView: gltf.Index(0), ComponentType: gltf.ComponentUint, Type: gltf.AccessorScalar, Count: 2,
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, err := modeler.ReadIndices(doc, acr, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkReadIndicesBuffer(b *testing.B) {
+	doc := &gltf.Document{
+		Buffers:     []*gltf.Buffer{{ByteLength: 8, Data: []byte{1, 0, 0, 0, 2, 0, 0, 0}}},
+		BufferViews: []*gltf.BufferView{{Buffer: 0, ByteLength: 8}},
+	}
+	acr := &gltf.Accessor{
+		BufferView: gltf.Index(0), ComponentType: gltf.ComponentUint, Type: gltf.AccessorScalar, Count: 2,
+	}
+	buf := make([]uint32, 6)
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, err := modeler.ReadIndices(doc, acr, buf)
 		if err != nil {
 			b.Fatal(err)
 		}
