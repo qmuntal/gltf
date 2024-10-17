@@ -102,6 +102,13 @@ func WriteJoints(doc *gltf.Document, data any) int {
 	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
 }
 
+// WriteInverseBindMatrices adds a new inverse bind matrices accessor to doc
+// and fills the last buffer with data.
+// If success it returns the index of the new accessor.
+func WriteInverseBindMatrices(doc *gltf.Document, data [][4][4]float32) int {
+	return WriteAccessor(doc, gltf.TargetArrayBuffer, data)
+}
+
 func checkJoints(data any) error {
 	switch data.(type) {
 	case [][4]uint8, [][4]uint16:

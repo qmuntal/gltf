@@ -694,3 +694,53 @@ func TestReadColor64(t *testing.T) {
 		})
 	}
 }
+
+func TestReadInverseBindMatrices(t *testing.T) {
+	type args struct {
+		data   []byte
+		acr    *gltf.Accessor
+		buffer [][4][4]float32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    [][4][4]float32
+		wantErr bool
+	}{
+		{"base", args{[]byte{
+			0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		}, &gltf.Accessor{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorMat4, ComponentType: gltf.ComponentFloat}, nil},
+			[][4][4]float32{{{1, 2, 3, 4}}}, false,
+		},
+		{"incorrect-type", args{[]byte{}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Type: gltf.AccessorMat2, ComponentType: gltf.ComponentFloat,
+		}, nil}, nil, true},
+		{"incorrect-componenttype", args{[]byte{}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Type: gltf.AccessorMat4, ComponentType: gltf.ComponentByte,
+		}, nil}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			doc := &gltf.Document{
+				BufferViews: []*gltf.BufferView{
+					{Buffer: 0, ByteLength: len(tt.args.data)},
+				},
+				Buffers: []*gltf.Buffer{
+					{Data: tt.args.data, ByteLength: len(tt.args.data)},
+				},
+			}
+			got, err := modeler.ReadInverseBindMatrices(doc, tt.args.acr, tt.args.buffer)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadInverseBindMatrices() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ReadInverseBindMatrices() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
+}
