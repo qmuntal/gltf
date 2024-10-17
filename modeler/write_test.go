@@ -733,6 +733,49 @@ func TestWriteImage(t *testing.T) {
 	}
 }
 
+func TestWriteInverseBindMatrices(t *testing.T) {
+	tests := []struct {
+		name    string
+		m       *gltf.Document
+		args    [][4][4]float32
+		want    int
+		wantDoc *gltf.Document
+	}{
+		{"base", &gltf.Document{
+			Accessors: []*gltf.Accessor{{}},
+		}, [][4][4]float32{{{1, 2, 3, 4}}}, 1, &gltf.Document{
+			Accessors: []*gltf.Accessor{
+				{},
+				{BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorMat4, ComponentType: gltf.ComponentFloat},
+			},
+			BufferViews: []*gltf.BufferView{
+				{ByteLength: 64, Target: gltf.TargetArrayBuffer},
+			},
+			Buffers: []*gltf.Buffer{
+				{ByteLength: 64, Data: []byte{
+					0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+					0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+					0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+					0, 0, 128, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				}},
+			},
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := modeler.WriteInverseBindMatrices(tt.m, tt.args)
+			if tt.want != got {
+				t.Errorf("WriteInverseBindMatrices() = %v, want %v", got, tt.want)
+				return
+			}
+			if diff := deep.Equal(tt.m, tt.wantDoc); diff != nil {
+				t.Errorf("WriteInverseBindMatrices() = %v", diff)
+				return
+			}
+		})
+	}
+}
+
 type errReader struct{}
 
 func (r *errReader) Read(p []byte) (int, error) {

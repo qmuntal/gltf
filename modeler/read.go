@@ -453,6 +453,27 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 	return buffer, nil
 }
 
+// ReadInverseBindMatrices returns the data referenced by acr.
+//
+// See ReadAccessor for more info.
+func ReadInverseBindMatrices(doc *gltf.Document, acr *gltf.Accessor, buffer [][4][4]float32) ([][4][4]float32, error) {
+	if acr.ComponentType != gltf.ComponentFloat {
+		return nil, errComponentType(acr.ComponentType)
+	}
+	if acr.Type != gltf.AccessorMat4 {
+		return nil, errAccessorType(acr.Type)
+	}
+	bufPtr := bufPool.Get().(*[]byte)
+	defer bufPool.Put(bufPtr)
+	data, err := ReadAccessor(doc, acr, *bufPtr)
+	if err != nil {
+		return nil, err
+	}
+	buffer = makeBufferOf(acr.Count, buffer)
+	copy(buffer, data.([][4][4]float32))
+	return buffer, nil
+}
+
 func errAccessorType(tp gltf.AccessorType) error {
 	return fmt.Errorf("gltf: accessor type %v not allowed", tp)
 }
