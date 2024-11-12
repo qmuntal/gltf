@@ -29,9 +29,6 @@ var uint32Pool = sync.Pool{
 // ReadAccessor is safe to use even with malformed documents.
 // If that happens it will return an error instead of panic.
 func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, error) {
-	if acr.BufferView == nil && acr.Sparse == nil {
-		return nil, nil
-	}
 	data, err := binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
 	if err != nil {
 		return nil, err
@@ -119,8 +116,10 @@ var bufPool = sync.Pool{
 func makeBufferOf[T any](count int, buffer []T) []T {
 	if len(buffer) < count {
 		buffer = append(buffer, make([]T, count-len(buffer))...)
-	} else {
+	} else if count != 0 {
 		buffer = buffer[:count]
+	} else if buffer == nil {
+		buffer = make([]T, 0)
 	}
 	return buffer
 }
