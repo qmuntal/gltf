@@ -112,7 +112,7 @@ func TestReadAccessor(t *testing.T) {
 		want    any
 		wantErr bool
 	}{
-		{"nodata", args{&gltf.Document{}, &gltf.Accessor{}}, nil, false},
+		{"nodata", args{&gltf.Document{}, &gltf.Accessor{}}, []float32{}, false},
 		{"base", args{&gltf.Document{Buffers: []*gltf.Buffer{
 			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
 		}, BufferViews: []*gltf.BufferView{{
@@ -542,6 +542,9 @@ func TestReadPosition(t *testing.T) {
 		want    [][3]float32
 		wantErr bool
 	}{
+		{"nil-bufferView", args{nil, &gltf.Accessor{
+			Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat,
+		}, nil}, [][3]float32{}, false},
 		{"float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat,
 		}, nil}, [][3]float32{{1, 2, 3}}, false},
@@ -557,13 +560,14 @@ func TestReadPosition(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			doc := &gltf.Document{
-				BufferViews: []*gltf.BufferView{
+			doc := new(gltf.Document)
+			if tt.args.data != nil {
+				doc.BufferViews = []*gltf.BufferView{
 					{Buffer: 0, ByteLength: len(tt.args.data)},
-				},
-				Buffers: []*gltf.Buffer{
+				}
+				doc.Buffers = []*gltf.Buffer{
 					{Data: tt.args.data, ByteLength: len(tt.args.data)},
-				},
+				}
 			}
 			got, err := modeler.ReadPosition(doc, tt.args.acr, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
