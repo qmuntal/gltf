@@ -372,10 +372,28 @@ func ReadColor(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint8) ([][4]
 		copy(buffer, data)
 	case [][3]uint16:
 		for i, e := range data {
+			if acr.Normalized {
+				buffer[i] = [4]uint8{
+					gltf.NormalizeUbyte(gltf.DenormalizeUshort(e[0])),
+					gltf.NormalizeUbyte(gltf.DenormalizeUshort(e[1])),
+					gltf.NormalizeUbyte(gltf.DenormalizeUshort(e[2])),
+					255,
+				}
+				continue
+			}
 			buffer[i] = [4]uint8{uint8(e[0]), uint8(e[1]), uint8(e[2]), 255}
 		}
 	case [][4]uint16:
 		for i, e := range data {
+			if acr.Normalized {
+				buffer[i] = [4]uint8{
+					gltf.NormalizeUbyte(gltf.DenormalizeUshort(e[0])),
+					gltf.NormalizeUbyte(gltf.DenormalizeUshort(e[1])),
+					gltf.NormalizeUbyte(gltf.DenormalizeUshort(e[2])),
+					gltf.NormalizeUbyte(gltf.DenormalizeUshort(e[3])),
+				}
+				continue
+			}
 			buffer[i] = [4]uint8{uint8(e[0]), uint8(e[1]), uint8(e[2]), uint8(e[3])}
 		}
 	case [][3]float32:
