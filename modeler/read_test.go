@@ -611,6 +611,9 @@ func TestReadColor(t *testing.T) {
 		{"[3]uint16", args{[]byte{0, 0, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort,
 		}, nil}, [][4]uint8{{0, 255, 255, 255}}, false},
+		{"[3]uint16-normalized", args{[]byte{0, 1, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort, Normalized: true,
+		}, nil}, [][4]uint8{{1, 1, 1, 255}}, false},
 		{"[3]float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat,
 		}, nil}, [][4]uint8{{255, 89, 155, 255}}, false},
