@@ -46,9 +46,9 @@ func DenormalizeUshort(v uint16) float32 {
 // to its uint8 represtation (from 0 to 255).
 func NormalizeRGB(v [3]float32) [3]uint8 {
 	return [3]uint8{
-		uint8(deliniarize(v[0]) * 255),
-		uint8(deliniarize(v[1]) * 255),
-		uint8(deliniarize(v[2]) * 255),
+		NormalizeUbyte(v[0]),
+		NormalizeUbyte(v[1]),
+		NormalizeUbyte(v[2]),
 	}
 }
 
@@ -56,9 +56,9 @@ func NormalizeRGB(v [3]float32) [3]uint8 {
 // to its float represtation (from 0 to 1).
 func DenormalizeRGB(v [3]uint8) [3]float32 {
 	return [3]float32{
-		linearize(float32(v[0]) / 255),
-		linearize(float32(v[1]) / 255),
-		linearize(float32(v[2]) / 255),
+		DenormalizeUbyte(v[0]),
+		DenormalizeUbyte(v[1]),
+		DenormalizeUbyte(v[2]),
 	}
 }
 
@@ -66,10 +66,10 @@ func DenormalizeRGB(v [3]uint8) [3]float32 {
 // to its uint8 represtation (from 0 to 255).
 func NormalizeRGBA(v [4]float32) [4]uint8 {
 	return [4]uint8{
-		uint8(deliniarize(v[0]) * 255),
-		uint8(deliniarize(v[1]) * 255),
-		uint8(deliniarize(v[2]) * 255),
-		uint8(v[3] * 255),
+		NormalizeUbyte(v[0]),
+		NormalizeUbyte(v[1]),
+		NormalizeUbyte(v[2]),
+		NormalizeUbyte(v[3]),
 	}
 }
 
@@ -77,10 +77,10 @@ func NormalizeRGBA(v [4]float32) [4]uint8 {
 // to its float represtation (from 0 to 1).
 func DenormalizeRGBA(v [4]uint8) [4]float32 {
 	return [4]float32{
-		linearize(float32(v[0]) / 255),
-		linearize(float32(v[1]) / 255),
-		linearize(float32(v[2]) / 255),
-		float32(v[3]) / 255,
+		DenormalizeUbyte(v[0]),
+		DenormalizeUbyte(v[1]),
+		DenormalizeUbyte(v[2]),
+		DenormalizeUbyte(v[3]),
 	}
 }
 
@@ -88,9 +88,9 @@ func DenormalizeRGBA(v [4]uint8) [4]float32 {
 // to its uint16 represtation (from 0 to 65535).
 func NormalizeRGB64(v [3]float32) [3]uint16 {
 	return [3]uint16{
-		uint16(deliniarize(v[0]) * 65535),
-		uint16(deliniarize(v[1]) * 65535),
-		uint16(deliniarize(v[2]) * 65535),
+		NormalizeUshort(v[0]),
+		NormalizeUshort(v[1]),
+		NormalizeUshort(v[2]),
 	}
 }
 
@@ -98,9 +98,9 @@ func NormalizeRGB64(v [3]float32) [3]uint16 {
 // to its float represtation (from 0 to 1).
 func DenormalizeRGB64(v [3]uint16) [3]float32 {
 	return [3]float32{
-		linearize(float32(v[0]) / 65535),
-		linearize(float32(v[1]) / 65535),
-		linearize(float32(v[2]) / 65535),
+		DenormalizeUshort(v[0]),
+		DenormalizeUshort(v[1]),
+		DenormalizeUshort(v[2]),
 	}
 }
 
@@ -108,10 +108,10 @@ func DenormalizeRGB64(v [3]uint16) [3]float32 {
 // to its uint16 represtation (from 0 to 65535).
 func NormalizeRGBA64(v [4]float32) [4]uint16 {
 	return [4]uint16{
-		uint16(deliniarize(v[0]) * 65535),
-		uint16(deliniarize(v[1]) * 65535),
-		uint16(deliniarize(v[2]) * 65535),
-		uint16(v[3] * 65535),
+		NormalizeUshort(v[0]),
+		NormalizeUshort(v[1]),
+		NormalizeUshort(v[2]),
+		NormalizeUshort(v[3]),
 	}
 }
 
@@ -119,23 +119,9 @@ func NormalizeRGBA64(v [4]float32) [4]uint16 {
 // to its float represtation (from 0 to 1).
 func DenormalizeRGBA64(v [4]uint16) [4]float32 {
 	return [4]float32{
-		linearize(float32(v[0]) / 65535),
-		linearize(float32(v[1]) / 65535),
-		linearize(float32(v[2]) / 65535),
-		float32(v[3]) / 65535,
+		DenormalizeUshort(v[0]),
+		DenormalizeUshort(v[1]),
+		DenormalizeUshort(v[2]),
+		DenormalizeUshort(v[3]),
 	}
-}
-
-func linearize(v float32) float32 {
-	if v <= 0.04045 {
-		return float32(v / 12.92)
-	}
-	return float32(math.Pow(float64(v+0.055)/1.055, 2.4))
-}
-
-func deliniarize(v float32) float32 {
-	if v < 0.0031308 {
-		return v * 12.92
-	}
-	return float32(1.055*math.Pow(float64(v), 1.0/2.4) - 0.055)
 }
