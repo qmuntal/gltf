@@ -48,6 +48,14 @@ const (
 // LightIndex is the id of the light referenced by this node.
 type LightIndex int
 
+// MarshalJSON marshals the light index as a node extension payload.
+func (l LightIndex) MarshalJSON() ([]byte, error) {
+	type lightIndexAlias LightIndex
+	return json.Marshal(struct {
+		Light lightIndexAlias `json:"light"`
+	}{Light: lightIndexAlias(l)})
+}
+
 // Spot defines the spot cone.
 type Spot struct {
 	InnerConeAngle float64  `json:"innerConeAngle,omitempty"`
@@ -73,8 +81,26 @@ func (s *Spot) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// MarshalJSON marshal the spot with default values omitted.
+func (s *Spot) MarshalJSON() ([]byte, error) {
+	type alias Spot
+	tmp := alias(*s)
+	if tmp.OuterConeAngle != nil && *tmp.OuterConeAngle == math.Pi/4 {
+		tmp.OuterConeAngle = nil
+	}
+	return json.Marshal(tmp)
+}
+
 // Lights defines a list of Lights.
 type Lights []*Light
+
+// MarshalJSON marshals the lights list as a root extension payload.
+func (l Lights) MarshalJSON() ([]byte, error) {
+	type lightsAlias Lights
+	return json.Marshal(struct {
+		Lights lightsAlias `json:"lights"`
+	}{Lights: lightsAlias(l)})
+}
 
 // Light defines a directional, point, or spot light.
 // When a light's type is spot, the spot property on the light is required.
@@ -106,10 +132,26 @@ func (l *Light) ColorOrDefault() [3]float64 {
 // UnmarshalJSON unmarshal the light with the correct default values.
 func (l *Light) UnmarshalJSON(data []byte) error {
 	type alias Light
-	tmp := alias(Light{Color: &[3]float64{1, 1, 1}, Intensity: gltf.Float(1), Range: gltf.Float(math.Inf(0))})
+	tmp := alias(Light{Color: &[3]float64{1, 1, 1}, Intensity: gltf.Float(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*l = Light(tmp)
 	}
 	return err
+}
+
+// MarshalJSON marshal the light with default values omitted.
+func (l *Light) MarshalJSON() ([]byte, error) {
+	type alias Light
+	tmp := alias(*l)
+	if tmp.Color != nil && *tmp.Color == [3]float64{1, 1, 1} {
+		tmp.Color = nil
+	}
+	if tmp.Intensity != nil && *tmp.Intensity == 1 {
+		tmp.Intensity = nil
+	}
+	if tmp.Range != nil && math.IsInf(*tmp.Range, 1) {
+		tmp.Range = nil
+	}
+	return json.Marshal(tmp)
 }
