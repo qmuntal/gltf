@@ -591,6 +591,62 @@ func TestReadPosition(t *testing.T) {
 	}
 }
 
+func TestReadPosition_AfterReadNormalSparseNoBufferView(t *testing.T) {
+	positionValues := float32Bytes(1, 2, 3)
+	normalValues := float32Bytes(4, 5, 6, 7, 8, 9)
+	data := append([]byte{1, 0}, positionValues...)
+	data = append(data, normalValues...)
+
+	doc := &gltf.Document{
+		BufferViews: []*gltf.BufferView{
+			{Buffer: 0, ByteLength: 2},
+			{Buffer: 0, ByteOffset: 2, ByteLength: len(positionValues)},
+			{Buffer: 0, ByteOffset: 2 + len(positionValues), ByteLength: len(normalValues)},
+		},
+		Buffers: []*gltf.Buffer{
+			{Data: data, ByteLength: len(data)},
+		},
+	}
+	positionAccessor := &gltf.Accessor{
+		ComponentType: gltf.ComponentFloat,
+		Type:          gltf.AccessorVec3,
+		Count:         2,
+		Sparse: &gltf.Sparse{
+			Count: 1,
+			Indices: gltf.SparseIndices{
+				BufferView:    0,
+				ComponentType: gltf.ComponentUshort,
+			},
+			Values: gltf.SparseValues{BufferView: 1},
+		},
+	}
+	normalAccessor := &gltf.Accessor{
+		BufferView:    gltf.Index(2),
+		ComponentType: gltf.ComponentFloat,
+		Type:          gltf.AccessorVec3,
+		Count:         2,
+	}
+	wantPosition := [][3]float32{{0, 0, 0}, {1, 2, 3}}
+
+	gotPosition, err := modeler.ReadPosition(doc, positionAccessor, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(gotPosition, wantPosition) {
+		t.Errorf("ReadPosition() = %v, want %v", gotPosition, wantPosition)
+	}
+	if _, err := modeler.ReadNormal(doc, normalAccessor, nil); err != nil {
+		t.Fatal(err)
+	}
+	gotPosition, err = modeler.ReadPosition(doc, positionAccessor, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(gotPosition, wantPosition) {
+		t.Errorf("ReadPosition() after ReadNormal() = %v, want %v", gotPosition, wantPosition)
+	}
+}
+
 func TestReadColor(t *testing.T) {
 	type args struct {
 		data   []byte

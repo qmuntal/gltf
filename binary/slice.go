@@ -145,6 +145,11 @@ func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count int, buffe
 		return nil, err
 	}
 	buffer = buffer[:cap(buffer)] // Extend the slice to its capacity.
+	// Reused backing storage may contain bytes from a previous accessor; reset it
+	// so callers get the same zero-value semantics as MakeSlice.
+	for i := range buffer {
+		buffer[i] = 0
+	}
 	if len(buffer) == 0 {
 		return MakeSlice(c, t, count)
 	}
