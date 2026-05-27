@@ -120,7 +120,7 @@ type Buffer struct {
 
 // IsEmbeddedResource returns true if the buffer points to an embedded resource.
 func (b *Buffer) IsEmbeddedResource() bool {
-	return strings.HasPrefix(b.URI, mimetypeApplicationOctet)
+	return b.embeddedResourceMimetype() != ""
 }
 
 // EmbeddedResource defines the buffer as an embedded resource and encodes the URI so it points to the the resource.
@@ -128,13 +128,23 @@ func (b *Buffer) EmbeddedResource() {
 	b.URI = mimetypeApplicationOctet + "," + base64.StdEncoding.EncodeToString(b.Data)
 }
 
+func (b *Buffer) embeddedResourceMimetype() string {
+	for _, mimetype := range [...]string{mimetypeApplicationOctet, mimetypeApplicationGltfBuffer} {
+		if strings.HasPrefix(b.URI, mimetype) {
+			return mimetype
+		}
+	}
+	return ""
+}
+
 // marshalData decode the buffer from the URI. If the buffer is not en embedded resource the returned array will be empty.
 func (b *Buffer) marshalData() ([]byte, error) {
-	if !b.IsEmbeddedResource() {
+	mimetype := b.embeddedResourceMimetype()
+	if mimetype == "" {
 		return nil, nil
 	}
-	startPos := len(mimetypeApplicationOctet) + 1
-	if len(b.URI) < startPos {
+	startPos := len(mimetype) + 1
+	if len(b.URI) < startPos || b.URI[len(mimetype)] != ',' {
 		return nil, errors.New("gltf: Invalid base64 content")
 	}
 	sl, err := base64.StdEncoding.DecodeString(b.URI[startPos:])
@@ -225,6 +235,7 @@ type Camera struct {
 	Extensions   Extensions    `json:"extensions,omitempty"`
 	Extras       any           `json:"extras,omitempty"`
 	Name         string        `json:"name,omitempty"`
+	Type         string        `json:"type"`
 	Orthographic *Orthographic `json:"orthographic,omitempty"`
 	Perspective  *Perspective  `json:"perspective,omitempty"`
 }
@@ -486,16 +497,9 @@ func queryExtension(key string) (func([]byte) (any, error), bool) {
 }
 
 // SizeOfElement returns the size, in bytes, of an element.
-// The element size may not be (component size) * (number of components),
-// as some of the elements are tightly packed in order to ensure
-// that they are aligned to 4-byte boundaries.
+// Matrix elements may include column padding required by the glTF binary layout.
 func SizeOfElement(c ComponentType, t AccessorType) int {
-	// special cases
 	switch {
-	case (t == AccessorVec3 || t == AccessorVec2) && (c == ComponentByte || c == ComponentUbyte):
-		return 4
-	case t == AccessorVec3 && (c == ComponentShort || c == ComponentUshort):
-		return 8
 	case t == AccessorMat2 && (c == ComponentByte || c == ComponentUbyte):
 		return 8
 	case t == AccessorMat3 && (c == ComponentByte || c == ComponentUbyte):

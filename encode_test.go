@@ -76,7 +76,7 @@ func TestEncoder_Encode_AsBinary_WithoutBuffer(t *testing.T) {
 }
 
 func TestEncoder_Encode_AsBinary_WithoutBinChunk(t *testing.T) {
-	doc := &Document{Buffers: []*Buffer{
+	doc := &Document{Asset: Asset{Version: "2.0"}, Buffers: []*Buffer{
 		{Extras: 8.0, Name: "embedded", ByteLength: 2, URI: "data:application/octet-stream;base64,YW55ICsgb2xkICYgZGF0YQ==", Data: []byte("any + old & data")},
 		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "b.bin", Data: []byte{4, 5, 6, 7}},
 		{Extras: 8.0, Name: "external", ByteLength: 4, URI: "a.drc", Data: []byte{0, 0, 0, 0}},
@@ -94,7 +94,7 @@ func TestEncoder_Encode_AsBinary_WithoutBinChunk(t *testing.T) {
 }
 
 func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
-	doc := &Document{Buffers: []*Buffer{
+	doc := &Document{Asset: Asset{Version: "2.0"}, Buffers: []*Buffer{
 		{Extras: 8.0, Name: "binary", ByteLength: 3, Data: []byte{1, 2, 3}},
 	}}
 	buff := new(bytes.Buffer)
@@ -120,7 +120,7 @@ func TestEncoder_Encode_AsBinary_WithBinChunk(t *testing.T) {
 }
 
 func TestEncoder_Encode_Buffers_Without_URI(t *testing.T) {
-	doc := &Document{Buffers: []*Buffer{
+	doc := &Document{Asset: Asset{Version: "2.0"}, Buffers: []*Buffer{
 		{Name: "binary", ByteLength: 3, Data: []byte{1, 2, 3}},
 		{Name: "binary2", ByteLength: 3, Data: []byte{4, 5, 6}},
 	}}
@@ -214,17 +214,19 @@ func TestEncoder_Encode(t *testing.T) {
 			{Extras: 8.0, Name: "emmisice", AlphaCutoff: Float(0.5), AlphaMode: AlphaMask, EmissiveTexture: &TextureInfo{Extras: 8.0, Index: 4, TexCoord: 50}},
 		}}}, false},
 		{"withMeshes", args{&Document{Meshes: []*Mesh{
-			{Extras: 8.0, Name: "mesh_1", Weights: []float64{1.2, 2}},
+			{Extras: 8.0, Name: "mesh_1", Primitives: []*Primitive{{Attributes: PrimitiveAttributes{POSITION: 1}}}, Weights: []float64{1.2, 2}},
 			{Extras: 8.0, Name: "mesh_2", Primitives: []*Primitive{
 				{Extras: 8.0, Attributes: PrimitiveAttributes{POSITION: 1}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
-				{Extras: 8.0, Targets: []PrimitiveAttributes{{POSITION: 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
+				{Extras: 8.0, Attributes: PrimitiveAttributes{POSITION: 1}, Targets: []PrimitiveAttributes{{POSITION: 1, "THEN": 4}, {"OTHER": 2}}, Indices: Index(2), Material: Index(1), Mode: PrimitiveLines},
 			}},
 		}}}, false},
 		{"withNodes", args{&Document{Nodes: []*Node{
 			{Extras: 8.0, Name: "n-1", Camera: Index(1), Children: []int{1, 2}, Skin: Index(3),
-				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
+				Matrix: [16]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Mesh: Index(15), Rotation: DefaultRotation, Scale: DefaultScale, Weights: []float64{1, 3}},
 			{Extras: 8.0, Name: "n-2", Camera: Index(1), Children: []int{1, 2}, Skin: Index(3),
 				Matrix: [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, Mesh: Index(15), Rotation: [4]float64{0, 0, 0, 1}, Scale: [3]float64{1, 1, 1}},
+			{Extras: 8.0, Name: "n-3", Camera: Index(1), Children: []int{1, 2}, Skin: Index(3),
+				Matrix: DefaultMatrix, Mesh: Index(15), Rotation: [4]float64{1.5, 1.3, 12, 0}, Scale: [3]float64{1, 3, 4}, Translation: [3]float64{0, 7.8, 9}, Weights: []float64{1, 3}},
 		}}}, false},
 		{"withSampler", args{&Document{Samplers: []*Sampler{
 			{Extras: 8.0, Name: "s_1", MagFilter: MagLinear, MinFilter: MinLinearMipMapLinear, WrapS: WrapClampToEdge, WrapT: WrapMirroredRepeat},
@@ -309,6 +311,30 @@ func TestImage_MarshalData(t *testing.T) {
 	}
 }
 
+func TestAsset_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		asset   *Asset
+		want    []byte
+		wantErr bool
+	}{
+		{"zero", &Asset{}, []byte(`{"version":"2.0"}`), false},
+		{"version", &Asset{Version: "2.1"}, []byte(`{"version":"2.1"}`), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.asset.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Asset.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Asset.MarshalJSON() = %v, want %v", string(got), string(tt.want))
+			}
+		})
+	}
+}
+
 func TestNode_UnmarshalJSON(t *testing.T) {
 	type args struct {
 		data []byte
@@ -325,7 +351,7 @@ func TestNode_UnmarshalJSON(t *testing.T) {
 			Rotation: [4]float64{0, 0, 0, 1},
 			Scale:    [3]float64{1, 1, 1},
 		}, false},
-		{"nodefault", new(Node), args{[]byte(`{"matrix":[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],"rotation":[0,0,0,1],"scale":[1,1,1],"camera":0,"mesh":0,"skin":0}`)}, &Node{
+		{"matrix", new(Node), args{[]byte(`{"matrix":[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],"camera":0,"mesh":0,"skin":0}`)}, &Node{
 			Matrix:   [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
 			Rotation: [4]float64{0, 0, 0, 1},
 			Scale:    [3]float64{1, 1, 1},
@@ -333,14 +359,16 @@ func TestNode_UnmarshalJSON(t *testing.T) {
 			Mesh:     Index(0),
 			Skin:     Index(0),
 		}, false},
-		{"nodefault", new(Node), args{[]byte(`{"matrix":[1,2,2,0,0,1,3,4,0,0,1,0,5,0,0,5],"rotation":[1,2,3,4],"scale":[2,3,4],"camera":1,"mesh":2,"skin":3}`)}, &Node{
-			Matrix:   [16]float64{1, 2, 2, 0, 0, 1, 3, 4, 0, 0, 1, 0, 5, 0, 0, 5},
-			Rotation: [4]float64{1, 2, 3, 4},
-			Scale:    [3]float64{2, 3, 4},
-			Camera:   Index(1),
-			Mesh:     Index(2),
-			Skin:     Index(3),
+		{"trs", new(Node), args{[]byte(`{"rotation":[1,2,3,4],"scale":[2,3,4],"translation":[5,0,0],"camera":1,"mesh":2,"skin":3}`)}, &Node{
+			Matrix:      [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+			Rotation:    [4]float64{1, 2, 3, 4},
+			Scale:       [3]float64{2, 3, 4},
+			Translation: [3]float64{5, 0, 0},
+			Camera:      Index(1),
+			Mesh:        Index(2),
+			Skin:        Index(3),
 		}, false},
+		{"matrix-with-trs", new(Node), args{[]byte(`{"matrix":[1,2,2,0,0,1,3,4,0,0,1,0,5,0,0,5],"rotation":[1,2,3,4]}`)}, new(Node), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -368,6 +396,7 @@ func TestMaterial_UnmarshalJSON(t *testing.T) {
 	}{
 		{"default", new(Material), args{[]byte("{}")}, &Material{AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque}, false},
 		{"nodefault", new(Material), args{[]byte(`{"alphaCutoff": 0.2, "alphaMode": "MASK"}`)}, &Material{AlphaCutoff: Float(0.2), AlphaMode: AlphaMask}, false},
+		{"cutoff-without-mode", new(Material), args{[]byte(`{"alphaCutoff": 0.2}`)}, new(Material), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -393,7 +422,7 @@ func TestNormalTexture_UnmarshalJSON(t *testing.T) {
 		want    *NormalTexture
 		wantErr bool
 	}{
-		{"default", new(NormalTexture), args{[]byte("{}")}, &NormalTexture{Scale: Float(1)}, false},
+		{"default", new(NormalTexture), args{[]byte("{}")}, new(NormalTexture), true},
 		{"empty", new(NormalTexture), args{[]byte(`{"scale": 0, "index": 0}`)}, &NormalTexture{Scale: Float(0), Index: Index(0)}, false},
 		{"nodefault", new(NormalTexture), args{[]byte(`{"scale": 0.5, "index":2}`)}, &NormalTexture{Scale: Float(0.5), Index: Index(2)}, false},
 	}
@@ -421,7 +450,7 @@ func TestOcclusionTexture_UnmarshalJSON(t *testing.T) {
 		want    *OcclusionTexture
 		wantErr bool
 	}{
-		{"default", new(OcclusionTexture), args{[]byte("{}")}, &OcclusionTexture{Strength: Float(1)}, false},
+		{"default", new(OcclusionTexture), args{[]byte("{}")}, new(OcclusionTexture), true},
 		{"empty", new(OcclusionTexture), args{[]byte(`{"strength": 0, "index": 0}`)}, &OcclusionTexture{Strength: Float(0), Index: Index(0)}, false},
 		{"nodefault", new(OcclusionTexture), args{[]byte(`{"strength": 0.5, "index":2}`)}, &OcclusionTexture{Strength: Float(0.5), Index: Index(2)}, false},
 	}
@@ -492,15 +521,24 @@ func TestNode_MarshalJSON(t *testing.T) {
 			Skin:     Index(0),
 			Mesh:     Index(0),
 		}, []byte(`{"camera":0,"skin":0,"mesh":0}`), false},
-		{"nodefault", &Node{
-			Matrix:      [16]float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		{"matrix", &Node{
+			Matrix: [16]float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Camera: Index(1),
+			Skin:   Index(1),
+			Mesh:   Index(1),
+		}, []byte(`{"matrix":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"camera":1,"skin":1,"mesh":1}`), false},
+		{"trs", &Node{
 			Rotation:    [4]float64{1, 0, 0, 0},
 			Scale:       [3]float64{1, 0, 0},
 			Translation: [3]float64{1, 0, 0},
 			Camera:      Index(1),
 			Skin:        Index(1),
 			Mesh:        Index(1),
-		}, []byte(`{"matrix":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"rotation":[1,0,0,0],"scale":[1,0,0],"translation":[1,0,0],"camera":1,"skin":1,"mesh":1}`), false},
+		}, []byte(`{"rotation":[1,0,0,0],"scale":[1,0,0],"translation":[1,0,0],"camera":1,"skin":1,"mesh":1}`), false},
+		{"matrix-with-trs", &Node{
+			Matrix:      [16]float64{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			Translation: [3]float64{1, 0, 0},
+		}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -526,6 +564,7 @@ func TestMaterial_MarshalJSON(t *testing.T) {
 		{"default", &Material{AlphaCutoff: Float(0.5), AlphaMode: AlphaOpaque}, []byte(`{}`), false},
 		{"empty", &Material{AlphaMode: AlphaBlend}, []byte(`{"alphaMode":"BLEND"}`), false},
 		{"nodefault", &Material{AlphaCutoff: Float(1), AlphaMode: AlphaBlend}, []byte(`{"alphaCutoff":1,"alphaMode":"BLEND"}`), false},
+		{"cutoff-without-mode", &Material{AlphaCutoff: Float(1)}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -548,7 +587,7 @@ func TestNormalTexture_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &NormalTexture{Scale: Float(1)}, []byte(`{}`), false},
+		{"default", &NormalTexture{Scale: Float(1)}, nil, true},
 		{"empty", &NormalTexture{Index: Index(0)}, []byte(`{"index":0}`), false},
 		{"nodefault", &NormalTexture{Index: Index(1), Scale: Float(0.5)}, []byte(`{"index":1,"scale":0.5}`), false},
 	}
@@ -573,7 +612,7 @@ func TestOcclusionTexture_MarshalJSON(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"default", &OcclusionTexture{Strength: Float(1)}, []byte(`{}`), false},
+		{"default", &OcclusionTexture{Strength: Float(1)}, nil, true},
 		{"empty", &OcclusionTexture{Index: Index(0)}, []byte(`{"index":0}`), false},
 		{"nodefault", &OcclusionTexture{Index: Index(1), Strength: Float(0.5)}, []byte(`{"index":1,"strength":0.5}`), false},
 	}
@@ -624,6 +663,9 @@ func TestCamera_MarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", &Camera{}, nil, true},
+		{"perspective", &Camera{Perspective: &Perspective{Yfov: 2, Znear: 4}}, []byte(`{"type":"perspective","perspective":{"yfov":2,"znear":4}}`), false},
+		{"orthographic", &Camera{Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, []byte(`{"type":"orthographic","orthographic":{"xmag":1,"ymag":2,"zfar":3,"znear":4}}`), false},
+		{"mismatch", &Camera{Type: "perspective", Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -634,6 +676,56 @@ func TestCamera_MarshalJSON(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Camera.MarshalJSON() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCamera_MarshalJSON_AutoPopulatesType(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *Camera
+		want string
+	}{
+		{"perspective", &Camera{Perspective: &Perspective{Yfov: 2, Znear: 4}}, "perspective"},
+		{"orthographic", &Camera{Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, "orthographic"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := tt.c.MarshalJSON(); err != nil {
+				t.Fatalf("Camera.MarshalJSON() error = %v", err)
+			}
+			if tt.c.Type != tt.want {
+				t.Errorf("Camera.Type = %q, want %q", tt.c.Type, tt.want)
+			}
+		})
+	}
+}
+
+func TestCamera_UnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		data    []byte
+		want    *Camera
+		wantErr bool
+	}{
+		{"perspective", []byte(`{"type":"perspective","perspective":{"yfov":2,"znear":4}}`), &Camera{Type: "perspective", Perspective: &Perspective{Yfov: 2, Znear: 4}}, false},
+		{"orthographic", []byte(`{"type":"orthographic","orthographic":{"xmag":1,"ymag":2,"zfar":3,"znear":4}}`), &Camera{Type: "orthographic", Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, false},
+		{"missing-type", []byte(`{"perspective":{"yfov":2,"znear":4}}`), new(Camera), true},
+		{"missing-projection", []byte(`{"type":"perspective"}`), new(Camera), true},
+		{"unknown-type", []byte(`{"type":"custom"}`), new(Camera), true},
+		{"both-projections", []byte(`{"type":"perspective","perspective":{"yfov":2,"znear":4},"orthographic":{"xmag":1,"ymag":2,"zfar":3,"znear":4}}`), new(Camera), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := new(Camera)
+			err := got.UnmarshalJSON(tt.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Camera.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Camera.UnmarshalJSON() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -40,8 +40,8 @@ func Read(b []byte, byteStride int, data any) error {
 			data[i] = color.RGBA64{R: c[0], G: c[1], B: c[2], A: c[3]}
 		}
 	case []int8:
-		for i, x := range b {
-			data[i] = int8(x)
+		for i := range data {
+			data[i] = Byte.Scalar(b[e*i:])
 		}
 	case [][2]int8:
 		for i := range data {
@@ -68,12 +68,8 @@ func Read(b []byte, byteStride int, data any) error {
 			data[i] = Byte.Mat4(b[e*i:])
 		}
 	case []uint8:
-		if byteStride != 1 {
-			copy(data, b)
-		} else {
-			for i := range data {
-				data[i] = Ubyte.Scalar(b[e*i:])
-			}
+		for i := range data {
+			data[i] = Ubyte.Scalar(b[e*i:])
 		}
 	case [][2]uint8:
 		for i := range data {
@@ -273,7 +269,13 @@ func Write(b []byte, stride int, data any) error {
 			Byte.PutMat4(b[e*i:], data[i])
 		}
 	case []uint8:
-		copy(b, data)
+		if e == 1 {
+			copy(b, data)
+		} else {
+			for i, x := range data {
+				Ubyte.PutScalar(b[e*i:], x)
+			}
+		}
 	case [][2]uint8:
 		for i := range data {
 			Ubyte.PutVec2(b[e*i:], data[i])

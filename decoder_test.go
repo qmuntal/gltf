@@ -67,8 +67,8 @@ func TestOpen(t *testing.T) {
 			},
 			Buffers: []*Buffer{{ByteLength: 60, URI: "simpleSquare.bin", Data: readFile("testdata/Cameras/glTF/simpleSquare.bin")}},
 			Cameras: []*Camera{
-				{Perspective: &Perspective{AspectRatio: Float(1.0), Yfov: 0.7, Zfar: Float(100), Znear: 0.01}},
-				{Orthographic: &Orthographic{Xmag: 1.0, Ymag: 1.0, Zfar: 100, Znear: 0.01}},
+				{Type: "perspective", Perspective: &Perspective{AspectRatio: Float(1.0), Yfov: 0.7, Zfar: Float(100), Znear: 0.01}},
+				{Type: "orthographic", Orthographic: &Orthographic{Xmag: 1.0, Ymag: 1.0, Zfar: 100, Znear: 0.01}},
 			},
 			Meshes: []*Mesh{{Primitives: []*Primitive{{Indices: Index(0), Mode: PrimitiveTriangles, Attributes: PrimitiveAttributes{POSITION: 1}}}}},
 			Nodes: []*Node{
@@ -124,9 +124,9 @@ func TestOpen(t *testing.T) {
 			},
 			Buffers: []*Buffer{{ByteLength: 840, URI: "Box With Spaces.bin", Data: readFile("testdata/Box With Spaces/glTF/Box With Spaces.bin")}},
 			Images: []*Image{
-				{Name: "Normal Map", MimeType: "image/png", URI: "Normal Map.png"},
-				{Name: "glTF Logo With Spaces", MimeType: "image/png", URI: "glTF Logo With Spaces.png"},
-				{Name: "Roughness Metallic", MimeType: "image/png", URI: "Roughness Metallic.png"},
+				{Name: "Normal Map", MimeType: "image/png", URI: "Normal%20Map.png"},
+				{Name: "glTF Logo With Spaces", MimeType: "image/png", URI: "glTF%20Logo%20With%20Spaces.png"},
+				{Name: "Roughness Metallic", MimeType: "image/png", URI: "Roughness%20Metallic.png"},
 			},
 			Materials: []*Material{{
 				Name: "Material", AlphaMode: AlphaOpaque, AlphaCutoff: Float(0.5), NormalTexture: &NormalTexture{Index: Index(0), Scale: Float(1)}, PBRMetallicRoughness: &PBRMetallicRoughness{
@@ -245,7 +245,7 @@ func TestDecoder_Decode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"baseJSON", NewDecoderFS(bytes.NewBufferString("{\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}"), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, false},
+		{"baseJSON", NewDecoderFS(bytes.NewBufferString("{\"asset\":{\"version\":\"2.0\"},\"buffers\": [{\"byteLength\": 1, \"URI\": \"a.bin\"}]}"), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, false},
 		{"onlyGLBHeader", NewDecoderFS(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x53, 0x4f, 0x4e}), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
 		{"glbNoJSONChunk", NewDecoderFS(bytes.NewBuffer([]byte{0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x40, 0x0b, 0x00, 0x00, 0x5c, 0x06, 0x00, 0x00, 0x4a, 0x52, 0x4f, 0x4e}), fstest.MapFS{"a.bin": &fstest.MapFile{Data: []byte("abcdfg")}}), args{new(Document)}, true},
 		{"empty", NewDecoder(bytes.NewBufferString("")), args{new(Document)}, true},

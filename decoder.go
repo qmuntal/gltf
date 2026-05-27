@@ -62,21 +62,6 @@ func (d *Decoder) Decode(doc *Document) error {
 		return err
 	}
 
-	for _, b := range doc.Buffers {
-		if !b.IsEmbeddedResource() {
-			if uri, ok := sanitizeURI(b.URI); ok {
-				b.URI = uri
-			}
-		}
-	}
-	for _, im := range doc.Images {
-		if !im.IsEmbeddedResource() {
-			if uri, ok := sanitizeURI(im.URI); ok {
-				im.URI = uri
-			}
-		}
-	}
-
 	var externalBufferIndex = 0
 	if isBinary && len(doc.Buffers) > 0 && doc.Buffers[0].URI == "" {
 		externalBufferIndex = 1
@@ -129,7 +114,7 @@ func (d *Decoder) readGLBHeader() (*glbHeader, error) {
 }
 
 func (d *Decoder) validateGLBHeader(header *glbHeader) error {
-	if header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(binary.Size(header))) > header.Length {
+	if header.Version != 2 || header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(binary.Size(header))) > header.Length {
 		return errors.New("gltf: Invalid GLB JSON header")
 	}
 	return nil
@@ -154,9 +139,13 @@ func (d *Decoder) decodeBuffer(buffer *Buffer) error {
 	if buffer.IsEmbeddedResource() {
 		buffer.Data, err = buffer.marshalData()
 	} else {
-		err = validateBufferURI(buffer.URI)
+		uri := buffer.URI
+		if sanitized, ok := sanitizeURI(uri); ok {
+			uri = sanitized
+		}
+		err = validateBufferURI(uri)
 		if err == nil && d.Fsys != nil {
-			buffer.Data, err = fs.ReadFile(d.Fsys, buffer.URI)
+			buffer.Data, err = fs.ReadFile(d.Fsys, uri)
 			if len(buffer.Data) > int(buffer.ByteLength) {
 				buffer.Data = buffer.Data[:buffer.ByteLength:buffer.ByteLength]
 			}
@@ -176,7 +165,7 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 	if err != nil {
 		return err
 	}
-	if header.Type != glbChunkBIN || header.Length < uint32(buffer.ByteLength) {
+	if header.Type != glbChunkBIN || header.Length < uint32(buffer.ByteLength) || header.Length > uint32(buffer.ByteLength+3) {
 		return errors.New("gltf: Invalid GLB BIN header")
 	}
 	buffer.Data = make([]byte, buffer.ByteLength)

@@ -66,7 +66,7 @@ func (c *ComponentType) UnmarshalJSON(data []byte) error {
 	var tmp uint16
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*c = map[uint16]ComponentType{
+		ct, ok := map[uint16]ComponentType{
 			5120: ComponentByte,
 			5121: ComponentUbyte,
 			5122: ComponentShort,
@@ -74,20 +74,28 @@ func (c *ComponentType) UnmarshalJSON(data []byte) error {
 			5125: ComponentUint,
 			5126: ComponentFloat,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown component type: %d", tmp)
+		}
+		*c = ct
 	}
 	return err
 }
 
 // MarshalJSON marshal the component type with the correct default values.
 func (c *ComponentType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[ComponentType]uint16{
+	ct, ok := map[ComponentType]uint16{
 		ComponentByte:   5120,
 		ComponentUbyte:  5121,
 		ComponentShort:  5122,
 		ComponentUshort: 5123,
 		ComponentUint:   5125,
 		ComponentFloat:  5126,
-	}[*c])
+	}[*c]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown component type: %d", *c)
+	}
+	return json.Marshal(ct)
 }
 
 // AccessorType specifies if the attribute is a scalar, vector, or matrix.
@@ -140,7 +148,7 @@ func (a *AccessorType) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON marshal the accessor type with the correct default values.
 func (a *AccessorType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[AccessorType]string{
+	accType, ok := map[AccessorType]string{
 		AccessorScalar: "SCALAR",
 		AccessorVec2:   "VEC2",
 		AccessorVec3:   "VEC3",
@@ -148,7 +156,11 @@ func (a *AccessorType) MarshalJSON() ([]byte, error) {
 		AccessorMat2:   "MAT2",
 		AccessorMat3:   "MAT3",
 		AccessorMat4:   "MAT4",
-	}[*a])
+	}[*a]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown accessor's type: %d", *a)
+	}
+	return json.Marshal(accType)
 }
 
 // The Target that the GPU buffer should be bound to.
@@ -181,7 +193,7 @@ func (p *PrimitiveMode) UnmarshalJSON(data []byte) error {
 	var tmp uint8
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*p = map[uint8]PrimitiveMode{
+		mode, ok := map[uint8]PrimitiveMode{
 			0: PrimitivePoints,
 			1: PrimitiveLines,
 			2: PrimitiveLineLoop,
@@ -190,13 +202,17 @@ func (p *PrimitiveMode) UnmarshalJSON(data []byte) error {
 			5: PrimitiveTriangleStrip,
 			6: PrimitiveTriangleFan,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown primitive mode: %d", tmp)
+		}
+		*p = mode
 	}
 	return err
 }
 
 // MarshalJSON marshal the primitive mode with the correct default values.
 func (p *PrimitiveMode) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[PrimitiveMode]uint8{
+	mode, ok := map[PrimitiveMode]uint8{
 		PrimitivePoints:        0,
 		PrimitiveLines:         1,
 		PrimitiveLineLoop:      2,
@@ -204,7 +220,11 @@ func (p *PrimitiveMode) MarshalJSON() ([]byte, error) {
 		PrimitiveTriangles:     4,
 		PrimitiveTriangleStrip: 5,
 		PrimitiveTriangleFan:   6,
-	}[*p])
+	}[*p]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown primitive mode: %d", *p)
+	}
+	return json.Marshal(mode)
 }
 
 // The AlphaMode enumeration specifying the interpretation of the alpha value of the main factor and texture.
@@ -221,22 +241,30 @@ func (a *AlphaMode) UnmarshalJSON(data []byte) error {
 	var tmp string
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*a = map[string]AlphaMode{
+		mode, ok := map[string]AlphaMode{
 			"OPAQUE": AlphaOpaque,
 			"MASK":   AlphaMask,
 			"BLEND":  AlphaBlend,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown alpha mode: %s", tmp)
+		}
+		*a = mode
 	}
 	return err
 }
 
 // MarshalJSON marshal the alpha mode with the correct default values.
 func (a *AlphaMode) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[AlphaMode]string{
+	mode, ok := map[AlphaMode]string{
 		AlphaOpaque: "OPAQUE",
 		AlphaMask:   "MASK",
 		AlphaBlend:  "BLEND",
-	}[*a])
+	}[*a]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown alpha mode: %d", *a)
+	}
+	return json.Marshal(mode)
 }
 
 // MagFilter is the magnification filter.
@@ -253,20 +281,28 @@ func (m *MagFilter) UnmarshalJSON(data []byte) error {
 	var tmp uint16
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*m = map[uint16]MagFilter{
+		filter, ok := map[uint16]MagFilter{
 			9728: MagNearest,
 			9729: MagLinear,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown magnification filter: %d", tmp)
+		}
+		*m = filter
 	}
 	return err
 }
 
 // MarshalJSON marshal the alpha mode with the correct default values.
 func (m *MagFilter) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[MagFilter]uint16{
+	filter, ok := map[MagFilter]uint16{
 		MagNearest: 9728,
 		MagLinear:  9729,
-	}[*m])
+	}[*m]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown magnification filter: %d", *m)
+	}
+	return json.Marshal(filter)
 }
 
 // MinFilter is the minification filter.
@@ -287,7 +323,7 @@ func (m *MinFilter) UnmarshalJSON(data []byte) error {
 	var tmp uint16
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*m = map[uint16]MinFilter{
+		filter, ok := map[uint16]MinFilter{
 			9728: MinNearest,
 			9729: MinLinear,
 			9984: MinNearestMipMapNearest,
@@ -295,20 +331,28 @@ func (m *MinFilter) UnmarshalJSON(data []byte) error {
 			9986: MinNearestMipMapLinear,
 			9987: MinLinearMipMapLinear,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown minification filter: %d", tmp)
+		}
+		*m = filter
 	}
 	return err
 }
 
 // MarshalJSON marshal the min filter with the correct default values.
 func (m *MinFilter) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[MinFilter]uint16{
+	filter, ok := map[MinFilter]uint16{
 		MinNearest:              9728,
 		MinLinear:               9729,
 		MinNearestMipMapNearest: 9984,
 		MinLinearMipMapNearest:  9985,
 		MinNearestMipMapLinear:  9986,
 		MinLinearMipMapLinear:   9987,
-	}[*m])
+	}[*m]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown minification filter: %d", *m)
+	}
+	return json.Marshal(filter)
 }
 
 // WrappingMode is the wrapping mode of a texture.
@@ -325,22 +369,30 @@ func (w *WrappingMode) UnmarshalJSON(data []byte) error {
 	var tmp uint16
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*w = map[uint16]WrappingMode{
+		mode, ok := map[uint16]WrappingMode{
 			33071: WrapClampToEdge,
 			33648: WrapMirroredRepeat,
 			10497: WrapRepeat,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown wrapping mode: %d", tmp)
+		}
+		*w = mode
 	}
 	return err
 }
 
 // MarshalJSON marshal the wrapping mode with the correct default values.
 func (w *WrappingMode) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[WrappingMode]uint16{
+	mode, ok := map[WrappingMode]uint16{
 		WrapClampToEdge:    33071,
 		WrapMirroredRepeat: 33648,
 		WrapRepeat:         10497,
-	}[*w])
+	}[*w]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown wrapping mode: %d", *w)
+	}
+	return json.Marshal(mode)
 }
 
 // Interpolation algorithm.
@@ -357,22 +409,30 @@ func (i *Interpolation) UnmarshalJSON(data []byte) error {
 	var tmp string
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*i = map[string]Interpolation{
+		interpolation, ok := map[string]Interpolation{
 			"LINEAR":      InterpolationLinear,
 			"STEP":        InterpolationStep,
 			"CUBICSPLINE": InterpolationCubicSpline,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown interpolation: %s", tmp)
+		}
+		*i = interpolation
 	}
 	return err
 }
 
 // MarshalJSON marshal the interpolation with the correct default values.
 func (i *Interpolation) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[Interpolation]string{
+	interpolation, ok := map[Interpolation]string{
 		InterpolationLinear:      "LINEAR",
 		InterpolationStep:        "STEP",
 		InterpolationCubicSpline: "CUBICSPLINE",
-	}[*i])
+	}[*i]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown interpolation: %d", *i)
+	}
+	return json.Marshal(interpolation)
 }
 
 // TRSProperty defines a local space transformation.
@@ -391,24 +451,32 @@ func (t *TRSProperty) UnmarshalJSON(data []byte) error {
 	var tmp string
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
-		*t = map[string]TRSProperty{
+		trs, ok := map[string]TRSProperty{
 			"translation": TRSTranslation,
 			"rotation":    TRSRotation,
 			"scale":       TRSScale,
 			"weights":     TRSWeights,
 		}[tmp]
+		if !ok {
+			return fmt.Errorf("gltf: unknown TRS property: %s", tmp)
+		}
+		*t = trs
 	}
 	return err
 }
 
 // MarshalJSON marshal the TRSProperty with the correct default values.
 func (t *TRSProperty) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[TRSProperty]string{
+	trs, ok := map[TRSProperty]string{
 		TRSTranslation: "translation",
 		TRSRotation:    "rotation",
 		TRSScale:       "scale",
 		TRSWeights:     "weights",
-	}[*t])
+	}[*t]
+	if !ok {
+		return nil, fmt.Errorf("gltf: unknown TRS property: %d", *t)
+	}
+	return json.Marshal(trs)
 }
 
 const (
@@ -430,7 +498,8 @@ type glbHeader struct {
 }
 
 const (
-	mimetypeApplicationOctet = "data:application/octet-stream;base64"
-	mimetypeImagePNG         = "data:image/png;base64"
-	mimetypeImageJPG         = "data:image/jpeg;base64"
+	mimetypeApplicationOctet      = "data:application/octet-stream;base64"
+	mimetypeApplicationGltfBuffer = "data:application/gltf-buffer;base64"
+	mimetypeImagePNG              = "data:image/png;base64"
+	mimetypeImageJPG              = "data:image/jpeg;base64"
 )
