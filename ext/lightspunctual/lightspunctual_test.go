@@ -1,6 +1,7 @@
 package lightspunctual_test
 
 import (
+	"encoding/json"
 	"math"
 	"reflect"
 	"testing"
@@ -76,7 +77,7 @@ func TestLight_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", new(lightspunctual.Light), args{[]byte("{}")}, &lightspunctual.Light{
-			Color: &[3]float64{1, 1, 1}, Intensity: gltf.Float(1), Range: gltf.Float(math.Inf(0)),
+			Color: &[3]float64{1, 1, 1}, Intensity: gltf.Float(1),
 		}, false},
 		{"nodefault", new(lightspunctual.Light), args{[]byte(`{
 			"color": [0.3, 0.7, 1.0],
@@ -134,8 +135,8 @@ func TestUnmarshal(t *testing.T) {
 			  "type": "point"
 			}
 		  ]}`)}, lightspunctual.Lights{
-			{Color: &[3]float64{1, 0.9, 0.7}, Name: "Directional", Intensity: gltf.Float(3.0), Type: "directional", Range: gltf.Float(math.Inf(0))},
-			{Color: &[3]float64{1, 0, 0}, Name: "Point", Intensity: gltf.Float(20.0), Type: "point", Range: gltf.Float(math.Inf(0))},
+			{Color: &[3]float64{1, 0.9, 0.7}, Name: "Directional", Intensity: gltf.Float(3.0), Type: "directional"},
+			{Color: &[3]float64{1, 0, 0}, Name: "Point", Intensity: gltf.Float(20.0), Type: "point"},
 		}, false},
 	}
 	for _, tt := range tests {
@@ -149,5 +150,25 @@ func TestUnmarshal(t *testing.T) {
 				t.Errorf("Unmarshal() = %v", diff)
 			}
 		})
+	}
+}
+
+func TestLightIndex_MarshalJSON(t *testing.T) {
+	got, err := json.Marshal(lightspunctual.LightIndex(1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := []byte(`{"light":1}`); !reflect.DeepEqual(got, want) {
+		t.Errorf("LightIndex.MarshalJSON() = %s, want %s", got, want)
+	}
+}
+
+func TestLights_MarshalJSON(t *testing.T) {
+	got, err := json.Marshal(lightspunctual.Lights{{Name: "Key", Type: lightspunctual.TypeDirectional, Color: &[3]float64{1, 1, 1}, Intensity: gltf.Float(1)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := []byte(`{"lights":[{"type":"directional","name":"Key"}]}`); !reflect.DeepEqual(got, want) {
+		t.Errorf("Lights.MarshalJSON() = %s, want %s", got, want)
 	}
 }

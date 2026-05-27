@@ -10,7 +10,6 @@ import (
 var (
 	// DefaultScale defines a scaling that does not modify the size of the object.
 	DefaultScale = [2]float64{1, 1}
-	emptyScale   = [2]float64{0, 0}
 	emptyOffset  = [2]float64{0, 0}
 )
 
@@ -38,11 +37,11 @@ type TextureTranform struct {
 	TexCoord *int       `json:"texCoord,omitempty"`
 }
 
+// TextureTransform is an alias for TextureTranform with the corrected spelling.
+type TextureTransform = TextureTranform
+
 // ScaleOrDefault returns the node scale if it represents a valid scale factor, else return the default one.
 func (t *TextureTranform) ScaleOrDefault() [2]float64 {
-	if t.Scale == emptyScale {
-		return DefaultScale
-	}
 	return t.Scale
 }
 
@@ -64,8 +63,6 @@ func (t *TextureTranform) MarshalJSON() ([]byte, error) {
 	if err == nil {
 		if t.Scale == DefaultScale {
 			out = removeProperty([]byte(`"scale":[1,1]`), out)
-		} else if t.Scale == emptyScale {
-			out = removeProperty([]byte(`"scale":[0,0]`), out)
 		}
 		if t.Offset == emptyOffset {
 			out = removeProperty([]byte(`"offset":[0,0]`), out)

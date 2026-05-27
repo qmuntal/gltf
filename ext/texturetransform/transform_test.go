@@ -15,7 +15,7 @@ func TestTextureTranform_ScaleOrDefault(t *testing.T) {
 		want [2]float64
 	}{
 		{"default", &texturetransform.TextureTranform{Scale: texturetransform.DefaultScale}, texturetransform.DefaultScale},
-		{"zeros", &texturetransform.TextureTranform{Scale: [2]float64{0, 0}}, texturetransform.DefaultScale},
+		{"zeros", &texturetransform.TextureTranform{Scale: [2]float64{0, 0}}, [2]float64{0, 0}},
 		{"other", &texturetransform.TextureTranform{Scale: [2]float64{1, 2}}, [2]float64{1, 2}},
 	}
 	for _, tt := range tests {
@@ -64,7 +64,7 @@ func TestTextureTranform_MarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", &texturetransform.TextureTranform{Scale: texturetransform.DefaultScale}, []byte(`{}`), false},
-		{"empty", &texturetransform.TextureTranform{}, []byte(`{}`), false},
+		{"empty", &texturetransform.TextureTranform{}, []byte(`{"scale":[0,0]}`), false},
 		{"nodefault", &texturetransform.TextureTranform{Offset: [2]float64{0.1, 0.2}, Rotation: 1.57, Scale: [2]float64{1, -1}, TexCoord: gltf.Index(2)}, []byte(`{"offset":[0.1,0.2],"rotation":1.57,"scale":[1,-1],"texCoord":2}`), false},
 	}
 	for _, tt := range tests {
