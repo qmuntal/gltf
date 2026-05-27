@@ -1,12 +1,22 @@
 package modeler_test
 
 import (
+	"encoding/binary"
+	"math"
 	"reflect"
 	"testing"
 
 	"github.com/qmuntal/gltf"
 	"github.com/qmuntal/gltf/modeler"
 )
+
+func float32Bytes(values ...float32) []byte {
+	data := make([]byte, 4*len(values))
+	for i, value := range values {
+		binary.LittleEndian.PutUint32(data[i*4:], math.Float32bits(value))
+	}
+	return data
+}
 
 func TestReadColor64_ReuseBuffer(t *testing.T) {
 	data := []byte{1, 2, 3, 4, 1, 2, 3, 4}
@@ -602,9 +612,12 @@ func TestReadColor(t *testing.T) {
 		{"[4]uint16-normalized", args{[]byte{0, 1, 115, 33, 200, 0, 255, 255}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][4]uint8{{1, 33, 1, 255}}, false},
-		{"[4]float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64}, &gltf.Accessor{
+		{"[4]uint16-normalized-linear", args{[]byte{37, 3, 180, 50, 255, 255, 255, 255}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
+		}, nil}, [][4]uint8{{3, 51, 255, 255}}, false},
+		{"[4]float32", args{float32Bytes(0, 0.5, 1, 1), &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat,
-		}, nil}, [][4]uint8{{255, 89, 155, 252}}, false},
+		}, nil}, [][4]uint8{{0, 128, 255, 255}}, false},
 		{"[3]uint8", args{[]byte{1, 2, 3, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUbyte,
 		}, nil}, [][4]uint8{{1, 2, 3, 255}}, false},
@@ -614,9 +627,9 @@ func TestReadColor(t *testing.T) {
 		{"[3]uint16-normalized", args{[]byte{0, 1, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][4]uint8{{1, 1, 1, 255}}, false},
-		{"[3]float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64}, &gltf.Accessor{
+		{"[3]float32", args{float32Bytes(805.0/65535.0, 12980.0/65535.0, 1), &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat,
-		}, nil}, [][4]uint8{{255, 89, 155, 255}}, false},
+		}, nil}, [][4]uint8{{3, 51, 255, 255}}, false},
 		{"incorrect-type", args{[]byte{}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Type: gltf.AccessorMat2, ComponentType: gltf.ComponentUbyte,
 		}, nil}, nil, true},
@@ -664,18 +677,21 @@ func TestReadColor64(t *testing.T) {
 		{"[4]uint16", args{[]byte{0, 0, 255, 255, 0, 0, 255, 255}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort,
 		}, nil}, [][4]uint16{{0, 65535, 0, 65535}}, false},
-		{"[4]float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64}, &gltf.Accessor{
+		{"[4]uint16-normalized", args{[]byte{37, 3, 180, 50, 255, 255, 255, 255}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
+		}, nil}, [][4]uint16{{805, 12980, 65535, 65535}}, false},
+		{"[4]float32", args{float32Bytes(0, 0.5, 1, 1), &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat,
-		}, nil}, [][4]uint16{{65535, 23149, 40135, 65532}}, false},
+		}, nil}, [][4]uint16{{0, 32768, 65535, 65535}}, false},
 		{"[3]uint8", args{[]byte{0, 100, 200, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUbyte,
 		}, nil}, [][4]uint16{{0, 25700, 51400, 65535}}, false},
 		{"[3]uint16", args{[]byte{0, 0, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort,
 		}, nil}, [][4]uint16{{0, 255, 255, 65535}}, false},
-		{"[3]float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64}, &gltf.Accessor{
+		{"[3]float32", args{float32Bytes(805.0/65535.0, 12980.0/65535.0, 1), &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat,
-		}, nil}, [][4]uint16{{65535, 23149, 40135, 65535}}, false},
+		}, nil}, [][4]uint16{{805, 12980, 65535, 65535}}, false},
 		{"incorrect-type", args{[]byte{}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Type: gltf.AccessorMat2, ComponentType: gltf.ComponentUbyte,
 		}, nil}, nil, true},

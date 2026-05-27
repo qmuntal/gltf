@@ -49,9 +49,9 @@ func TestNormalizeRGBA(t *testing.T) {
 		want [4]uint8
 	}{
 		{"empty", args{[4]float32{}}, [4]uint8{}},
-		{"base", args{[4]float32{0.0003035, 0.0003035, 0.0003035, 0.00392156}}, [4]uint8{0, 0, 0, 0}},
+		{"base", args{[4]float32{1.0 / 255, 1.0 / 255, 1.0 / 255, 1.0 / 255}}, [4]uint8{1, 1, 1, 1}},
 		{"max", args{[4]float32{1, 1, 1, 1}}, [4]uint8{255, 255, 255, 255}},
-		{"other", args{[4]float32{0.045186, 0.1878207, 0.4564110, 0.86274509}}, [4]uint8{59, 119, 179, 220}},
+		{"other", args{[4]float32{60.0 / 255, 120.0 / 255, 180.0 / 255, 220.0 / 255}}, [4]uint8{60, 120, 180, 220}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -74,9 +74,9 @@ func TestNormalizeRGB(t *testing.T) {
 		want [3]uint8
 	}{
 		{"empty", args{[3]float32{}}, [3]uint8{}},
-		{"base", args{[3]float32{0.0003035, 0.0003035, 0.0003035}}, [3]uint8{0, 0, 0}},
+		{"base", args{[3]float32{1.0 / 255, 1.0 / 255, 1.0 / 255}}, [3]uint8{1, 1, 1}},
 		{"max", args{[3]float32{1, 1, 1}}, [3]uint8{255, 255, 255}},
-		{"other", args{[3]float32{0.045186, 0.1878207, 0.4564110}}, [3]uint8{59, 119, 179}},
+		{"other", args{[3]float32{60.0 / 255, 120.0 / 255, 180.0 / 255}}, [3]uint8{60, 120, 180}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -99,9 +99,9 @@ func TestNormalizeRGBA64(t *testing.T) {
 		want [4]uint16
 	}{
 		{"empty", args{[4]float32{}}, [4]uint16{}},
-		{"base", args{[4]float32{0.001181, 0.001181, 0.001181, 0.0152590}}, [4]uint16{999, 999, 999, 999}},
+		{"base", args{[4]float32{1000.0 / 65535, 1000.0 / 65535, 1000.0 / 65535, 1000.0 / 65535}}, [4]uint16{1000, 1000, 1000, 1000}},
 		{"max", args{[4]float32{1, 1, 1, 1}}, [4]uint16{65535, 65535, 65535, 65535}},
-		{"other", args{[4]float32{0.0087617, 0.0280836, 0.061314, 0.335698}}, [4]uint16{5999, 11999, 17999, 21999}},
+		{"other", args{[4]float32{6000.0 / 65535, 12000.0 / 65535, 18000.0 / 65535, 22000.0 / 65535}}, [4]uint16{6000, 12000, 18000, 22000}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -124,9 +124,9 @@ func TestNormalizeRGB64(t *testing.T) {
 		want [3]uint16
 	}{
 		{"empty", args{[3]float32{}}, [3]uint16{}},
-		{"base", args{[3]float32{0.001181, 0.001181, 0.001181}}, [3]uint16{999, 999, 999}},
+		{"base", args{[3]float32{1000.0 / 65535, 1000.0 / 65535, 1000.0 / 65535}}, [3]uint16{1000, 1000, 1000}},
 		{"max", args{[3]float32{1, 1, 1}}, [3]uint16{65535, 65535, 65535}},
-		{"other", args{[3]float32{0.0087617, 0.0280836, 0.061314}}, [3]uint16{5999, 11999, 17999}},
+		{"other", args{[3]float32{6000.0 / 65535, 12000.0 / 65535, 18000.0 / 65535}}, [3]uint16{6000, 12000, 18000}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -149,9 +149,9 @@ func TestDenormalizeRGBA(t *testing.T) {
 		want [4]float32
 	}{
 		{"empty", args{[4]uint8{}}, [4]float32{}},
-		{"base", args{[4]uint8{1, 1, 1, 1}}, [4]float32{0.0003035, 0.0003035, 0.0003035, 0.00392156}},
+		{"base", args{[4]uint8{1, 1, 1, 1}}, [4]float32{1.0 / 255, 1.0 / 255, 1.0 / 255, 1.0 / 255}},
 		{"max", args{[4]uint8{255, 255, 255, 255}}, [4]float32{1, 1, 1, 1}},
-		{"other", args{[4]uint8{60, 120, 180, 220}}, [4]float32{0.045186, 0.1878207, 0.4564110, 0.86274509}},
+		{"other", args{[4]uint8{60, 120, 180, 220}}, [4]float32{60.0 / 255, 120.0 / 255, 180.0 / 255, 220.0 / 255}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -174,9 +174,9 @@ func TestDenormalizeRGB(t *testing.T) {
 		want [3]float32
 	}{
 		{"empty", args{[3]uint8{}}, [3]float32{}},
-		{"base", args{[3]uint8{1, 1, 1}}, [3]float32{0.0003035, 0.0003035, 0.0003035}},
+		{"base", args{[3]uint8{1, 1, 1}}, [3]float32{1.0 / 255, 1.0 / 255, 1.0 / 255}},
 		{"max", args{[3]uint8{255, 255, 255}}, [3]float32{1, 1, 1}},
-		{"other", args{[3]uint8{60, 120, 180}}, [3]float32{0.045186, 0.1878207, 0.4564110}},
+		{"other", args{[3]uint8{60, 120, 180}}, [3]float32{60.0 / 255, 120.0 / 255, 180.0 / 255}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -199,9 +199,9 @@ func TestDenormalizeRGBA64(t *testing.T) {
 		want [4]float32
 	}{
 		{"empty", args{[4]uint16{}}, [4]float32{}},
-		{"base", args{[4]uint16{1000, 1000, 1000, 1000}}, [4]float32{0.001181, 0.001181, 0.001181, 0.0152590}},
+		{"base", args{[4]uint16{1000, 1000, 1000, 1000}}, [4]float32{1000.0 / 65535, 1000.0 / 65535, 1000.0 / 65535, 1000.0 / 65535}},
 		{"max", args{[4]uint16{65535, 65535, 65535, 65535}}, [4]float32{1, 1, 1, 1}},
-		{"other", args{[4]uint16{6000, 12000, 18000, 22000}}, [4]float32{0.0087617, 0.0280836, 0.061314, 0.335698}},
+		{"other", args{[4]uint16{6000, 12000, 18000, 22000}}, [4]float32{6000.0 / 65535, 12000.0 / 65535, 18000.0 / 65535, 22000.0 / 65535}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -224,9 +224,9 @@ func TestDenormalizeRGB64(t *testing.T) {
 		want [3]float32
 	}{
 		{"empty", args{[3]uint16{}}, [3]float32{}},
-		{"base", args{[3]uint16{1000, 1000, 1000}}, [3]float32{0.001181, 0.001181, 0.001181}},
+		{"base", args{[3]uint16{1000, 1000, 1000}}, [3]float32{1000.0 / 65535, 1000.0 / 65535, 1000.0 / 65535}},
 		{"max", args{[3]uint16{65535, 65535, 65535}}, [3]float32{1, 1, 1}},
-		{"other", args{[3]uint16{6000, 12000, 18000}}, [3]float32{0.0087617, 0.0280836, 0.061314}},
+		{"other", args{[3]uint16{6000, 12000, 18000}}, [3]float32{6000.0 / 65535, 12000.0 / 65535, 18000.0 / 65535}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
