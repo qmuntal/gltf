@@ -36,6 +36,7 @@ func TestBuffer_IsEmbeddedResource(t *testing.T) {
 		want bool
 	}{
 		{"embedded", &Buffer{URI: "data:application/octet-stream;base64,dsjdsaGGUDXGA"}, true},
+		{"embedded-gltf-buffer", &Buffer{URI: "data:application/gltf-buffer;base64,dsjdsaGGUDXGA"}, true},
 		{"external", &Buffer{URI: "https://web.com/a"}, false},
 	}
 	for _, tt := range tests {
@@ -95,6 +96,7 @@ func TestBuffer_marshalData(t *testing.T) {
 		{"external", &Buffer{URI: "http://web.com"}, nil, false},
 		{"empty", &Buffer{URI: "data:application/octet-stream;base64,"}, nil, false},
 		{"test", &Buffer{URI: "data:application/octet-stream;base64,TEST"}, []byte{76, 68, 147}, false},
+		{"gltf-buffer", &Buffer{URI: "data:application/gltf-buffer;base64,TEST"}, []byte{76, 68, 147}, false},
 		{"complex", &Buffer{URI: "data:application/octet-stream;base64,YW55IGNhcm5hbCBwbGVhcw=="}, []byte{97, 110, 121, 32, 99, 97, 114, 110, 97, 108, 32, 112, 108, 101, 97, 115}, false},
 		{"invalid", &Buffer{URI: "data:application/octet-stream;base64"}, nil, true},
 	}
@@ -305,12 +307,12 @@ func TestSizeOfElement(t *testing.T) {
 		args args
 		want int
 	}{
-		{"byte-vec2", args{ComponentByte, AccessorVec2}, 4},
-		{"ubyte-vec2", args{ComponentUbyte, AccessorVec2}, 4},
-		{"byte-vec3", args{ComponentByte, AccessorVec3}, 4},
-		{"ubyte-vec3", args{ComponentUbyte, AccessorVec3}, 4},
-		{"short-vec3", args{ComponentShort, AccessorVec3}, 8},
-		{"ushort-vec3", args{ComponentUshort, AccessorVec3}, 8},
+		{"byte-vec2", args{ComponentByte, AccessorVec2}, 2},
+		{"ubyte-vec2", args{ComponentUbyte, AccessorVec2}, 2},
+		{"byte-vec3", args{ComponentByte, AccessorVec3}, 3},
+		{"ubyte-vec3", args{ComponentUbyte, AccessorVec3}, 3},
+		{"short-vec3", args{ComponentShort, AccessorVec3}, 6},
+		{"ushort-vec3", args{ComponentUshort, AccessorVec3}, 6},
 		{"byte-mat2", args{ComponentByte, AccessorMat2}, 8},
 		{"ubyte-mat2", args{ComponentUbyte, AccessorMat2}, 8},
 		{"byte-mat3", args{ComponentByte, AccessorMat3}, 12},

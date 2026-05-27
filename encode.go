@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -167,6 +168,9 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 	hasBinChunk := len(doc.Buffers) > 0 && doc.Buffers[0].URI == ""
 	var binPaddedLength int
 	if hasBinChunk {
+		if len(doc.Buffers[0].Data) < doc.Buffers[0].ByteLength {
+			return false, io.ErrShortBuffer
+		}
 		binPaddedLength = ((doc.Buffers[0].ByteLength + 3) / 4) * 4
 		header.Length += uint32(8 + binPaddedLength)
 	}
@@ -186,7 +190,7 @@ func (e *Encoder) encodeBinary(doc *Document) (bool, error) {
 		}
 		binHeader := chunkHeader{Length: uint32(binPaddedLength), Type: glbChunkBIN}
 		binary.Write(e.w, binary.LittleEndian, &binHeader)
-		e.w.Write(binBuffer.Data)
+		e.w.Write(binBuffer.Data[:binBuffer.ByteLength])
 		_, err = e.w.Write(binPadding)
 	}
 
@@ -231,12 +235,39 @@ func (e *Encoder) marshalJSONDoc(doc *Document) ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
+// UnmarshalJSON unmarshals the document and validates root-level required fields.
+func (doc *Document) UnmarshalJSON(data []byte) error {
+	type alias Document
+	var required struct {
+		Asset *json.RawMessage `json:"asset"`
+	}
+	if err := json.Unmarshal(data, &required); err != nil {
+		return err
+	}
+	if required.Asset == nil {
+		return errors.New("gltf: asset is required")
+	}
+	var tmp alias
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	*doc = Document(tmp)
+	return nil
+}
+
 // UnmarshalJSON unmarshal the asset with the correct default values.
 func (as *Asset) UnmarshalJSON(data []byte) error {
 	type alias Asset
-	tmp := alias(Asset{
-		Version: "2.0",
-	})
+	var required struct {
+		Version *string `json:"version"`
+	}
+	if err := json.Unmarshal(data, &required); err != nil {
+		return err
+	}
+	if required.Version == nil || *required.Version == "" {
+		return errors.New("gltf: asset.version is required")
+	}
+	var tmp alias
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
 		*as = Asset(tmp)
@@ -247,21 +278,56 @@ func (as *Asset) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the asset with the correct default values.
 func (as *Asset) MarshalJSON() ([]byte, error) {
 	type alias Asset
-	if as.Version == "" {
-		return json.Marshal(&struct {
-			Version string `json:"version,omitempty"`
-			*alias
-		}{
-			Version: "2.0",
-			alias:   (*alias)(as),
-		})
+	tmp := alias(*as)
+	if tmp.Version == "" {
+		tmp.Version = "2.0"
 	}
-	return json.Marshal((*alias)(as))
+	return json.Marshal(tmp)
+}
+
+// UnmarshalJSON unmarshal the accessor and validates required fields.
+func (a *Accessor) UnmarshalJSON(data []byte) error {
+	type alias Accessor
+	var required struct {
+		ComponentType *json.RawMessage `json:"componentType"`
+		Count         *int             `json:"count"`
+		Type          *json.RawMessage `json:"type"`
+	}
+	if err := json.Unmarshal(data, &required); err != nil {
+		return err
+	}
+	if required.ComponentType == nil {
+		return errors.New("gltf: accessor.componentType is required")
+	}
+	if required.Count == nil || *required.Count < 1 {
+		return errors.New("gltf: accessor.count must be greater than zero")
+	}
+	if required.Type == nil {
+		return errors.New("gltf: accessor.type is required")
+	}
+	var tmp alias
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	*a = Accessor(tmp)
+	return nil
 }
 
 // UnmarshalJSON unmarshal the node with the correct default values.
 func (n *Node) UnmarshalJSON(data []byte) error {
 	type alias Node
+	var raw struct {
+		Matrix      *json.RawMessage `json:"matrix"`
+		Rotation    *json.RawMessage `json:"rotation"`
+		Scale       *json.RawMessage `json:"scale"`
+		Translation *json.RawMessage `json:"translation"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Matrix != nil && (raw.Rotation != nil || raw.Scale != nil || raw.Translation != nil) {
+		return errors.New("gltf: node must not define both matrix and TRS properties")
+	}
 	tmp := alias(Node{
 		Matrix:   DefaultMatrix,
 		Rotation: DefaultRotation,
@@ -286,47 +352,135 @@ func (n *Node) MarshalJSON() ([]byte, error) {
 	}{
 		alias: (*alias)(n),
 	}
-	if n.Matrix != DefaultMatrix && n.Matrix != emptyMatrix {
+	hasMatrix := n.Matrix != DefaultMatrix && n.Matrix != emptyMatrix
+	hasRotation := n.Rotation != DefaultRotation && n.Rotation != emptyRotation
+	hasScale := n.Scale != DefaultScale && n.Scale != emptyScale
+	hasTranslation := n.Translation != DefaultTranslation
+	if hasMatrix && (hasRotation || hasScale || hasTranslation) {
+		return nil, errors.New("gltf: node must not define both matrix and TRS properties")
+	}
+	if hasMatrix {
 		tmp.Matrix = &n.Matrix
 	}
-	if n.Rotation != DefaultRotation && n.Rotation != emptyRotation {
+	if hasRotation {
 		tmp.Rotation = &n.Rotation
 	}
-	if n.Scale != DefaultScale && n.Scale != emptyScale {
+	if hasScale {
 		tmp.Scale = &n.Scale
 	}
-	if n.Translation != DefaultTranslation {
+	if hasTranslation {
 		tmp.Translation = &n.Translation
 	}
 	return json.Marshal(tmp)
 }
 
+// UnmarshalJSON unmarshal the skin and validates required fields.
+func (s *Skin) UnmarshalJSON(data []byte) error {
+	type alias Skin
+	var tmp alias
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	if len(tmp.Joints) == 0 {
+		return errors.New("gltf: skin.joints is required")
+	}
+	*s = Skin(tmp)
+	return nil
+}
+
+// UnmarshalJSON unmarshal the camera and validates its declared type.
+func (c *Camera) UnmarshalJSON(data []byte) error {
+	type alias Camera
+	var tmp alias
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	if tmp.Perspective != nil && tmp.Orthographic != nil {
+		return errors.New("gltf: camera must not define both perspective and orthographic properties")
+	}
+	switch tmp.Type {
+	case "perspective":
+		if tmp.Perspective == nil {
+			return errors.New("gltf: perspective camera must define the perspective property")
+		}
+	case "orthographic":
+		if tmp.Orthographic == nil {
+			return errors.New("gltf: orthographic camera must define the orthographic property")
+		}
+	case "":
+		return errors.New("gltf: camera.type is required")
+	default:
+		return fmt.Errorf("gltf: unknown camera type: %s", tmp.Type)
+	}
+	*c = Camera(tmp)
+	return nil
+}
+
 // MarshalJSON marshal the camera with the correct default values.
 func (c *Camera) MarshalJSON() ([]byte, error) {
 	type alias Camera
-	if c.Perspective != nil {
-		return json.Marshal(&struct {
-			Type string `json:"type"`
-			*alias
-		}{
-			Type:  "perspective",
-			alias: (*alias)(c),
-		})
-	} else if c.Orthographic != nil {
-		return json.Marshal(&struct {
-			Type string `json:"type"`
-			*alias
-		}{
-			Type:  "orthographic",
-			alias: (*alias)(c),
-		})
+	if c.Perspective != nil && c.Orthographic != nil {
+		return nil, errors.New("gltf: camera must not define both perspective and orthographic properties")
 	}
-	return nil, errors.New("gltf: camera must defined either the perspective or orthographic property")
+	tmp := alias(*c)
+	var cameraType string
+	if c.Perspective != nil {
+		cameraType = "perspective"
+	} else if c.Orthographic != nil {
+		cameraType = "orthographic"
+	} else {
+		return nil, errors.New("gltf: camera must define either the perspective or orthographic property")
+	}
+	if tmp.Type == "" {
+		c.Type = cameraType
+		tmp.Type = cameraType
+	} else if tmp.Type != cameraType {
+		return nil, fmt.Errorf("gltf: camera type %q does not match %s property", tmp.Type, cameraType)
+	}
+	return json.Marshal(tmp)
+}
+
+// UnmarshalJSON unmarshal the mesh and validates required fields.
+func (m *Mesh) UnmarshalJSON(data []byte) error {
+	type alias Mesh
+	var tmp alias
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	if len(tmp.Primitives) == 0 {
+		return errors.New("gltf: mesh.primitives is required")
+	}
+	*m = Mesh(tmp)
+	return nil
+}
+
+// UnmarshalJSON unmarshal the primitive and validates required fields.
+func (p *Primitive) UnmarshalJSON(data []byte) error {
+	type alias Primitive
+	var tmp alias
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	if len(tmp.Attributes) == 0 {
+		return errors.New("gltf: primitive.attributes is required")
+	}
+	*p = Primitive(tmp)
+	return nil
 }
 
 // UnmarshalJSON unmarshal the material with the correct default values.
 func (m *Material) UnmarshalJSON(data []byte) error {
 	type alias Material
+	var raw struct {
+		AlphaMode   *json.RawMessage `json:"alphaMode"`
+		AlphaCutoff *json.RawMessage `json:"alphaCutoff"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.AlphaCutoff != nil && raw.AlphaMode == nil {
+		return errors.New("gltf: material.alphaCutoff requires alphaMode")
+	}
 	tmp := alias(Material{AlphaCutoff: Float(0.5)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
@@ -346,6 +500,9 @@ func (m *Material) MarshalJSON() ([]byte, error) {
 		alias: (*alias)(m),
 	}
 	if m.AlphaCutoff != nil && *m.AlphaCutoff != 0.5 {
+		if m.AlphaMode == AlphaOpaque {
+			return nil, errors.New("gltf: material.alphaCutoff requires alphaMode")
+		}
 		tmp.AlphaCutoff = m.AlphaCutoff
 	}
 	if m.EmissiveFactor != [3]float64{0, 0, 0} {
@@ -360,6 +517,9 @@ func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 	tmp := alias(NormalTexture{Scale: Float(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
+		if tmp.Index == nil {
+			return errors.New("gltf: normalTexture.index is required")
+		}
 		*n = NormalTexture(tmp)
 	}
 	return err
@@ -368,6 +528,9 @@ func (n *NormalTexture) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the texture info with the correct default values.
 func (n *NormalTexture) MarshalJSON() ([]byte, error) {
 	type alias NormalTexture
+	if n.Index == nil {
+		return nil, errors.New("gltf: normalTexture.index is required")
+	}
 	if n.Scale != nil && *n.Scale == 1 {
 		return json.Marshal(&struct {
 			Scale float64 `json:"scale,omitempty"`
@@ -386,6 +549,9 @@ func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 	tmp := alias(OcclusionTexture{Strength: Float(1)})
 	err := json.Unmarshal(data, &tmp)
 	if err == nil {
+		if tmp.Index == nil {
+			return errors.New("gltf: occlusionTexture.index is required")
+		}
 		*o = OcclusionTexture(tmp)
 	}
 	return err
@@ -394,6 +560,9 @@ func (o *OcclusionTexture) UnmarshalJSON(data []byte) error {
 // MarshalJSON marshal the texture info with the correct default values.
 func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 	type alias OcclusionTexture
+	if o.Index == nil {
+		return nil, errors.New("gltf: occlusionTexture.index is required")
+	}
 	if o.Strength != nil && *o.Strength == 1 {
 		return json.Marshal(&struct {
 			Strength float64 `json:"strength,omitempty"`
@@ -404,6 +573,26 @@ func (o *OcclusionTexture) MarshalJSON() ([]byte, error) {
 		})
 	}
 	return json.Marshal((*alias)(o))
+}
+
+// UnmarshalJSON unmarshal the texture info and validates required fields.
+func (t *TextureInfo) UnmarshalJSON(data []byte) error {
+	type alias TextureInfo
+	var required struct {
+		Index *int `json:"index"`
+	}
+	if err := json.Unmarshal(data, &required); err != nil {
+		return err
+	}
+	if required.Index == nil {
+		return errors.New("gltf: textureInfo.index is required")
+	}
+	var tmp alias
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	*t = TextureInfo(tmp)
+	return nil
 }
 
 // UnmarshalJSON unmarshal the pbr with the correct default values.

@@ -223,6 +223,7 @@ func WriteAccessorsInterleaved(doc *gltf.Document, data ...any) ([]int, error) {
 	var byteOffset int
 	for i, d := range data {
 		c, t, l := binary.Type(d)
+		byteOffset = align4(byteOffset)
 		doc.Accessors = append(doc.Accessors, &gltf.Accessor{
 			BufferView:    gltf.Index(index),
 			ByteOffset:    byteOffset,
@@ -324,12 +325,23 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...any) (int,
 			return 0, errors.New("gltf: interleaved data shall have the same number of elements in all chunks")
 		}
 		sizeOfElement := gltf.SizeOfElement(c, a)
-		size += l * sizeOfElement
 		if len(data) > 1 {
+			stride = align4(stride)
 			stride += sizeOfElement
-		} else if target == gltf.TargetArrayBuffer && c.ByteSize()*a.Components() != sizeOfElement {
-			stride = sizeOfElement
+		} else {
+			paddedSize := sizeOfElement
+			if target == gltf.TargetArrayBuffer {
+				paddedSize = align4(sizeOfElement)
+			}
+			size += l * paddedSize
+			if paddedSize != sizeOfElement {
+				stride = paddedSize
+			}
 		}
+	}
+	if len(data) > 1 {
+		stride = align4(stride)
+		size = refLength * stride
 	}
 	buffer := lastBuffer(doc)
 	offset := len(buffer.Data)
@@ -337,6 +349,9 @@ func writeBufferViews(doc *gltf.Document, target gltf.Target, data ...any) (int,
 	buffer.Data = append(buffer.Data, make([]byte, size)...)
 	dataOffset := offset
 	for _, d := range data {
+		if len(data) > 1 {
+			dataOffset = offset + align4(dataOffset-offset)
+		}
 		// Cannot return error as the buffer has enough size and the data type is controlled.
 		_ = binary.Write(buffer.Data[dataOffset:], stride, d)
 		c, a, _ := binary.Type(d)
@@ -373,6 +388,10 @@ func getPadding(offset int) int {
 		return 0
 	}
 	return 4 - padAlign
+}
+
+func align4(offset int) int {
+	return offset + getPadding(offset)
 }
 
 func sliceLength(data any) int {
