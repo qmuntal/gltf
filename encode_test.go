@@ -188,8 +188,8 @@ func TestEncoder_Encode(t *testing.T) {
 			{Buffer: 10, ByteOffset: 10, ByteLength: 20, ByteStride: 50, Target: TargetElementArrayBuffer},
 		}}}, false},
 		{"withCameras", args{&Document{Cameras: []*Camera{
-			{Extras: 8.0, Name: "cam_1", Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
-			{Extras: 8.0, Name: "cam_2", Perspective: &Perspective{Extras: 8.0, AspectRatio: Float(1), Yfov: 2, Zfar: Float(3), Znear: 4}},
+			{Extras: 8.0, Name: "cam_1", Type: "orthographic", Orthographic: &Orthographic{Extras: 8.0, Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}},
+			{Extras: 8.0, Name: "cam_2", Type: "perspective", Perspective: &Perspective{Extras: 8.0, AspectRatio: Float(1), Yfov: 2, Zfar: Float(3), Znear: 4}},
 		}}}, false},
 		{"withImages", args{&Document{Images: []*Image{
 			{Extras: 8.0, Name: "binary", BufferView: Index(1), MimeType: "data:image/png"},
@@ -496,6 +496,74 @@ func TestPBRMetallicRoughness_UnmarshalJSON(t *testing.T) {
 	}
 }
 
+func TestAnimationChannelTarget_UnmarshalJSON_KHRAnimationPointer(t *testing.T) {
+	var doc Document
+	data := []byte(`{
+		"asset":{"version":"2.0"},
+		"extensionsUsed":["KHR_animation_pointer"],
+		"animations":[{
+			"channels":[{
+				"sampler":0,
+				"target":{
+					"path":"pointer",
+					"extensions":{"KHR_animation_pointer":{"pointer":"/nodes/0/translation"}}
+				}
+			}],
+			"samplers":[{"input":0,"output":1}]
+		}]
+	}`)
+	if err := json.Unmarshal(data, &doc); err != nil {
+		t.Fatalf("Document.UnmarshalJSON() error = %v", err)
+	}
+
+	target := doc.Animations[0].Channels[0].Target
+	if target.Path != TRSProperty("pointer") {
+		t.Fatalf("AnimationChannelTarget.Path = %v, want %v", target.Path, TRSProperty("pointer"))
+	}
+	if target.Node != nil {
+		t.Fatalf("AnimationChannelTarget.Node = %v, want nil", *target.Node)
+	}
+	extension, ok := target.Extensions["KHR_animation_pointer"].(json.RawMessage)
+	if !ok {
+		t.Fatalf("KHR_animation_pointer extension = %T, want json.RawMessage", target.Extensions["KHR_animation_pointer"])
+	}
+	if !strings.Contains(string(extension), `"/nodes/0/translation"`) {
+		t.Fatalf("KHR_animation_pointer extension = %s", extension)
+	}
+	if _, err := json.Marshal(target); err != nil {
+		t.Fatalf("AnimationChannelTarget.MarshalJSON() error = %v", err)
+	}
+}
+
+func TestAnimationChannelTarget_UnmarshalJSON_ExtensionPath(t *testing.T) {
+	var doc Document
+	data := []byte(`{
+		"asset":{"version":"2.0"},
+		"animations":[{
+			"channels":[{
+				"sampler":0,
+				"target":{"node":0,"path":"EXT_custom_property"}
+			}],
+			"samplers":[{"input":0,"output":1}]
+		}]
+	}`)
+	if err := json.Unmarshal(data, &doc); err != nil {
+		t.Fatalf("Document.UnmarshalJSON() error = %v", err)
+	}
+
+	target := doc.Animations[0].Channels[0].Target
+	if target.Path != TRSProperty("EXT_custom_property") {
+		t.Fatalf("AnimationChannelTarget.Path = %v, want %v", target.Path, TRSProperty("EXT_custom_property"))
+	}
+	out, err := json.Marshal(target)
+	if err != nil {
+		t.Fatalf("AnimationChannelTarget.MarshalJSON() error = %v", err)
+	}
+	if !strings.Contains(string(out), `"path":"EXT_custom_property"`) {
+		t.Fatalf("AnimationChannelTarget.MarshalJSON() = %s", out)
+	}
+}
+
 func TestNode_MarshalJSON(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -665,6 +733,7 @@ func TestCamera_MarshalJSON(t *testing.T) {
 		{"empty", &Camera{}, nil, true},
 		{"perspective", &Camera{Perspective: &Perspective{Yfov: 2, Znear: 4}}, []byte(`{"type":"perspective","perspective":{"yfov":2,"znear":4}}`), false},
 		{"orthographic", &Camera{Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, []byte(`{"type":"orthographic","orthographic":{"xmag":1,"ymag":2,"zfar":3,"znear":4}}`), false},
+		{"custom", &Camera{Type: "custom"}, []byte(`{"type":"custom"}`), false},
 		{"mismatch", &Camera{Type: "perspective", Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, nil, true},
 	}
 	for _, tt := range tests {
@@ -681,22 +750,21 @@ func TestCamera_MarshalJSON(t *testing.T) {
 	}
 }
 
-func TestCamera_MarshalJSON_AutoPopulatesType(t *testing.T) {
+func TestCamera_MarshalJSON_DoesNotMutateType(t *testing.T) {
 	tests := []struct {
 		name string
 		c    *Camera
-		want string
 	}{
-		{"perspective", &Camera{Perspective: &Perspective{Yfov: 2, Znear: 4}}, "perspective"},
-		{"orthographic", &Camera{Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, "orthographic"},
+		{"perspective", &Camera{Perspective: &Perspective{Yfov: 2, Znear: 4}}},
+		{"orthographic", &Camera{Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := tt.c.MarshalJSON(); err != nil {
 				t.Fatalf("Camera.MarshalJSON() error = %v", err)
 			}
-			if tt.c.Type != tt.want {
-				t.Errorf("Camera.Type = %q, want %q", tt.c.Type, tt.want)
+			if tt.c.Type != "" {
+				t.Errorf("Camera.Type = %q, want empty", tt.c.Type)
 			}
 		})
 	}
@@ -713,7 +781,7 @@ func TestCamera_UnmarshalJSON(t *testing.T) {
 		{"orthographic", []byte(`{"type":"orthographic","orthographic":{"xmag":1,"ymag":2,"zfar":3,"znear":4}}`), &Camera{Type: "orthographic", Orthographic: &Orthographic{Xmag: 1, Ymag: 2, Zfar: 3, Znear: 4}}, false},
 		{"missing-type", []byte(`{"perspective":{"yfov":2,"znear":4}}`), new(Camera), true},
 		{"missing-projection", []byte(`{"type":"perspective"}`), new(Camera), true},
-		{"unknown-type", []byte(`{"type":"custom"}`), new(Camera), true},
+		{"custom", []byte(`{"type":"custom"}`), &Camera{Type: "custom"}, false},
 		{"both-projections", []byte(`{"type":"perspective","perspective":{"yfov":2,"znear":4},"orthographic":{"xmag":1,"ymag":2,"zfar":3,"znear":4}}`), new(Camera), true},
 	}
 	for _, tt := range tests {
