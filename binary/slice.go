@@ -141,6 +141,9 @@ func castSlice(c gltf.ComponentType, t gltf.AccessorType, count int, v []byte) a
 // If the buffer is an slice which type matches with the expected by the acr then it will
 // be used as backing slice.
 func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count int, buffer []byte) (any, error) {
+	if count < 0 {
+		return nil, fmt.Errorf("gltf: accessor count %d not allowed", count)
+	}
 	if err := checkAccessorType(c, t); err != nil {
 		return nil, err
 	}
@@ -160,6 +163,9 @@ func MakeSliceBuffer(c gltf.ComponentType, t gltf.AccessorType, count int, buffe
 // For example, if c is gltf.ComponentFloat and t is gltf.AccessorVec3
 // then MakeSlice(c, t, 5) is equivalent to make([][3]float32, 5).
 func MakeSlice(c gltf.ComponentType, t gltf.AccessorType, count int) (any, error) {
+	if count < 0 {
+		return nil, fmt.Errorf("gltf: accessor count %d not allowed", count)
+	}
 	if err := checkAccessorType(c, t); err != nil {
 		return nil, err
 	}

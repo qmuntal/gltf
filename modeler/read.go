@@ -29,23 +29,40 @@ var uint32Pool = sync.Pool{
 // ReadAccessor is safe to use even with malformed documents.
 // If that happens it will return an error instead of panic.
 func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, error) {
+	if acr == nil {
+		return nil, errors.New("gltf: accessor is nil")
+	}
+	if acr.Count < 0 {
+		return nil, errCount("accessor", acr.Count)
+	}
 	data, err := binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
 	if err != nil {
 		return nil, err
 	}
 	if acr.BufferView != nil {
-		buf, err := readBufferView(doc, *acr.BufferView)
+		bv, buf, err := readBufferView(doc, *acr.BufferView)
 		if err != nil {
 			return nil, err
 		}
-		byteStride := doc.BufferViews[*acr.BufferView].ByteStride
-		err = binary.Read(buf[acr.ByteOffset:], byteStride, data)
+		if err := validateByteStride(bv.ByteStride, acr.ComponentType, acr.Type); err != nil {
+			return nil, err
+		}
+		if err := validateAccessorByteOffset(acr.ByteOffset, len(buf)); err != nil {
+			return nil, err
+		}
+		err = binary.Read(buf[acr.ByteOffset:], bv.ByteStride, data)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if acr.Sparse != nil {
+		if acr.Sparse.Count < 0 {
+			return nil, errCount("sparse", acr.Sparse.Count)
+		}
+		if acr.Sparse.Count > acr.Count {
+			return nil, errors.New("gltf: sparse count overflows accessor count")
+		}
 		bufPtr := uint32Pool.Get().(*[]uint32)
 		defer uint32Pool.Put(bufPtr)
 		indices, err := ReadIndices(doc, &gltf.Accessor{
@@ -56,6 +73,9 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 			ByteOffset:    acr.Sparse.Indices.ByteOffset,
 		}, *bufPtr)
 		if err != nil {
+			return nil, err
+		}
+		if err := validateSparseIndices(indices, acr.Count); err != nil {
 			return nil, err
 		}
 
@@ -81,11 +101,22 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 	return data, nil
 }
 
-func readBufferView(doc *gltf.Document, bufferViewIndex int) ([]byte, error) {
-	if len(doc.BufferViews) <= bufferViewIndex {
-		return nil, errors.New("gltf: bufferview index overflows")
+func readBufferView(doc *gltf.Document, bufferViewIndex int) (*gltf.BufferView, []byte, error) {
+	if doc == nil {
+		return nil, nil, errors.New("gltf: document is nil")
 	}
-	return ReadBufferView(doc, doc.BufferViews[bufferViewIndex])
+	if bufferViewIndex < 0 || len(doc.BufferViews) <= bufferViewIndex {
+		return nil, nil, errors.New("gltf: bufferview index overflows")
+	}
+	bv := doc.BufferViews[bufferViewIndex]
+	if bv == nil {
+		return nil, nil, errors.New("gltf: bufferview is nil")
+	}
+	buf, err := ReadBufferView(doc, bv)
+	if err != nil {
+		return nil, nil, err
+	}
+	return bv, buf, nil
 }
 
 // ReadBufferView returns the slice of bytes associated with the BufferView.
@@ -94,16 +125,69 @@ func readBufferView(doc *gltf.Document, bufferViewIndex int) ([]byte, error) {
 // It is safe to use even with malformed documents.
 // If that happens it will return an error instead of panic.
 func ReadBufferView(doc *gltf.Document, bv *gltf.BufferView) ([]byte, error) {
-	if len(doc.Buffers) <= bv.Buffer {
+	if doc == nil {
+		return nil, errors.New("gltf: document is nil")
+	}
+	if bv == nil {
+		return nil, errors.New("gltf: bufferview is nil")
+	}
+	if bv.Buffer < 0 || len(doc.Buffers) <= bv.Buffer {
 		return nil, errors.New("gltf: buffer index overflows")
 	}
-	buf := doc.Buffers[bv.Buffer].Data
-
-	high := bv.ByteOffset + bv.ByteLength
-	if len(buf) < high {
+	buffer := doc.Buffers[bv.Buffer]
+	if buffer == nil {
+		return nil, errors.New("gltf: buffer is nil")
+	}
+	if buffer.ByteLength < 0 || bv.ByteOffset < 0 || bv.ByteLength < 0 {
+		return nil, errors.New("gltf: negative buffer length or offset")
+	}
+	if bv.ByteOffset > buffer.ByteLength || bv.ByteLength > buffer.ByteLength-bv.ByteOffset {
 		return nil, io.ErrShortBuffer
 	}
-	return buf[bv.ByteOffset:high], nil
+
+	high := bv.ByteOffset + bv.ByteLength
+	if len(buffer.Data) < high {
+		return nil, io.ErrShortBuffer
+	}
+	return buffer.Data[bv.ByteOffset:high], nil
+}
+
+func validateAccessorByteOffset(byteOffset, bufferViewLength int) error {
+	if byteOffset < 0 {
+		return errors.New("gltf: accessor byte offset is negative")
+	}
+	if byteOffset > bufferViewLength {
+		return io.ErrShortBuffer
+	}
+	return nil
+}
+
+func validateByteStride(byteStride int, componentType gltf.ComponentType, accessorType gltf.AccessorType) error {
+	if byteStride == 0 {
+		return nil
+	}
+	if byteStride < 0 {
+		return fmt.Errorf("gltf: byte stride %d not allowed", byteStride)
+	}
+	if byteStride < gltf.SizeOfElement(componentType, accessorType) {
+		return fmt.Errorf("gltf: byte stride %d too small", byteStride)
+	}
+	if byteStride < 4 || byteStride > 252 || byteStride%4 != 0 {
+		return fmt.Errorf("gltf: byte stride %d not allowed", byteStride)
+	}
+	return nil
+}
+
+func validateSparseIndices(indices []uint32, count int) error {
+	for i, index := range indices {
+		if uint64(index) >= uint64(count) {
+			return errors.New("gltf: sparse index overflows accessor count")
+		}
+		if i > 0 && index <= indices[i-1] {
+			return errors.New("gltf: sparse indices must be strictly increasing")
+		}
+	}
+	return nil
 }
 
 var bufPool = sync.Pool{
@@ -216,6 +300,9 @@ func ReadTextureCoord(doc *gltf.Document, acr *gltf.Accessor, buffer [][2]float3
 	if acr.Type != gltf.AccessorVec2 {
 		return nil, errAccessorType(acr.Type)
 	}
+	if err := requireNormalizedInteger(acr); err != nil {
+		return nil, err
+	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
 	data, err := ReadAccessor(doc, acr, *bufPtr)
@@ -255,6 +342,9 @@ func ReadWeights(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	}
 	if acr.Type != gltf.AccessorVec4 {
 		return nil, errAccessorType(acr.Type)
+	}
+	if err := requireNormalizedInteger(acr); err != nil {
+		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
@@ -356,6 +446,9 @@ func ReadColor(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint8) ([][4]
 	default:
 		return nil, errAccessorType(acr.Type)
 	}
+	if err := requireNormalizedInteger(acr); err != nil {
+		return nil, err
+	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
 	data, err := ReadAccessor(doc, acr, *bufPtr)
@@ -424,6 +517,9 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 	case gltf.AccessorVec3, gltf.AccessorVec4:
 	default:
 		return nil, errAccessorType(acr.Type)
+	}
+	if err := requireNormalizedInteger(acr); err != nil {
+		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
@@ -497,4 +593,15 @@ func errAccessorType(tp gltf.AccessorType) error {
 
 func errComponentType(tp gltf.ComponentType) error {
 	return fmt.Errorf("gltf: component type %v not allowed", tp)
+}
+
+func errCount(name string, count int) error {
+	return fmt.Errorf("gltf: %s count %d not allowed", name, count)
+}
+
+func requireNormalizedInteger(acr *gltf.Accessor) error {
+	if acr.ComponentType != gltf.ComponentFloat && !acr.Normalized {
+		return errors.New("gltf: integer accessor must be normalized")
+	}
+	return nil
 }

@@ -21,10 +21,10 @@ func float32Bytes(values ...float32) []byte {
 func TestReadColor64_ReuseBuffer(t *testing.T) {
 	data := []byte{1, 2, 3, 4, 1, 2, 3, 4}
 	acc1 := &gltf.Accessor{
-		BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
+		BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true,
 	}
 	acc2 := &gltf.Accessor{
-		BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
+		BufferView: gltf.Index(0), Count: 2, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true,
 	}
 	doc := &gltf.Document{
 		BufferViews: []*gltf.BufferView{
@@ -77,6 +77,28 @@ func TestReadBufferView(t *testing.T) {
 			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
 		}}, &gltf.BufferView{
 			Buffer: 0, ByteLength: 10, ByteOffset: 6,
+		}}, nil, true},
+		{"nil-doc", args{nil, &gltf.BufferView{}}, nil, true},
+		{"nil-bufferview", args{&gltf.Document{}, nil}, nil, true},
+		{"negative-buffer", args{&gltf.Document{Buffers: []*gltf.Buffer{
+			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		}}, &gltf.BufferView{
+			Buffer: -1, ByteLength: 3,
+		}}, nil, true},
+		{"negative-offset", args{&gltf.Document{Buffers: []*gltf.Buffer{
+			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		}}, &gltf.BufferView{
+			Buffer: 0, ByteLength: 3, ByteOffset: -1,
+		}}, nil, true},
+		{"negative-length", args{&gltf.Document{Buffers: []*gltf.Buffer{
+			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		}}, &gltf.BufferView{
+			Buffer: 0, ByteLength: -1,
+		}}, nil, true},
+		{"declared-buffer-short", args{&gltf.Document{Buffers: []*gltf.Buffer{
+			{ByteLength: 2, Data: []byte{1, 2, 3, 4}},
+		}}, &gltf.BufferView{
+			Buffer: 0, ByteLength: 3,
 		}}, nil, true},
 	}
 	for _, tt := range tests {
@@ -144,6 +166,42 @@ func TestReadAccessor(t *testing.T) {
 		}}}, &gltf.Accessor{
 			BufferView: gltf.Index(1), ByteOffset: 3, ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 3,
 		}}, nil, true},
+		{"negative-view", args{&gltf.Document{Buffers: []*gltf.Buffer{
+			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		}, BufferViews: []*gltf.BufferView{{
+			Buffer: 0, ByteLength: 6, ByteOffset: 3,
+		}}}, &gltf.Accessor{
+			BufferView: gltf.Index(-1), ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 3,
+		}}, nil, true},
+		{"negative-offset", args{&gltf.Document{Buffers: []*gltf.Buffer{
+			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		}, BufferViews: []*gltf.BufferView{{
+			Buffer: 0, ByteLength: 6, ByteOffset: 3,
+		}}}, &gltf.Accessor{
+			BufferView: gltf.Index(0), ByteOffset: -1, ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 3,
+		}}, nil, true},
+		{"offset-overflow", args{&gltf.Document{Buffers: []*gltf.Buffer{
+			{ByteLength: 9, Data: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9}},
+		}, BufferViews: []*gltf.BufferView{{
+			Buffer: 0, ByteLength: 6, ByteOffset: 3,
+		}}}, &gltf.Accessor{
+			BufferView: gltf.Index(0), ByteOffset: 7, ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 0,
+		}}, nil, true},
+		{"negative-count", args{&gltf.Document{}, &gltf.Accessor{
+			ComponentType: gltf.ComponentFloat, Type: gltf.AccessorScalar, Count: -1,
+		}}, nil, true},
+		{"invalid-stride", args{&gltf.Document{
+			Buffers:     []*gltf.Buffer{{ByteLength: 24, Data: make([]byte, 24)}},
+			BufferViews: []*gltf.BufferView{{Buffer: 0, ByteLength: 24, ByteStride: 4}},
+		}, &gltf.Accessor{
+			BufferView: gltf.Index(0), ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 2,
+		}}, nil, true},
+		{"nonconformant-stride", args{&gltf.Document{
+			Buffers:     []*gltf.Buffer{{ByteLength: 3, Data: []byte{1, 0, 2}}},
+			BufferViews: []*gltf.BufferView{{Buffer: 0, ByteLength: 3, ByteStride: 2}},
+		}, &gltf.Accessor{
+			BufferView: gltf.Index(0), ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 2,
+		}}, nil, true},
 		{"interleaved", args{&gltf.Document{
 			Buffers: []*gltf.Buffer{{ByteLength: 52, Data: []byte{
 				0, 0, 0, 0,
@@ -194,6 +252,67 @@ func TestReadAccessor(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ReadAccessor() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadAccessorSparseMalformed(t *testing.T) {
+	tests := []struct {
+		name string
+		data []byte
+		acr  *gltf.Accessor
+	}{
+		{"index-overflow", append([]byte{2}, float32Bytes(1)...), &gltf.Accessor{
+			ComponentType: gltf.ComponentFloat,
+			Type:          gltf.AccessorScalar,
+			Count:         2,
+			Sparse: &gltf.Sparse{Count: 1,
+				Indices: gltf.SparseIndices{BufferView: 0, ComponentType: gltf.ComponentUbyte},
+				Values:  gltf.SparseValues{BufferView: 1},
+			},
+		}},
+		{"duplicate-indices", append([]byte{1, 1}, float32Bytes(1, 2)...), &gltf.Accessor{
+			ComponentType: gltf.ComponentFloat,
+			Type:          gltf.AccessorScalar,
+			Count:         3,
+			Sparse: &gltf.Sparse{Count: 2,
+				Indices: gltf.SparseIndices{BufferView: 0, ComponentType: gltf.ComponentUbyte},
+				Values:  gltf.SparseValues{BufferView: 1},
+			},
+		}},
+		{"out-of-order-indices", append([]byte{2, 1}, float32Bytes(1, 2)...), &gltf.Accessor{
+			ComponentType: gltf.ComponentFloat,
+			Type:          gltf.AccessorScalar,
+			Count:         3,
+			Sparse: &gltf.Sparse{Count: 2,
+				Indices: gltf.SparseIndices{BufferView: 0, ComponentType: gltf.ComponentUbyte},
+				Values:  gltf.SparseValues{BufferView: 1},
+			},
+		}},
+		{"count-overflow", nil, &gltf.Accessor{
+			ComponentType: gltf.ComponentFloat,
+			Type:          gltf.AccessorScalar,
+			Count:         1,
+			Sparse: &gltf.Sparse{Count: 2,
+				Indices: gltf.SparseIndices{BufferView: 0, ComponentType: gltf.ComponentUbyte},
+				Values:  gltf.SparseValues{BufferView: 1},
+			},
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			doc := &gltf.Document{}
+			if tt.data != nil {
+				doc.Buffers = []*gltf.Buffer{{Data: tt.data, ByteLength: len(tt.data)}}
+				doc.BufferViews = []*gltf.BufferView{
+					{Buffer: 0, ByteLength: tt.acr.Sparse.Count},
+					{Buffer: 0, ByteOffset: tt.acr.Sparse.Count, ByteLength: len(tt.data) - tt.acr.Sparse.Count},
+				}
+			}
+			if _, err := modeler.ReadAccessor(doc, tt.acr, nil); err == nil {
+				t.Fatal("ReadAccessor() expected an error")
 			}
 		})
 	}
@@ -400,10 +519,10 @@ func TestReadTextureCoord(t *testing.T) {
 		wantErr bool
 	}{
 		{"uint8", args{[]byte{255, 0, 0, 0}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUbyte,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUbyte, Normalized: true,
 		}, nil}, [][2]float32{{1, 0}}, false},
 		{"uint16", args{[]byte{255, 255, 0, 0}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUshort,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][2]float32{{1, 0}}, false},
 		{"float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentFloat,
@@ -416,6 +535,9 @@ func TestReadTextureCoord(t *testing.T) {
 		}, nil}, nil, true},
 		{"incorrect-componenttype", args{[]byte{}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Type: gltf.AccessorVec2, ComponentType: gltf.ComponentByte,
+		}, nil}, nil, true},
+		{"integer-not-normalized", args{[]byte{255, 0}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec2, ComponentType: gltf.ComponentUbyte,
 		}, nil}, nil, true},
 	}
 	for _, tt := range tests {
@@ -453,10 +575,10 @@ func TestReadWeights(t *testing.T) {
 		wantErr bool
 	}{
 		{"uint8", args{[]byte{255, 0, 255, 0}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true,
 		}, nil}, [][4]float32{{1, 0, 1, 0}}, false},
 		{"uint16", args{[]byte{0, 0, 255, 255, 0, 0, 255, 255}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][4]float32{{0, 1, 0, 1}}, false},
 		{"float32", args{[]byte{0, 0, 128, 63, 0, 0, 0, 64, 0, 0, 64, 64, 0, 0, 128, 64}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat,
@@ -469,6 +591,9 @@ func TestReadWeights(t *testing.T) {
 		}, nil}, nil, true},
 		{"incorrect-componenttype", args{[]byte{}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Type: gltf.AccessorVec4, ComponentType: gltf.ComponentByte,
+		}, nil}, nil, true},
+		{"integer-not-normalized", args{[]byte{255, 0, 255, 0}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
 		}, nil}, nil, true},
 	}
 	for _, tt := range tests {
@@ -660,11 +785,11 @@ func TestReadColor(t *testing.T) {
 		wantErr bool
 	}{
 		{"[4]uint8", args{[]byte{1, 2, 3, 4}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true,
 		}, nil}, [][4]uint8{{1, 2, 3, 4}}, false},
 		{"[4]uint16", args{[]byte{0, 0, 115, 33, 200, 0, 255, 255}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort,
-		}, nil}, [][4]uint8{{0, 115, 200, 255}}, false},
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
+		}, nil}, [][4]uint8{{0, 33, 1, 255}}, false},
 		{"[4]uint16-normalized", args{[]byte{0, 1, 115, 33, 200, 0, 255, 255}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][4]uint8{{1, 33, 1, 255}}, false},
@@ -675,11 +800,11 @@ func TestReadColor(t *testing.T) {
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat,
 		}, nil}, [][4]uint8{{0, 128, 255, 255}}, false},
 		{"[3]uint8", args{[]byte{1, 2, 3, 0}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUbyte,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUbyte, Normalized: true,
 		}, nil}, [][4]uint8{{1, 2, 3, 255}}, false},
 		{"[3]uint16", args{[]byte{0, 0, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort,
-		}, nil}, [][4]uint8{{0, 255, 255, 255}}, false},
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort, Normalized: true,
+		}, nil}, [][4]uint8{{0, 1, 1, 255}}, false},
 		{"[3]uint16-normalized", args{[]byte{0, 1, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][4]uint8{{1, 1, 1, 255}}, false},
@@ -691,6 +816,9 @@ func TestReadColor(t *testing.T) {
 		}, nil}, nil, true},
 		{"incorrect-componenttype", args{[]byte{}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Type: gltf.AccessorVec4, ComponentType: gltf.ComponentByte,
+		}, nil}, nil, true},
+		{"integer-not-normalized", args{[]byte{1, 2, 3, 4}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
 		}, nil}, nil, true},
 	}
 	for _, tt := range tests {
@@ -728,10 +856,10 @@ func TestReadColor64(t *testing.T) {
 		wantErr bool
 	}{
 		{"[4]uint8", args{[]byte{0, 115, 200, 255}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte, Normalized: true,
 		}, nil}, [][4]uint16{{0, 29555, 51400, 65535}}, false},
 		{"[4]uint16", args{[]byte{0, 0, 255, 255, 0, 0, 255, 255}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][4]uint16{{0, 65535, 0, 65535}}, false},
 		{"[4]uint16-normalized", args{[]byte{37, 3, 180, 50, 255, 255, 255, 255}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUshort, Normalized: true,
@@ -740,10 +868,10 @@ func TestReadColor64(t *testing.T) {
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentFloat,
 		}, nil}, [][4]uint16{{0, 32768, 65535, 65535}}, false},
 		{"[3]uint8", args{[]byte{0, 100, 200, 0}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUbyte,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUbyte, Normalized: true,
 		}, nil}, [][4]uint16{{0, 25700, 51400, 65535}}, false},
 		{"[3]uint16", args{[]byte{0, 0, 255, 0, 255, 0, 0, 0}, &gltf.Accessor{
-			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort,
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentUshort, Normalized: true,
 		}, nil}, [][4]uint16{{0, 255, 255, 65535}}, false},
 		{"[3]float32", args{float32Bytes(805.0/65535.0, 12980.0/65535.0, 1), &gltf.Accessor{
 			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec3, ComponentType: gltf.ComponentFloat,
@@ -753,6 +881,9 @@ func TestReadColor64(t *testing.T) {
 		}, nil}, nil, true},
 		{"incorrect-componenttype", args{[]byte{}, &gltf.Accessor{
 			BufferView: gltf.Index(0), Type: gltf.AccessorVec4, ComponentType: gltf.ComponentByte,
+		}, nil}, nil, true},
+		{"integer-not-normalized", args{[]byte{0, 115, 200, 255}, &gltf.Accessor{
+			BufferView: gltf.Index(0), Count: 1, Type: gltf.AccessorVec4, ComponentType: gltf.ComponentUbyte,
 		}, nil}, nil, true},
 	}
 	for _, tt := range tests {

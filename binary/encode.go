@@ -3,8 +3,10 @@ package binary
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"image/color"
 	"io"
+	"math"
 
 	"github.com/qmuntal/gltf"
 )
@@ -17,14 +19,23 @@ import (
 func Read(b []byte, byteStride int, data any) error {
 	c, t, n := Type(data)
 	size := gltf.SizeOfElement(c, t)
+	if byteStride < 0 {
+		return fmt.Errorf("gltf: byte stride %d not allowed", byteStride)
+	}
 	if byteStride == 0 {
 		byteStride = size
 	}
-	e := int(byteStride)
-	high := int(n) * e
-	if byteStride != size {
-		high -= int(byteStride - size)
+	if byteStride < size {
+		return fmt.Errorf("gltf: byte stride %d smaller than element size %d", byteStride, size)
 	}
+	if n == 0 {
+		return nil
+	}
+	if n > 1 && byteStride > (math.MaxInt-size)/(n-1) {
+		return io.ErrShortBuffer
+	}
+	e := byteStride
+	high := size + (n-1)*byteStride
 	if len(b) < high {
 		return io.ErrShortBuffer
 	}
