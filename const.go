@@ -1,4 +1,4 @@
-//go:generate stringer -linecomment -type ComponentType,AccessorType,PrimitiveMode,AlphaMode,MagFilter,MinFilter,WrappingMode,Interpolation,Target,TRSProperty -output const_strings.go
+//go:generate stringer -linecomment -type ComponentType,AccessorType,PrimitiveMode,AlphaMode,MagFilter,MinFilter,WrappingMode,Interpolation,Target -output const_strings.go
 
 package gltf
 
@@ -435,49 +435,16 @@ func (i *Interpolation) MarshalJSON() ([]byte, error) {
 	return json.Marshal(interpolation)
 }
 
-// TRSProperty defines a local space transformation.
-// TRSproperties are converted to matrices and postmultiplied in the T * R * S order to compose the transformation matrix.
-type TRSProperty uint8
+// TRSProperty defines an animation target path.
+// Extensions may define additional target paths beyond the constants provided by this package.
+type TRSProperty string
 
 const (
-	TRSTranslation TRSProperty = iota // translation
-	TRSRotation                       // rotation
-	TRSScale                          // scale
-	TRSWeights                        // weights
+	TRSTranslation TRSProperty = "translation"
+	TRSRotation    TRSProperty = "rotation"
+	TRSScale       TRSProperty = "scale"
+	TRSWeights     TRSProperty = "weights"
 )
-
-// UnmarshalJSON unmarshal the TRSProperty with the correct default values.
-func (t *TRSProperty) UnmarshalJSON(data []byte) error {
-	var tmp string
-	err := json.Unmarshal(data, &tmp)
-	if err == nil {
-		trs, ok := map[string]TRSProperty{
-			"translation": TRSTranslation,
-			"rotation":    TRSRotation,
-			"scale":       TRSScale,
-			"weights":     TRSWeights,
-		}[tmp]
-		if !ok {
-			return fmt.Errorf("gltf: unknown TRS property: %s", tmp)
-		}
-		*t = trs
-	}
-	return err
-}
-
-// MarshalJSON marshal the TRSProperty with the correct default values.
-func (t *TRSProperty) MarshalJSON() ([]byte, error) {
-	trs, ok := map[TRSProperty]string{
-		TRSTranslation: "translation",
-		TRSRotation:    "rotation",
-		TRSScale:       "scale",
-		TRSWeights:     "weights",
-	}[*t]
-	if !ok {
-		return nil, fmt.Errorf("gltf: unknown TRS property: %d", *t)
-	}
-	return json.Marshal(trs)
-}
 
 const (
 	glbHeaderMagic = 0x46546c67

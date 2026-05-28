@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -388,7 +387,7 @@ func (s *Skin) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// UnmarshalJSON unmarshal the camera and validates its declared type.
+// UnmarshalJSON unmarshal the camera and validates its declared core type.
 func (c *Camera) UnmarshalJSON(data []byte) error {
 	type alias Camera
 	var tmp alias
@@ -409,8 +408,6 @@ func (c *Camera) UnmarshalJSON(data []byte) error {
 		}
 	case "":
 		return errors.New("gltf: camera.type is required")
-	default:
-		return fmt.Errorf("gltf: unknown camera type: %s", tmp.Type)
 	}
 	*c = Camera(tmp)
 	return nil
@@ -423,19 +420,26 @@ func (c *Camera) MarshalJSON() ([]byte, error) {
 		return nil, errors.New("gltf: camera must not define both perspective and orthographic properties")
 	}
 	tmp := alias(*c)
-	var cameraType string
-	if c.Perspective != nil {
-		cameraType = "perspective"
-	} else if c.Orthographic != nil {
-		cameraType = "orthographic"
-	} else {
-		return nil, errors.New("gltf: camera must define either the perspective or orthographic property")
-	}
 	if tmp.Type == "" {
-		c.Type = cameraType
-		tmp.Type = cameraType
-	} else if tmp.Type != cameraType {
-		return nil, fmt.Errorf("gltf: camera type %q does not match %s property", tmp.Type, cameraType)
+		switch {
+		case c.Perspective != nil:
+			tmp.Type = "perspective"
+		case c.Orthographic != nil:
+			tmp.Type = "orthographic"
+		default:
+			return nil, errors.New("gltf: camera.type is required")
+		}
+	} else {
+		switch tmp.Type {
+		case "perspective":
+			if c.Perspective == nil {
+				return nil, errors.New("gltf: perspective camera must define the perspective property")
+			}
+		case "orthographic":
+			if c.Orthographic == nil {
+				return nil, errors.New("gltf: orthographic camera must define the orthographic property")
+			}
+		}
 	}
 	return json.Marshal(tmp)
 }
