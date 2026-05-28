@@ -178,6 +178,24 @@ func TestRead(t *testing.T) {
 	}
 }
 
+func TestReadInvalidByteStride(t *testing.T) {
+	tests := []struct {
+		name       string
+		byteStride int
+		data       any
+	}{
+		{"negative", -1, make([]uint16, 2)},
+		{"smaller-than-element", 1, make([]uint16, 2)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := binary.Read(make([]byte, 4), tt.byteStride, tt.data); err == nil {
+				t.Fatal("Read() expected an error")
+			}
+		})
+	}
+}
+
 func TestWrite(t *testing.T) {
 	type args struct {
 		n    int

@@ -78,6 +78,12 @@ func TestMakeSlice(t *testing.T) {
 	}
 }
 
+func TestMakeSliceNegativeCount(t *testing.T) {
+	if _, err := binary.MakeSlice(gltf.ComponentUbyte, gltf.AccessorScalar, -1); err == nil {
+		t.Fatal("MakeSlice() expected an error")
+	}
+}
+
 func TestMakeSliceBuffer(t *testing.T) {
 	type args struct {
 		c      gltf.ComponentType
@@ -104,5 +110,11 @@ func TestMakeSliceBuffer(t *testing.T) {
 				t.Errorf("MakeSliceBuffer() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestMakeSliceBufferNegativeCount(t *testing.T) {
+	if _, err := binary.MakeSliceBuffer(gltf.ComponentUbyte, gltf.AccessorScalar, -1, nil); err == nil {
+		t.Fatal("MakeSliceBuffer() expected an error")
 	}
 }
