@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math"
 	"os"
 	"reflect"
 	"testing"
@@ -299,6 +300,9 @@ func TestSampler_Decode(t *testing.T) {
 // attempted a multi-GiB allocation from this ~96 byte input.
 func TestDecodeBinaryBufferOversized(t *testing.T) {
 	const byteLength = 0xFFFFFFFC // ~4 GiB, small enough that byteLength+3 does not overflow uint32
+	if byteLength > math.MaxInt {
+		t.Skip("byteLength does not fit in int on this platform")
+	}
 
 	jsonChunk := []byte(`{"asset":{"version":"2.0"},"buffers":[{"byteLength":4294967292}]}`)
 	for len(jsonChunk)%4 != 0 {

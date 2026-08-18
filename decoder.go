@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -164,6 +165,14 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 	header, err := d.chunkHeader()
 	if err != nil {
 		return err
+	}
+	// A GLB BIN chunk length is a uint32, so buffer.ByteLength must fit in one.
+	// Reject anything outside that range up front: it can never match a valid
+	// header, and doing so before the conversions below prevents an oversized
+	// byteLength from being truncated into a value that spuriously passes the
+	// header.Length bounds check.
+	if buffer.ByteLength < 0 || int64(buffer.ByteLength) > math.MaxUint32 {
+		return errors.New("gltf: Invalid GLB BIN header")
 	}
 	if header.Type != glbChunkBIN || header.Length < uint32(buffer.ByteLength) || header.Length > uint32(buffer.ByteLength+3) {
 		return errors.New("gltf: Invalid GLB BIN header")
