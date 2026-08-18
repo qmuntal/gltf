@@ -168,9 +168,18 @@ func (d *Decoder) decodeBinaryBuffer(buffer *Buffer) error {
 	if header.Type != glbChunkBIN || header.Length < uint32(buffer.ByteLength) || header.Length > uint32(buffer.ByteLength+3) {
 		return errors.New("gltf: Invalid GLB BIN header")
 	}
-	buffer.Data = make([]byte, buffer.ByteLength)
-	_, err = io.ReadFull(d.r, buffer.Data)
-	return err
+	// buffer.ByteLength comes from the untrusted JSON header, so read the binary
+	// chunk by growing the buffer as the data arrives rather than allocating
+	// buffer.ByteLength up front, which a corrupt length could otherwise use to
+	// force a huge allocation before any data is read.
+	buffer.Data, err = io.ReadAll(io.LimitReader(d.r, int64(buffer.ByteLength)))
+	if err != nil {
+		return err
+	}
+	if len(buffer.Data) != buffer.ByteLength {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 
 func (d *Decoder) validateBuffer(buffer *Buffer) error {
