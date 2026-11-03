@@ -2,6 +2,8 @@ package modeler_test
 
 import (
 	"encoding/binary"
+	"errors"
+	"io"
 	"math"
 	"reflect"
 	"testing"
@@ -956,4 +958,32 @@ func TestReadInverseBindMatrices(t *testing.T) {
 		})
 	}
 
+}
+
+func TestReadAccessorOversizedCount(t *testing.T) {
+	// Regression test for GHSA-8pp7-j5x6-h8qc: an accessor whose declared
+	// count far exceeds its buffer view must be rejected before allocating.
+	data := make([]byte, 16)
+	doc := &gltf.Document{
+		BufferViews: []*gltf.BufferView{
+			{Buffer: 0, ByteLength: len(data)},
+		},
+		Buffers: []*gltf.Buffer{
+			{Data: data, ByteLength: len(data)},
+		},
+	}
+	acr := &gltf.Accessor{
+		BufferView:    gltf.Index(0),
+		Count:         4294967295,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// A count near math.MaxInt must not overflow the size computation.
+	acr.Count = math.MaxInt64
+	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
 }
