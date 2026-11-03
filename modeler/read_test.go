@@ -1054,6 +1054,12 @@ func TestReadAccessorZeroInitWithoutBufferView(t *testing.T) {
 	if _, err := modeler.ReadAccessor(doc, huge, nil); !errors.Is(err, io.ErrShortBuffer) {
 		t.Fatalf("oversized zero-initialised accessor: expected io.ErrShortBuffer, got %v", err)
 	}
+
+	// A nil document must not bypass the bound: the validation does not
+	// depend on the document, so the oversized count is rejected here too.
+	if _, err := modeler.ReadAccessor(nil, huge, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("nil document: expected io.ErrShortBuffer, got %v", err)
+	}
 	// An inflated declared buffer length must not raise the bound: the
 	// buffer claims 8 GiB (clamped to math.MaxInt on 32-bit targets)
 	// but the request (1.2 GB of VEC3 floats) still exceeds the cap.
