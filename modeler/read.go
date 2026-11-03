@@ -53,6 +53,10 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 		if err := validateAccessorCount(acr, bv.ByteStride, len(buf)-acr.ByteOffset); err != nil {
 			return nil, err
 		}
+	} else if doc != nil {
+		if err := validateZeroInitAccessorCount(acr, totalBufferLength(doc)); err != nil {
+			return nil, err
+		}
 	}
 	data, err := binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
 	if err != nil {
@@ -183,6 +187,40 @@ func validateAccessorCount(acr *gltf.Accessor, byteStride, available int) error 
 		return io.ErrShortBuffer
 	}
 	return nil
+}
+
+// validateZeroInitAccessorCount bounds the allocation for an accessor
+// without a buffer view (zero-initialised data, e.g. a sparse base) by
+// the total size of the document buffers, so that a document cannot
+// force an allocation larger than the data it carries.
+func validateZeroInitAccessorCount(acr *gltf.Accessor, budget int) error {
+	size := gltf.SizeOfElement(acr.ComponentType, acr.Type)
+	if size <= 0 || acr.Count == 0 {
+		return nil
+	}
+	if acr.Count > math.MaxInt/size {
+		return io.ErrShortBuffer
+	}
+	if acr.Count*size > budget {
+		return io.ErrShortBuffer
+	}
+	return nil
+}
+
+// totalBufferLength returns the sum of the declared lengths of the
+// document buffers, saturating at math.MaxInt.
+func totalBufferLength(doc *gltf.Document) int {
+	total := 0
+	for _, b := range doc.Buffers {
+		if b == nil || b.ByteLength < 0 {
+			continue
+		}
+		if b.ByteLength > math.MaxInt-total {
+			return math.MaxInt
+		}
+		total += b.ByteLength
+	}
+	return total
 }
 
 func validateAccessorByteOffset(byteOffset, bufferViewLength int) error {
