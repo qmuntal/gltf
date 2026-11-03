@@ -122,7 +122,7 @@ func (d *Decoder) readGLBHeader() (*glbHeader, error) {
 }
 
 func (d *Decoder) validateGLBHeader(header *glbHeader) error {
-	if header.Version != 2 || header.JSONHeader.Type != glbChunkJSON || (header.JSONHeader.Length+uint32(binary.Size(header))) > header.Length {
+	if header.Version != 2 || header.JSONHeader.Type != glbChunkJSON || uint64(header.JSONHeader.Length)+uint64(binary.Size(header)) > uint64(header.Length) {
 		return errors.New("gltf: Invalid GLB JSON header")
 	}
 	return nil
