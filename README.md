@@ -76,13 +76,14 @@ fmt.Print(doc.Asset)
 
 In both cases the decoder will automatically detect if the file is JSON/ASCII (gltf) or Binary (glb) based on its content.
 
-### Hello World: a rotating cube
+### Mesh viewer: a rotating cube
 
-Run this command from the repository root, then open http://127.0.0.1:8080
-in a browser with WebGL 2 support:
+Run this command from the repository root, then open the URL printed in the
+terminal in a browser with WebGL 2 support. The server automatically selects
+an available port on `127.0.0.1`:
 
 ```sh
-go run ./examples/helloworld
+go run ./examples/meshviewer
 ```
 
 The example loads the included cube with `gltf.Open`, extracts its `POSITION`
@@ -94,10 +95,10 @@ No additional Go dependencies or native graphics libraries are needed.
 To try your own file (keep any external buffers alongside it):
 
 ```sh
-go run ./examples/helloworld -model /path/to/Box.gltf
+go run ./examples/meshviewer -model /path/to/Box.gltf
 ```
 
-See [`examples/helloworld`](./examples/helloworld) for the Go loader and browser
+See [`examples/meshviewer`](./examples/meshviewer) for the Go loader and browser
 code. This is a mesh-loading example, not a full scene renderer: it displays only
 the first mesh's first triangle primitive, centered and scaled to fit, ignoring
 node transforms, materials, textures, and animations. Non-indexed primitives and

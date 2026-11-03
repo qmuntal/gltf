@@ -1,4 +1,4 @@
-// Hello World loads a glTF mesh in Go and displays it using WebGL in a browser.
+// Mesh Viewer loads a glTF mesh in Go and displays it using WebGL in a browser.
 package main
 
 import (
@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -46,13 +47,16 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 	})
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		log.Fatal(err)
+	}
 	server := &http.Server{
-		Addr:              "127.0.0.1:8080",
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
-	log.Print("Open http://127.0.0.1:8080 in a WebGL 2 browser. Press Ctrl+C to stop.")
-	log.Fatal(server.ListenAndServe())
+	log.Printf("Open http://%s in a WebGL 2 browser. Press Ctrl+C to stop.", listener.Addr())
+	log.Fatal(server.Serve(listener))
 }
 
 func loadMesh(path string) (*mesh, error) {
