@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>glTF Hello World</title>
+<style>
+  body { margin: 0; background: #18202b; color: white; font-family: sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  p { position: absolute; margin: 1em; }
+</style>
+<p id="status">glTF Hello World — rotating mesh</p>
+<canvas></canvas>
+<script type="module">
+try {
+  const canvas = document.querySelector("canvas");
+  const gl = canvas.getContext("webgl2");
+  if (!gl) throw new Error("WebGL 2 is required.");
+  const response = await fetch("/mesh");
+  if (!response.ok) throw new Error("Could not load mesh.");
+  const mesh = await response.json();
+
+  function shader(type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(shader));
+    }
+    return shader;
+  }
+  const program = gl.createProgram();
+  gl.attachShader(program, shader(gl.VERTEX_SHADER, `#version 300 es
+    in vec3 position;
+    uniform vec3 center;
+    uniform float scale;
+    uniform float angle;
+    uniform float aspect;
+    out vec3 color;
+    void main() {
+      vec3 p = (position - center) * scale;
+      color = p + 0.5;
+      // Rotate around Y, then tilt around X. Use an orthographic projection.
+      float c = cos(angle), s = sin(angle);
+      p = vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
+      p = vec3(p.x, 0.866*p.y - 0.5*p.z, 0.5*p.y + 0.866*p.z);
+      gl_Position = vec4(p.x / max(aspect, 1.0), p.y * min(aspect, 1.0), -p.z * 0.5, 1.0);
+    }
+  `));
+  gl.attachShader(program, shader(gl.FRAGMENT_SHADER, `#version 300 es
+    precision mediump float;
+    in vec3 color;
+    out vec4 fragment;
+    void main() {
+      fragment = vec4(color, 1.0);
+    }
+  `));
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw new Error(gl.getProgramInfoLog(program));
+  }
+  gl.useProgram(program);
+
+  // Upload the accessor data decoded by Go to GPU vertex and index buffers.
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.positions.flat()), gl.STATIC_DRAW);
+  const position = gl.getAttribLocation(program, "position");
+  gl.enableVertexAttribArray(position);
+  gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(mesh.indices), gl.STATIC_DRAW);
+
+  // Center and fit the mesh without requiring cameras or a matrix library.
+  const min = [...mesh.positions[0]], max = [...min];
+  for (const p of mesh.positions) {
+    for (let i = 0; i < 3; i++) {
+      min[i] = Math.min(min[i], p[i]);
+      max[i] = Math.max(max[i], p[i]);
+    }
+  }
+  gl.uniform3fv(gl.getUniformLocation(program, "center"), min.map((v, i) => (v + max[i]) / 2));
+  gl.uniform1f(gl.getUniformLocation(program, "scale"), 1 / (Math.max(...max.map((v, i) => v - min[i])) || 1));
+  const angle = gl.getUniformLocation(program, "angle");
+  const aspect = gl.getUniformLocation(program, "aspect");
+  gl.enable(gl.DEPTH_TEST);
+  gl.clearColor(0.094, 0.125, 0.169, 1);
+  function draw(time) {
+    const width = Math.max(1, Math.round(canvas.clientWidth * devicePixelRatio));
+    const height = Math.max(1, Math.round(canvas.clientHeight * devicePixelRatio));
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform1f(aspect, canvas.width / canvas.height);
+    gl.uniform1f(angle, time * 0.001);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.drawElements(gl.TRIANGLES, mesh.indices.length, gl.UNSIGNED_INT, 0);
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+} catch (error) {
+  document.querySelector("#status").textContent = error.message;
+  console.error(error);
+}
+</script>
+</html>

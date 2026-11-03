@@ -76,6 +76,33 @@ fmt.Print(doc.Asset)
 
 In both cases the decoder will automatically detect if the file is JSON/ASCII (gltf) or Binary (glb) based on its content.
 
+### Hello World: a rotating cube
+
+Run this command from the repository root, then open http://127.0.0.1:8080
+in a browser with WebGL 2 support:
+
+```sh
+go run ./examples/helloworld
+```
+
+The example loads the included cube with `gltf.Open`, extracts its `POSITION`
+and index accessors with `modeler.ReadPosition` and `modeler.ReadIndices`, and
+serves the data to a small WebGL viewer. The viewer uploads vertex and index
+buffers and uses simple vertex and fragment shaders to draw and rotate the cube.
+No additional Go dependencies or native graphics libraries are needed.
+
+To try your own file (keep any external buffers alongside it):
+
+```sh
+go run ./examples/helloworld -model /path/to/Box.gltf
+```
+
+See [`examples/helloworld`](./examples/helloworld) for the Go loader and browser
+code. This is a mesh-loading example, not a full scene renderer: it displays only
+the first mesh's first triangle primitive, centered and scaled to fit, ignoring
+node transforms, materials, textures, and animations. Non-indexed primitives and
+GLB files are also supported. Press Ctrl+C to stop the server.
+
 ### Writing a document
 
 A [gltf.Document](https://pkg.go.dev/github.com/qmuntal/gltf#Document) can be encoded to any `io.Writer` by using [gltf.Encoder](https://pkg.go.dev/github.com/qmuntal/gltf#Encoder):
