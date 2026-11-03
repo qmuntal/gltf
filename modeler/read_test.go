@@ -995,13 +995,13 @@ func TestReadAccessorOversizedCount(t *testing.T) {
 		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
 	}
 	// An accessor without a buffer view allocates zero-initialised data
-	// from its declared count alone; bound it by the document buffers.
+	// from its declared count alone; bound it by an explicit cap.
 	acr.BufferView = nil
 	acr.Count = 900_000_000
 	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
 		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
 	}
-	// A small zero-initialised accessor within the budget still reads.
+	// A small zero-initialised accessor within the cap still reads.
 	acr.Count = 1
 	got, err := modeler.ReadAccessor(doc, acr, nil)
 	if err != nil {
@@ -1009,5 +1009,70 @@ func TestReadAccessorOversizedCount(t *testing.T) {
 	}
 	if v := got.([][3]float32); len(v) != 1 || v[0] != [3]float32{} {
 		t.Fatalf("unexpected zero-initialised data: %v", v)
+	}
+}
+
+func TestReadAccessorZeroInitWithoutBufferView(t *testing.T) {
+	// An accessor without a buffer view is zero-initialised (e.g. the
+	// base of a sparse accessor). Its output size is unrelated to the
+	// stored buffers: a valid accessor may expand a few stored bytes
+	// into a larger zero-filled output, and a document may carry no
+	// buffers at all. The allocation is instead bounded by an explicit
+	// cap, independent of any declared buffer length.
+	sparseBase := &gltf.Accessor{
+		Count:         2,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	// Stored buffers (16 B) smaller than the zero-filled output (24 B).
+	doc := &gltf.Document{
+		Buffers: []*gltf.Buffer{
+			{Data: make([]byte, 16), ByteLength: 16},
+		},
+	}
+	got, err := modeler.ReadAccessor(doc, sparseBase, nil)
+	if err != nil {
+		t.Fatalf("sparse base accessor: unexpected error: %v", err)
+	}
+	if v := got.([][3]float32); len(v) != 2 || v[0] != [3]float32{} || v[1] != [3]float32{} {
+		t.Fatalf("sparse base accessor: unexpected data: %v", v)
+	}
+	// A document without any buffers still reads small accessors.
+	got, err = modeler.ReadAccessor(&gltf.Document{}, sparseBase, nil)
+	if err != nil {
+		t.Fatalf("buffer-less document: unexpected error: %v", err)
+	}
+	if v := got.([][3]float32); len(v) != 2 || v[0] != [3]float32{} || v[1] != [3]float32{} {
+		t.Fatalf("buffer-less document: unexpected data: %v", v)
+	}
+	// A declared count far beyond the cap is rejected before allocating.
+	huge := &gltf.Accessor{
+		Count:         900_000_000,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	if _, err := modeler.ReadAccessor(doc, huge, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("oversized zero-initialised accessor: expected io.ErrShortBuffer, got %v", err)
+	}
+	// An inflated declared buffer length must not raise the bound: the
+	// buffer claims 8 GiB (clamped to math.MaxInt on 32-bit targets)
+	// but the request (1.2 GB of VEC3 floats) still exceeds the cap.
+	declared := int64(1) << 33
+	byteLength := math.MaxInt
+	if strconv.IntSize == 64 {
+		byteLength = int(declared)
+	}
+	inflated := &gltf.Document{
+		Buffers: []*gltf.Buffer{
+			{Data: make([]byte, 16), ByteLength: byteLength},
+		},
+	}
+	overCap := &gltf.Accessor{
+		Count:         100_000_000,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	if _, err := modeler.ReadAccessor(inflated, overCap, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("inflated buffer length: expected io.ErrShortBuffer, got %v", err)
 	}
 }
