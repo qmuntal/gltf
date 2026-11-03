@@ -87,8 +87,10 @@ func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 		jd       *json.Decoder
 		isBinary bool
 	)
+	var jsonChunk *io.LimitedReader
 	if glbHeader != nil {
-		jd = json.NewDecoder(&io.LimitedReader{R: d.r, N: int64(glbHeader.JSONHeader.Length)})
+		jsonChunk = &io.LimitedReader{R: d.r, N: int64(glbHeader.JSONHeader.Length)}
+		jd = json.NewDecoder(jsonChunk)
 		isBinary = true
 	} else {
 		jd = json.NewDecoder(d.r)
@@ -96,6 +98,11 @@ func (d *Decoder) decodeDocument(doc *Document) (bool, error) {
 	}
 
 	err = jd.Decode(doc)
+	if err == nil && jsonChunk != nil {
+		// json.Decoder stops at the closing brace, so skip whatever is left of
+		// the chunk (its padding) before the BIN chunk header is read.
+		_, err = io.Copy(io.Discard, jsonChunk)
+	}
 	return isBinary, err
 }
 

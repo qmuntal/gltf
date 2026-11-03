@@ -9,6 +9,8 @@ import (
 	"math"
 	"os"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -326,5 +328,42 @@ func TestDecodeBinaryBufferOversized(t *testing.T) {
 	}
 	if !errors.Is(err, io.ErrUnexpectedEOF) {
 		t.Errorf("expected io.ErrUnexpectedEOF; got %v", err)
+	}
+}
+
+// TestDecodeGLBJSONChunkPadding ensures the BIN chunk header is read from where
+// the BIN chunk starts, whatever padding follows the JSON object. json.Decoder
+// stops at the closing brace, so when the brace ended one of its reads the
+// padding was left unread and taken for the BIN chunk header. Exporters such
+// as trimesh pad an already aligned JSON chunk with four spaces.
+func TestDecodeGLBJSONChunkPadding(t *testing.T) {
+	bin := []byte{1, 2, 3, 4}
+	glb := func(braceEnd int) []byte {
+		head := `{"asset":{"version":"2.0"},"buffers":[{"byteLength":4}],"nodes":[{"name":"`
+		tail := `"}]}`
+		jsonChunk := head + strings.Repeat("a", braceEnd-len(head)-len(tail)) + tail + "    "
+		var b bytes.Buffer
+		binary.Write(&b, binary.LittleEndian, uint32(glbHeaderMagic))
+		binary.Write(&b, binary.LittleEndian, uint32(2)) // version
+		binary.Write(&b, binary.LittleEndian, uint32(12+8+len(jsonChunk)+8+len(bin)))
+		binary.Write(&b, binary.LittleEndian, uint32(len(jsonChunk)))
+		binary.Write(&b, binary.LittleEndian, uint32(glbChunkJSON))
+		b.WriteString(jsonChunk)
+		binary.Write(&b, binary.LittleEndian, uint32(len(bin)))
+		binary.Write(&b, binary.LittleEndian, uint32(glbChunkBIN))
+		b.Write(bin)
+		return b.Bytes()
+	}
+	// 1024, 4076 and 8192 end one of json.Decoder's reads; 1020 and 4072 do not.
+	for _, braceEnd := range []int{1020, 1024, 4072, 4076, 8192} {
+		t.Run(strconv.Itoa(braceEnd), func(t *testing.T) {
+			doc := new(Document)
+			if err := NewDecoder(bytes.NewReader(glb(braceEnd))).Decode(doc); err != nil {
+				t.Fatalf("Decoder.Decode() error = %v", err)
+			}
+			if !bytes.Equal(doc.Buffers[0].Data, bin) {
+				t.Errorf("Decoder.Decode() buffer = %v, want %v", doc.Buffers[0].Data, bin)
+			}
+		})
 	}
 }
