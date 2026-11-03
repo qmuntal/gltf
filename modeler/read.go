@@ -54,7 +54,7 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 			return nil, err
 		}
 	} else if doc != nil {
-		if err := validateZeroInitAccessorCount(acr, totalBufferLength(doc)); err != nil {
+		if err := validateZeroInitAccessorCount(acr); err != nil {
 			return nil, err
 		}
 	}
@@ -189,11 +189,19 @@ func validateAccessorCount(acr *gltf.Accessor, byteStride, available int) error 
 	return nil
 }
 
-// validateZeroInitAccessorCount bounds the allocation for an accessor
-// without a buffer view (zero-initialised data, e.g. a sparse base) by
-// the total size of the document buffers, so that a document cannot
-// force an allocation larger than the data it carries.
-func validateZeroInitAccessorCount(acr *gltf.Accessor, budget int) error {
+// maxZeroInitAccessorBytes bounds the allocation for an accessor without
+// a buffer view (zero-initialised data, e.g. a sparse base). The bound is
+// a fixed cap, independent of the document buffers: stored buffer sizes
+// say nothing about how much zero-filled output an accessor may
+// legitimately declare, and declared buffer lengths can be inflated, so
+// neither can be trusted to limit the allocation.
+const maxZeroInitAccessorBytes = 1 << 30
+
+// validateZeroInitAccessorCount checks that the zero-initialised data of
+// an accessor without a buffer view stays within
+// maxZeroInitAccessorBytes, so that a malformed document cannot force a
+// multi-gigabyte allocation from a declared count alone.
+func validateZeroInitAccessorCount(acr *gltf.Accessor) error {
 	size := gltf.SizeOfElement(acr.ComponentType, acr.Type)
 	if size <= 0 || acr.Count == 0 {
 		return nil
@@ -201,26 +209,10 @@ func validateZeroInitAccessorCount(acr *gltf.Accessor, budget int) error {
 	if acr.Count > math.MaxInt/size {
 		return io.ErrShortBuffer
 	}
-	if acr.Count*size > budget {
+	if acr.Count*size > maxZeroInitAccessorBytes {
 		return io.ErrShortBuffer
 	}
 	return nil
-}
-
-// totalBufferLength returns the sum of the declared lengths of the
-// document buffers, saturating at math.MaxInt.
-func totalBufferLength(doc *gltf.Document) int {
-	total := 0
-	for _, b := range doc.Buffers {
-		if b == nil || b.ByteLength < 0 {
-			continue
-		}
-		if b.ByteLength > math.MaxInt-total {
-			return math.MaxInt
-		}
-		total += b.ByteLength
-	}
-	return total
 }
 
 func validateAccessorByteOffset(byteOffset, bufferViewLength int) error {
