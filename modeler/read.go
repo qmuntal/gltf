@@ -53,7 +53,7 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 		if err := validateAccessorCount(acr, bv.ByteStride, len(buf)-acr.ByteOffset); err != nil {
 			return nil, err
 		}
-	} else if doc != nil {
+	} else {
 		if err := validateZeroInitAccessorCount(acr); err != nil {
 			return nil, err
 		}
