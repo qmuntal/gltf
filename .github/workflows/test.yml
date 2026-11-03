@@ -29,9 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check test result
-        env:
-          TEST_RESULT: ${{ needs.test.result }}
-        run: test "$TEST_RESULT" = success
+        run: test "${{ needs.test.result }}" = success
   finish:
     needs: test
     runs-on: ubuntu-latest
