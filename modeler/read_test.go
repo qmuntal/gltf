@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/qmuntal/gltf"
@@ -972,9 +973,16 @@ func TestReadAccessorOversizedCount(t *testing.T) {
 			{Data: data, ByteLength: len(data)},
 		},
 	}
+	// The uint32-max regression count from the advisory, clamped to
+	// math.MaxInt on 32-bit targets so the test compiles there.
+	count := math.MaxInt
+	u32max := int64(4294967295)
+	if strconv.IntSize == 64 {
+		count = int(u32max)
+	}
 	acr := &gltf.Accessor{
 		BufferView:    gltf.Index(0),
-		Count:         4294967295,
+		Count:         count,
 		Type:          gltf.AccessorVec3,
 		ComponentType: gltf.ComponentFloat,
 	}
@@ -982,8 +990,24 @@ func TestReadAccessorOversizedCount(t *testing.T) {
 		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
 	}
 	// A count near math.MaxInt must not overflow the size computation.
-	acr.Count = math.MaxInt64
+	acr.Count = math.MaxInt
 	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
 		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// An accessor without a buffer view allocates zero-initialised data
+	// from its declared count alone; bound it by the document buffers.
+	acr.BufferView = nil
+	acr.Count = 900_000_000
+	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// A small zero-initialised accessor within the budget still reads.
+	acr.Count = 1
+	got, err := modeler.ReadAccessor(doc, acr, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if v := got.([][3]float32); len(v) != 1 || v[0] != [3]float32{} {
+		t.Fatalf("unexpected zero-initialised data: %v", v)
 	}
 }
