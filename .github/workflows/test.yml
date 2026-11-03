@@ -25,6 +25,7 @@ jobs:
   conclusion:
     needs: test
     if: ${{ always() }}
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: Check test result
