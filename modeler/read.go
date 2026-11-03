@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"reflect"
 	"sync"
 
@@ -35,12 +36,11 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 	if acr.Count < 0 {
 		return nil, errCount("accessor", acr.Count)
 	}
-	data, err := binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
-	if err != nil {
-		return nil, err
-	}
+	var bv *gltf.BufferView
+	var buf []byte
 	if acr.BufferView != nil {
-		bv, buf, err := readBufferView(doc, *acr.BufferView)
+		var err error
+		bv, buf, err = readBufferView(doc, *acr.BufferView)
 		if err != nil {
 			return nil, err
 		}
@@ -50,6 +50,15 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 		if err := validateAccessorByteOffset(acr.ByteOffset, len(buf)); err != nil {
 			return nil, err
 		}
+		if err := validateAccessorCount(acr, bv.ByteStride, len(buf)-acr.ByteOffset); err != nil {
+			return nil, err
+		}
+	}
+	data, err := binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
+	if err != nil {
+		return nil, err
+	}
+	if acr.BufferView != nil {
 		err = binary.Read(buf[acr.ByteOffset:], bv.ByteStride, data)
 		if err != nil {
 			return nil, err
@@ -150,6 +159,30 @@ func ReadBufferView(doc *gltf.Document, bv *gltf.BufferView) ([]byte, error) {
 		return nil, io.ErrShortBuffer
 	}
 	return buffer.Data[bv.ByteOffset:high], nil
+}
+
+// validateAccessorCount checks that the data of an accessor fits in the
+// available bytes of its buffer view, so that a malformed document cannot
+// force an allocation larger than the backing buffer before being rejected.
+func validateAccessorCount(acr *gltf.Accessor, byteStride, available int) error {
+	size := gltf.SizeOfElement(acr.ComponentType, acr.Type)
+	if size <= 0 || acr.Count == 0 {
+		return nil
+	}
+	stride := byteStride
+	if stride == 0 {
+		stride = size
+	}
+	// Guard against overflow before multiplying, as binary.Read does.
+	if acr.Count > 1 && stride > (math.MaxInt-size)/(acr.Count-1) {
+		return io.ErrShortBuffer
+	}
+	// The last element only occupies its own size, not a full stride.
+	needed := size + (acr.Count-1)*stride
+	if needed > available {
+		return io.ErrShortBuffer
+	}
+	return nil
 }
 
 func validateAccessorByteOffset(byteOffset, bufferViewLength int) error {
