@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"reflect"
 	"sync"
 
@@ -35,12 +36,11 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 	if acr.Count < 0 {
 		return nil, errCount("accessor", acr.Count)
 	}
-	data, err := binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
-	if err != nil {
-		return nil, err
-	}
+	var bv *gltf.BufferView
+	var buf []byte
 	if acr.BufferView != nil {
-		bv, buf, err := readBufferView(doc, *acr.BufferView)
+		var err error
+		bv, buf, err = readBufferView(doc, *acr.BufferView)
 		if err != nil {
 			return nil, err
 		}
@@ -50,6 +50,19 @@ func ReadAccessor(doc *gltf.Document, acr *gltf.Accessor, buffer []byte) (any, e
 		if err := validateAccessorByteOffset(acr.ByteOffset, len(buf)); err != nil {
 			return nil, err
 		}
+		if err := validateAccessorCount(acr, bv.ByteStride, len(buf)-acr.ByteOffset); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := validateZeroInitAccessorCount(acr, buffer); err != nil {
+			return nil, err
+		}
+	}
+	data, err := binary.MakeSliceBuffer(acr.ComponentType, acr.Type, acr.Count, buffer)
+	if err != nil {
+		return nil, err
+	}
+	if acr.BufferView != nil {
 		err = binary.Read(buf[acr.ByteOffset:], bv.ByteStride, data)
 		if err != nil {
 			return nil, err
@@ -152,6 +165,87 @@ func ReadBufferView(doc *gltf.Document, bv *gltf.BufferView) ([]byte, error) {
 	return buffer.Data[bv.ByteOffset:high], nil
 }
 
+// validateAccessorCount checks that the data of an accessor fits in the
+// available bytes of its buffer view, so that a malformed document cannot
+// force an allocation larger than the backing buffer before being rejected.
+func validateAccessorCount(acr *gltf.Accessor, byteStride, available int) error {
+	size := gltf.SizeOfElement(acr.ComponentType, acr.Type)
+	if size <= 0 || acr.Count == 0 {
+		return nil
+	}
+	stride := byteStride
+	if stride == 0 {
+		stride = size
+	}
+	// Guard against overflow before multiplying, as binary.Read does.
+	if acr.Count > 1 && stride > (math.MaxInt-size)/(acr.Count-1) {
+		return io.ErrShortBuffer
+	}
+	// The last element only occupies its own size, not a full stride.
+	needed := size + (acr.Count-1)*stride
+	if needed > available {
+		return io.ErrShortBuffer
+	}
+	return nil
+}
+
+// maxZeroInitAccessorBytes bounds the allocation for an accessor without
+// a buffer view (zero-initialised data, e.g. a sparse base). The bound is
+// a fixed cap, independent of the document buffers: stored buffer sizes
+// say nothing about how much zero-filled output an accessor may
+// legitimately declare, and declared buffer lengths can be inflated, so
+// neither can be trusted to limit the allocation.
+const maxZeroInitAccessorBytes = 1 << 30
+
+// validateZeroInitAccessorCount checks that the zero-initialised data of
+// an accessor without a buffer view stays within
+// maxZeroInitAccessorBytes, so that a malformed document cannot force a
+// multi-gigabyte allocation from a declared count alone. The element size
+// is the unpadded size used by binary.MakeSliceBuffer: gltf.SizeOfElement
+// includes matrix column padding, which the allocated Go arrays do not
+// have. The check is skipped when the caller supplied a buffer with
+// enough capacity for the whole result, since no allocation occurs then.
+func validateZeroInitAccessorCount(acr *gltf.Accessor, buffer []byte) error {
+	size := acr.ComponentType.ByteSize() * acr.Type.Components()
+	if size <= 0 || acr.Count == 0 {
+		return nil
+	}
+	if acr.Count > math.MaxInt/size {
+		return io.ErrShortBuffer
+	}
+	needed := acr.Count * size
+	if needed <= cap(buffer) {
+		return nil
+	}
+	if needed > maxZeroInitAccessorBytes {
+		return io.ErrShortBuffer
+	}
+	return nil
+}
+
+// validateZeroInitConversion checks that, for an accessor without a
+// buffer view, the accessor data plus a converted output of outSize
+// bytes per element stays within maxZeroInitAccessorBytes. The
+// converting readers allocate the output on top of the accessor data,
+// so bounding only the data would still let a declared count force a
+// multi-gigabyte allocation when the conversion widens the element
+// type. The check is skipped when the caller supplied storage for the
+// whole output, and for accessors backed by a buffer view, whose count
+// is already bounded by the real buffer length.
+func validateZeroInitConversion(acr *gltf.Accessor, outSize, supplied int) error {
+	if acr.BufferView != nil || supplied >= acr.Count {
+		return nil
+	}
+	size := acr.ComponentType.ByteSize()*acr.Type.Components() + outSize
+	if size <= 0 || acr.Count == 0 {
+		return nil
+	}
+	if acr.Count > maxZeroInitAccessorBytes/size {
+		return io.ErrShortBuffer
+	}
+	return nil
+}
+
 func validateAccessorByteOffset(byteOffset, bufferViewLength int) error {
 	if byteOffset < 0 {
 		return errors.New("gltf: accessor byte offset is negative")
@@ -221,6 +315,9 @@ func ReadIndices(doc *gltf.Document, acr *gltf.Accessor, buffer []uint32) ([]uin
 	}
 	if acr.Type != gltf.AccessorScalar {
 		return nil, errAccessorType(acr.Type)
+	}
+	if err := validateZeroInitConversion(acr, 4, len(buffer)); err != nil {
+		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
@@ -303,6 +400,9 @@ func ReadTextureCoord(doc *gltf.Document, acr *gltf.Accessor, buffer [][2]float3
 	if err := requireNormalizedInteger(acr); err != nil {
 		return nil, err
 	}
+	if err := validateZeroInitConversion(acr, 8, len(buffer)); err != nil {
+		return nil, err
+	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
 	data, err := ReadAccessor(doc, acr, *bufPtr)
@@ -346,6 +446,9 @@ func ReadWeights(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	if err := requireNormalizedInteger(acr); err != nil {
 		return nil, err
 	}
+	if err := validateZeroInitConversion(acr, 16, len(buffer)); err != nil {
+		return nil, err
+	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
 	data, err := ReadAccessor(doc, acr, *bufPtr)
@@ -387,6 +490,9 @@ func ReadJoints(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([][
 	}
 	if acr.Type != gltf.AccessorVec4 {
 		return nil, errAccessorType(acr.Type)
+	}
+	if err := validateZeroInitConversion(acr, 8, len(buffer)); err != nil {
+		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
@@ -519,6 +625,9 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 		return nil, errAccessorType(acr.Type)
 	}
 	if err := requireNormalizedInteger(acr); err != nil {
+		return nil, err
+	}
+	if err := validateZeroInitConversion(acr, 8, len(buffer)); err != nil {
 		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)

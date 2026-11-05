@@ -2,8 +2,11 @@ package modeler_test
 
 import (
 	"encoding/binary"
+	"errors"
+	"io"
 	"math"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/qmuntal/gltf"
@@ -956,4 +959,181 @@ func TestReadInverseBindMatrices(t *testing.T) {
 		})
 	}
 
+}
+
+func TestReadAccessorOversizedCount(t *testing.T) {
+	// Regression test for GHSA-8pp7-j5x6-h8qc: an accessor whose declared
+	// count far exceeds its buffer view must be rejected before allocating.
+	data := make([]byte, 16)
+	doc := &gltf.Document{
+		BufferViews: []*gltf.BufferView{
+			{Buffer: 0, ByteLength: len(data)},
+		},
+		Buffers: []*gltf.Buffer{
+			{Data: data, ByteLength: len(data)},
+		},
+	}
+	// The uint32-max regression count from the advisory, clamped to
+	// math.MaxInt on 32-bit targets so the test compiles there.
+	count := math.MaxInt
+	u32max := int64(4294967295)
+	if strconv.IntSize == 64 {
+		count = int(u32max)
+	}
+	acr := &gltf.Accessor{
+		BufferView:    gltf.Index(0),
+		Count:         count,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// A count near math.MaxInt must not overflow the size computation.
+	acr.Count = math.MaxInt
+	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// An accessor without a buffer view allocates zero-initialised data
+	// from its declared count alone; bound it by an explicit cap.
+	acr.BufferView = nil
+	acr.Count = 900_000_000
+	if _, err := modeler.ReadAccessor(doc, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// A small zero-initialised accessor within the cap still reads.
+	acr.Count = 1
+	got, err := modeler.ReadAccessor(doc, acr, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if v := got.([][3]float32); len(v) != 1 || v[0] != [3]float32{} {
+		t.Fatalf("unexpected zero-initialised data: %v", v)
+	}
+}
+
+func TestReadAccessorZeroInitWithoutBufferView(t *testing.T) {
+	// An accessor without a buffer view is zero-initialised (e.g. the
+	// base of a sparse accessor). Its output size is unrelated to the
+	// stored buffers: a valid accessor may expand a few stored bytes
+	// into a larger zero-filled output, and a document may carry no
+	// buffers at all. The allocation is instead bounded by an explicit
+	// cap, independent of any declared buffer length.
+	sparseBase := &gltf.Accessor{
+		Count:         2,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	// Stored buffers (16 B) smaller than the zero-filled output (24 B).
+	doc := &gltf.Document{
+		Buffers: []*gltf.Buffer{
+			{Data: make([]byte, 16), ByteLength: 16},
+		},
+	}
+	got, err := modeler.ReadAccessor(doc, sparseBase, nil)
+	if err != nil {
+		t.Fatalf("sparse base accessor: unexpected error: %v", err)
+	}
+	if v := got.([][3]float32); len(v) != 2 || v[0] != [3]float32{} || v[1] != [3]float32{} {
+		t.Fatalf("sparse base accessor: unexpected data: %v", v)
+	}
+	// A document without any buffers still reads small accessors.
+	got, err = modeler.ReadAccessor(&gltf.Document{}, sparseBase, nil)
+	if err != nil {
+		t.Fatalf("buffer-less document: unexpected error: %v", err)
+	}
+	if v := got.([][3]float32); len(v) != 2 || v[0] != [3]float32{} || v[1] != [3]float32{} {
+		t.Fatalf("buffer-less document: unexpected data: %v", v)
+	}
+	// A declared count far beyond the cap is rejected before allocating.
+	huge := &gltf.Accessor{
+		Count:         900_000_000,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	if _, err := modeler.ReadAccessor(doc, huge, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("oversized zero-initialised accessor: expected io.ErrShortBuffer, got %v", err)
+	}
+
+	// A nil document must not bypass the bound: the validation does not
+	// depend on the document, so the oversized count is rejected here too.
+	if _, err := modeler.ReadAccessor(nil, huge, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("nil document: expected io.ErrShortBuffer, got %v", err)
+	}
+	// An inflated declared buffer length must not raise the bound: the
+	// buffer claims 8 GiB (clamped to math.MaxInt on 32-bit targets)
+	// but the request (1.2 GB of VEC3 floats) still exceeds the cap.
+	declared := int64(1) << 33
+	byteLength := math.MaxInt
+	if strconv.IntSize == 64 {
+		byteLength = int(declared)
+	}
+	inflated := &gltf.Document{
+		Buffers: []*gltf.Buffer{
+			{Data: make([]byte, 16), ByteLength: byteLength},
+		},
+	}
+	overCap := &gltf.Accessor{
+		Count:         100_000_000,
+		Type:          gltf.AccessorVec3,
+		ComponentType: gltf.ComponentFloat,
+	}
+	if _, err := modeler.ReadAccessor(inflated, overCap, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("inflated buffer length: expected io.ErrShortBuffer, got %v", err)
+	}
+}
+
+func TestReadAccessorZeroInitUnpaddedElementSize(t *testing.T) {
+	// MAT2/UNSIGNED_BYTE: gltf.SizeOfElement counts 8 bytes per element
+	// (matrix column padding), but the allocated Go array uses the
+	// unpadded 4 bytes per element. 140M elements allocate 560 MB,
+	// within the cap, even though the padded count is 1.12 GB.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorMat2, Count: 140_000_000}
+	data, err := modeler.ReadAccessor(nil, acr, nil)
+	if err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+	if got := reflect.ValueOf(data).Len(); got != acr.Count {
+		t.Fatalf("expected %d elements, got %d", acr.Count, got)
+	}
+}
+
+func TestReadAccessorZeroInitCallerSuppliedBuffer(t *testing.T) {
+	// The result needs 1.08 GB, above the cap, but the caller supplied
+	// a buffer with enough capacity, so nothing is allocated and the
+	// cap does not apply.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 90_000_000}
+	caller := make([]byte, acr.Count*12)
+	data, err := modeler.ReadAccessor(nil, acr, caller)
+	if err != nil {
+		t.Fatalf("expected success with caller-supplied buffer, got %v", err)
+	}
+	if got := reflect.ValueOf(data).Len(); got != acr.Count {
+		t.Fatalf("expected %d elements, got %d", acr.Count, got)
+	}
+}
+
+func TestReadIndicesZeroInitConversionBudget(t *testing.T) {
+	// The accessor data alone (256 MB) is within the cap, but the
+	// converted uint32 output (1 GB) brings the total above it.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 1 << 28}
+	if _, err := modeler.ReadIndices(nil, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// With caller-supplied output storage the conversion allocates
+	// nothing, so the same accessor succeeds.
+	supplied := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 220_000_000}
+	out, err := modeler.ReadIndices(nil, supplied, make([]uint32, supplied.Count))
+	if err != nil {
+		t.Fatalf("expected success with caller-supplied output, got %v", err)
+	}
+	if len(out) != supplied.Count {
+		t.Fatalf("expected %d indices, got %d", supplied.Count, len(out))
+	}
+	// Same budgeting in the other widening readers: 60M VEC4 ubyte
+	// weights are 240 MB of data but 960 MB of float32 output.
+	weights := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorVec4, Count: 60_000_000, Normalized: true}
+	if _, err := modeler.ReadWeights(nil, weights, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("weights: expected io.ErrShortBuffer, got %v", err)
+	}
 }
