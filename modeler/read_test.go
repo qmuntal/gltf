@@ -1082,3 +1082,58 @@ func TestReadAccessorZeroInitWithoutBufferView(t *testing.T) {
 		t.Fatalf("inflated buffer length: expected io.ErrShortBuffer, got %v", err)
 	}
 }
+
+func TestReadAccessorZeroInitUnpaddedElementSize(t *testing.T) {
+	// MAT2/UNSIGNED_BYTE: gltf.SizeOfElement counts 8 bytes per element
+	// (matrix column padding), but the allocated Go array uses the
+	// unpadded 4 bytes per element. 140M elements allocate 560 MB,
+	// within the cap, even though the padded count is 1.12 GB.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorMat2, Count: 140_000_000}
+	data, err := modeler.ReadAccessor(nil, acr, nil)
+	if err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+	if got := reflect.ValueOf(data).Len(); got != acr.Count {
+		t.Fatalf("expected %d elements, got %d", acr.Count, got)
+	}
+}
+
+func TestReadAccessorZeroInitCallerSuppliedBuffer(t *testing.T) {
+	// The result needs 1.08 GB, above the cap, but the caller supplied
+	// a buffer with enough capacity, so nothing is allocated and the
+	// cap does not apply.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 90_000_000}
+	caller := make([]byte, acr.Count*12)
+	data, err := modeler.ReadAccessor(nil, acr, caller)
+	if err != nil {
+		t.Fatalf("expected success with caller-supplied buffer, got %v", err)
+	}
+	if got := reflect.ValueOf(data).Len(); got != acr.Count {
+		t.Fatalf("expected %d elements, got %d", acr.Count, got)
+	}
+}
+
+func TestReadIndicesZeroInitConversionBudget(t *testing.T) {
+	// The accessor data alone (256 MB) is within the cap, but the
+	// converted uint32 output (1 GB) brings the total above it.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 1 << 28}
+	if _, err := modeler.ReadIndices(nil, acr, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
+	}
+	// With caller-supplied output storage the conversion allocates
+	// nothing, so the same accessor succeeds.
+	supplied := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 220_000_000}
+	out, err := modeler.ReadIndices(nil, supplied, make([]uint32, supplied.Count))
+	if err != nil {
+		t.Fatalf("expected success with caller-supplied output, got %v", err)
+	}
+	if len(out) != supplied.Count {
+		t.Fatalf("expected %d indices, got %d", supplied.Count, len(out))
+	}
+	// Same budgeting in the other widening readers: 60M VEC4 ubyte
+	// weights are 240 MB of data but 960 MB of float32 output.
+	weights := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorVec4, Count: 60_000_000, Normalized: true}
+	if _, err := modeler.ReadWeights(nil, weights, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("weights: expected io.ErrShortBuffer, got %v", err)
+	}
+}
