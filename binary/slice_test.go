@@ -103,6 +103,7 @@ func TestMakeSliceBuffer(t *testing.T) {
 		{"large buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([]uint8, 6)}, make([][2]uint8, 2)},
 		{"same buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, make([]uint8, 4)}, make([][2]uint8, 2)},
 		{"dirty buffer", args{gltf.ComponentUbyte, gltf.AccessorVec2, 2, []uint8{1, 2, 3, 4}}, make([][2]uint8, 2)},
+		{"uint mat3 buffer", args{gltf.ComponentUint, gltf.AccessorMat3, 2, make([]uint8, 72)}, make([][3][3]uint32, 2)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
