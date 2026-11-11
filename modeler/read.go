@@ -231,9 +231,12 @@ func validateZeroInitAccessorCount(acr *gltf.Accessor, buffer []byte) error {
 // multi-gigabyte allocation when the conversion widens the element
 // type. The check is skipped when the caller supplied storage for the
 // whole output, and for accessors backed by a buffer view, whose count
-// is already bounded by the real buffer length.
-func validateZeroInitConversion(acr *gltf.Accessor, outSize, supplied int) error {
-	if acr.BufferView != nil || supplied >= acr.Count {
+// is already bounded by the real buffer length. suppliedCap is the
+// capacity of the caller buffer, not its length: makeBufferOf extends
+// a short output slice within its existing capacity, so length would
+// understate the storage available and wrongly reject reusable buffers.
+func validateZeroInitConversion(acr *gltf.Accessor, outSize, suppliedCap int) error {
+	if acr.BufferView != nil || suppliedCap >= acr.Count {
 		return nil
 	}
 	size := acr.ComponentType.ByteSize()*acr.Type.Components() + outSize
@@ -316,7 +319,7 @@ func ReadIndices(doc *gltf.Document, acr *gltf.Accessor, buffer []uint32) ([]uin
 	if acr.Type != gltf.AccessorScalar {
 		return nil, errAccessorType(acr.Type)
 	}
-	if err := validateZeroInitConversion(acr, 4, len(buffer)); err != nil {
+	if err := validateZeroInitConversion(acr, 4, cap(buffer)); err != nil {
 		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
@@ -351,6 +354,11 @@ func ReadNormal(doc *gltf.Document, acr *gltf.Accessor, buffer [][3]float32) ([]
 	if acr.Type != gltf.AccessorVec3 {
 		return nil, errAccessorType(acr.Type)
 	}
+	// No conversion, but the output is a second full-size allocation on
+	// top of the accessor data, so the combined zero-init budget applies.
+	if err := validateZeroInitConversion(acr, 12, cap(buffer)); err != nil {
+		return nil, err
+	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
 	data, err := ReadAccessor(doc, acr, *bufPtr)
@@ -371,6 +379,9 @@ func ReadTangent(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	}
 	if acr.Type != gltf.AccessorVec4 {
 		return nil, errAccessorType(acr.Type)
+	}
+	if err := validateZeroInitConversion(acr, 16, cap(buffer)); err != nil {
+		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
@@ -400,7 +411,7 @@ func ReadTextureCoord(doc *gltf.Document, acr *gltf.Accessor, buffer [][2]float3
 	if err := requireNormalizedInteger(acr); err != nil {
 		return nil, err
 	}
-	if err := validateZeroInitConversion(acr, 8, len(buffer)); err != nil {
+	if err := validateZeroInitConversion(acr, 8, cap(buffer)); err != nil {
 		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
@@ -446,7 +457,7 @@ func ReadWeights(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]float32) ([
 	if err := requireNormalizedInteger(acr); err != nil {
 		return nil, err
 	}
-	if err := validateZeroInitConversion(acr, 16, len(buffer)); err != nil {
+	if err := validateZeroInitConversion(acr, 16, cap(buffer)); err != nil {
 		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
@@ -491,7 +502,7 @@ func ReadJoints(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([][
 	if acr.Type != gltf.AccessorVec4 {
 		return nil, errAccessorType(acr.Type)
 	}
-	if err := validateZeroInitConversion(acr, 8, len(buffer)); err != nil {
+	if err := validateZeroInitConversion(acr, 8, cap(buffer)); err != nil {
 		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
@@ -525,6 +536,9 @@ func ReadPosition(doc *gltf.Document, acr *gltf.Accessor, buffer [][3]float32) (
 	if acr.Type != gltf.AccessorVec3 {
 		return nil, errAccessorType(acr.Type)
 	}
+	if err := validateZeroInitConversion(acr, 12, cap(buffer)); err != nil {
+		return nil, err
+	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
 	data, err := ReadAccessor(doc, acr, *bufPtr)
@@ -553,6 +567,12 @@ func ReadColor(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint8) ([][4]
 		return nil, errAccessorType(acr.Type)
 	}
 	if err := requireNormalizedInteger(acr); err != nil {
+		return nil, err
+	}
+	// UBYTE/VEC3 is the one widening case here (3 bytes/elem raw -> 4
+	// bytes/elem [4]uint8 output): the same budget ReadColor64 applies
+	// for its own widening sources.
+	if err := validateZeroInitConversion(acr, 4, cap(buffer)); err != nil {
 		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
@@ -627,7 +647,7 @@ func ReadColor64(doc *gltf.Document, acr *gltf.Accessor, buffer [][4]uint16) ([]
 	if err := requireNormalizedInteger(acr); err != nil {
 		return nil, err
 	}
-	if err := validateZeroInitConversion(acr, 8, len(buffer)); err != nil {
+	if err := validateZeroInitConversion(acr, 8, cap(buffer)); err != nil {
 		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
@@ -684,6 +704,9 @@ func ReadInverseBindMatrices(doc *gltf.Document, acr *gltf.Accessor, buffer [][4
 	}
 	if acr.Type != gltf.AccessorMat4 {
 		return nil, errAccessorType(acr.Type)
+	}
+	if err := validateZeroInitConversion(acr, 64, cap(buffer)); err != nil {
+		return nil, err
 	}
 	bufPtr := bufPool.Get().(*[]byte)
 	defer bufPool.Put(bufPtr)
