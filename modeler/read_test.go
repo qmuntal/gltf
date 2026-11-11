@@ -1086,9 +1086,11 @@ func TestReadAccessorZeroInitWithoutBufferView(t *testing.T) {
 func TestReadAccessorZeroInitUnpaddedElementSize(t *testing.T) {
 	// MAT2/UNSIGNED_BYTE: gltf.SizeOfElement counts 8 bytes per element
 	// (matrix column padding), but the allocated Go array uses the
-	// unpadded 4 bytes per element. 140M elements allocate 560 MB,
-	// within the cap, even though the padded count is 1.12 GB.
-	acr := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorMat2, Count: 140_000_000}
+	// unpadded 4 bytes per element. The end-to-end case stays small
+	// here; the large-count decision (140M elements = 560 MB unpadded,
+	// within the cap, while the padded count would be 1.12 GB) is
+	// covered allocation-free in TestValidateZeroInitAccessorCountUnpadded.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorMat2, Count: 4}
 	data, err := modeler.ReadAccessor(nil, acr, nil)
 	if err != nil {
 		t.Fatalf("expected success, got %v", err)
@@ -1099,10 +1101,12 @@ func TestReadAccessorZeroInitUnpaddedElementSize(t *testing.T) {
 }
 
 func TestReadAccessorZeroInitCallerSuppliedBuffer(t *testing.T) {
-	// The result needs 1.08 GB, above the cap, but the caller supplied
-	// a buffer with enough capacity, so nothing is allocated and the
-	// cap does not apply.
-	acr := &gltf.Accessor{ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 90_000_000}
+	// A caller-supplied buffer exempts the accessor from the cap, since
+	// nothing is allocated. The end-to-end case stays small here; the
+	// large-count decision (90M VEC3 floats = 1.08 GB, above the cap,
+	// succeeding only with caller-supplied capacity) is covered
+	// allocation-free in TestValidateZeroInitConversionCapacity.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 4}
 	caller := make([]byte, acr.Count*12)
 	data, err := modeler.ReadAccessor(nil, acr, caller)
 	if err != nil {
@@ -1121,8 +1125,10 @@ func TestReadIndicesZeroInitConversionBudget(t *testing.T) {
 		t.Fatalf("expected io.ErrShortBuffer, got %v", err)
 	}
 	// With caller-supplied output storage the conversion allocates
-	// nothing, so the same accessor succeeds.
-	supplied := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 220_000_000}
+	// nothing, so the same accessor succeeds. The end-to-end case
+	// stays small; the large-count boundary is covered allocation-free
+	// in TestValidateZeroInitConversionCapacity.
+	supplied := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorScalar, Count: 8}
 	out, err := modeler.ReadIndices(nil, supplied, make([]uint32, supplied.Count))
 	if err != nil {
 		t.Fatalf("expected success with caller-supplied output, got %v", err)
@@ -1135,5 +1141,46 @@ func TestReadIndicesZeroInitConversionBudget(t *testing.T) {
 	weights := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorVec4, Count: 60_000_000, Normalized: true}
 	if _, err := modeler.ReadWeights(nil, weights, nil); !errors.Is(err, io.ErrShortBuffer) {
 		t.Fatalf("weights: expected io.ErrShortBuffer, got %v", err)
+	}
+}
+
+func TestReadColorZeroInitWidening(t *testing.T) {
+	// Regression: ReadColor's UBYTE/VEC3 case widens 3 bytes/elem raw
+	// data into a 4 bytes/elem [4]uint8 output; without a budget check
+	// a bufferless accessor can combine two large allocations. The
+	// end-to-end case stays small; the large-count boundary is covered
+	// allocation-free in TestValidateZeroInitConversionColorUbyteVec3.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorVec3, Count: 1, Normalized: true}
+	got, err := modeler.ReadColor(nil, acr, nil)
+	if err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+	if len(got) != 1 || got[0] != [4]uint8{0, 0, 0, 255} {
+		t.Fatalf("unexpected zero-initialised data: %v", got)
+	}
+	oversized := &gltf.Accessor{ComponentType: gltf.ComponentUbyte, Type: gltf.AccessorVec3, Count: 360_000_000, Normalized: true}
+	if _, err := modeler.ReadColor(nil, oversized, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("oversized: expected io.ErrShortBuffer, got %v", err)
+	}
+}
+
+func TestReadPositionZeroInitCombinedBudget(t *testing.T) {
+	// Regression: ReadPosition does not convert, but its output is a
+	// second full-size allocation on top of the accessor data. A
+	// bufferless accessor just under the raw-only cap would otherwise
+	// allocate ~1 GiB of data plus ~1 GiB of output from metadata
+	// alone. The end-to-end case stays small; the oversized case is
+	// rejected by the combined-budget check before allocating.
+	acr := &gltf.Accessor{ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 1}
+	got, err := modeler.ReadPosition(nil, acr, nil)
+	if err != nil {
+		t.Fatalf("expected success, got %v", err)
+	}
+	if len(got) != 1 || got[0] != [3]float32{0, 0, 0} {
+		t.Fatalf("unexpected zero-initialised data: %v", got)
+	}
+	oversized := &gltf.Accessor{ComponentType: gltf.ComponentFloat, Type: gltf.AccessorVec3, Count: 89_478_485}
+	if _, err := modeler.ReadPosition(nil, oversized, nil); !errors.Is(err, io.ErrShortBuffer) {
+		t.Fatalf("oversized: expected io.ErrShortBuffer, got %v", err)
 	}
 }
