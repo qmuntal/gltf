@@ -112,7 +112,7 @@ func castSlice(c gltf.ComponentType, t gltf.AccessorType, count int, v []byte) a
 		case gltf.AccessorMat2:
 			return reslice[[2][2]uint32](v, l, rem)
 		case gltf.AccessorMat3:
-
+			return reslice[[3][3]uint32](v, l, rem)
 		case gltf.AccessorMat4:
 			return reslice[[4][4]uint32](v, l, rem)
 		}
